@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="qiniu-android-sdk-7.1.0">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/seal/libs/qiniu-android-sdk-7.1.0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
