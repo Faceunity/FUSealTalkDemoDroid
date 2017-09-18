@@ -1,94 +1,72 @@
-# sealtalk-android
-[![Platform](https://img.shields.io/badge/platform-android-green.svg)](http://developer.android.com/index.html)
-[![API](https://img.shields.io/badge/API-9%2B-brightgreen.svg?style=flat)](https://android-arsenal.com/api?level=9)<br/>
+本代码由[sealtalk-android](https://github.com/sealtalk/sealtalk-android)修改。
+# 对接步骤
+## 添加module
+添加faceunity module到工程中，在app dependencies里添加compile project(':faceunity')
+## 修改代码
+### 生成与销毁
+在SingleCallActivity的
+onCreate方法中添加（初始化并加载美颜道具、默认道具）
+~~~
+FUManager.getInstance(mContext).loadItems();
+~~~
+onDestroy方法中添加（销毁道具）
+~~~
+FUManager.getInstance(mContext).destroyItems();
+~~~
+### 渲染道具到原始数据上
+在SingleCallActivity的onCreate方法里使用FUManager将道具渲染到原始数据上
+~~~
+RongCallClient.getInstance().registerVideoFrameListener(new IVideoFrameListener() {
+    @Override
+    public boolean onCaptureVideoFrame(AgoraVideoFrame agoraVideoFrame) {
+        FUManager.renderItemsToYUVFrame(agoraVideoFrame.getyBuffer(), agoraVideoFrame.getuBuffer(), agoraVideoFrame.getvBuffer(), agoraVideoFrame.getyStride(), agoraVideoFrame.getuStride(), agoraVideoFrame.getvStride(), agoraVideoFrame.getWidth(), agoraVideoFrame.getHeight(), 270);
+        return true;
+    }
+});
+~~~
+## 添加界面（可选）
+### 修改rc_voip_activity_single_call
+在rc_voip_activity_single_call(layout文件)的末尾修改（在界面底部显示默认的道具选择控件）
+~~~
+<LinearLayout
+    android:layout_alignParentBottom="true"
+    android:layout_width="match_parent"
+    android:orientation="vertical"
+    android:layout_height="wrap_content">
 
+    <FrameLayout
+        android:id="@+id/rc_voip_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+    </FrameLayout>
 
-[中文版](https://github.com/sealtalk/sealtalk-android/blob/master/README.zh.md)  <br/>
-Android App of SealTalk powered by RongCloud.  
-
-## Features
-- Support multi-device [Android iOS Web PC(Windows Mac)](http://web.sealtalk.im/) online simultaneously, so is your app;
-- [Audio and video](http://www.rongcloud.cn/docs/android_callkit.html) calling;
-- Real-time location sharing;
-- Arbitrary custom [message](http://www.rongcloud.cn/docs/android.html#消息自定义) definition and custom [functional](http://www.rongcloud.cn/docs/android.html#4、会话扩展功能自定义) template；
-- Complete friend relationship system code demo；
-- Complete group function code demo；
-- Different social situations such as single chat，group chat，chatroom satisfy your needs, what’s more, [live video](http://rongcloud.cn/live) can be simply implemented. [Customer service](http://rongcloud.cn/customservice)? Yes, it’s simpler than your imagination.
-- To be continued...
-
-## Gif
-
-### Add RedPacket
- 
-![image](https://github.com/sealtalk/sealtalk-android/blob/master/gif/redpacket.gif)<br/>
- 
-### Powerful global searching
- 
-![image](https://github.com/sealtalk/sealtalk-android/blob/master/gif/search.gif)<br/>
- 
-### Single and muliple audio and video
-![image](https://github.com/sealtalk/sealtalk-android/blob/master/gif/audio_video.gif)<br/>
-### Customer service, service robot
-![image](https://github.com/sealtalk/sealtalk-android/blob/master/gif/customer_service.gif)<br/>
-### Group
-![image](https://github.com/sealtalk/sealtalk-android/blob/master/gif/group.gif)<br/>
-
-## APK
-[Download Apk](http://rongcloud.cn/sealtalk)<br/>
-
-## Jcenter & Maven
-
-![image](https://github.com/sealtalk/sealtalk-android/blob/master/screenshots/maven.png)<br/>
-
-```Java
-
-dependencies {
-
-    compile 'cn.rongcloud.android:IMLib:2.8.6'
-    compile 'cn.rongcloud.android:IMKit:2.8.6'
-    compile 'cn.rongcloud.android:CallLib:2.8.6'
-    compile 'cn.rongcloud.android:CallKit:2.8.6'
-    compile 'cn.rongcloud.android:RedPacket:2.8.6'
-}
-
-```
-
-[Sample and Uses](https://github.com/13120241790/RongCloudJcenter)<br/>
-
-## UML
-  SealTalk UML
- ![image](https://github.com/sealtalk/sealtalk-android/blob/master/screenshots/SealTalk_UML.png)<br/>
- 
- Http UML
- 
- ![image](https://cloud.githubusercontent.com/assets/15966403/23929940/22a00a3c-0964-11e7-9300-0f86bcee3bda.png)<br/>
- 
- Thanks to [JerryMissTom](https://github.com/JerryMissTom) provide images
-
-## Uses
-#### Step 1:
-[Download RongCloud SDK](http://rongcloud.cn/downloads) Android IMKit SDK Package
-#### Step 2:
-Import IMKit SDK as module in Android Studio，then add dependency.
-#### Step 3:
-Read Android [Android Dev Doc](http://www.rongcloud.cn/docs/android.html), Learning knowledge
-#### Step 4:
-[Download RongCloud Demo](https://github.com/sealtalk/sealtalk-android) , After finishing integrating IMKit and adding dependency, read demo source code,and get the functional section you want.
-
-
-## Support
- - [App Parser Doc](https://github.com/sealtalk/sealtalk-android/blob/master/sealtalk_parser.md)
- - [Knowledge Base](http://support.rongcloud.cn/)
- - [Dev Repair Order](https://developer.rongcloud.cn/signin?returnUrl=%2Fticket), Need to log in
- - [Android Video Tutorial](http://www.rongcloud.cn/docs/android_video_tutorials.html)
- 
-## Thanks
-- [androidone](https://github.com/devinhu/androidone)
-- [android-async-http](https://github.com/loopj/android-async-http)
-- [greendao](https://github.com/greenrobot/greenDAO)
-- [fastjson](https://github.com/alibaba/fastjson)
-
-### Stronger than what you can imagine, Upgrades on the way.
-
-[RongCloud Web](http://rongcloud.cn/downloads)
-
+    <com.faceunity.EffectView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+</LinearLayout>
+~~~
+# 更新SDK
+[Nama SDK发布地址](https://github.com/Faceunity/FULiveDemoDroid/releases),可查看Nama的所有版本和发布说明。
+更新方法为下载Faceunity*.zip解压后替换faceunity模块中的相应文件。
+# 定制需求
+## 定制界面
+修改faceunity中的界面代码
+EffectView、EffectAndFilterRecycleViewAdapter和EffectAndFilterItemView或者自己编写。
+## 定制道具
+faceunity中FUManager ITEM_NAMES指定的是assets里对应的道具的文件名，故如需增删道具只需要在assets增删相应的道具文件并在ITEM_NAMES增删相应的文件名即可。
+## 修改默认美颜参数
+修改faceunity中FUManager中以下代码
+~~~
+faceunity.fuItemSetParam(facebeautyItem, "blur_level", 6);
+faceunity.fuItemSetParam(facebeautyItem, "color_level", 0.2);
+faceunity.fuItemSetParam(facebeautyItem, "red_level", 0.5);
+faceunity.fuItemSetParam(facebeautyItem, "face_shape", 3);
+faceunity.fuItemSetParam(facebeautyItem, "face_shape_level", 0.5);
+faceunity.fuItemSetParam(facebeautyItem, "cheek_thinning", 1);
+faceunity.fuItemSetParam(facebeautyItem, "eye_enlarging", 0.5);
+~~~
+参数含义与取值范围参考[这里](http://www.faceunity.com/technical/android-beauty.html)，如果使用界面，则需要同时修改界面中的初始值。
+## 其他需求
+nama库的使用参考[这里](http://www.faceunity.com/technical/android-api.html)。
+# 2D 3D道具制作
+除了使用制作好的道具外，还可以自行制作2D和3D道具，参考[这里](http://www.faceunity.com/technical/fueditor-intro.html)。

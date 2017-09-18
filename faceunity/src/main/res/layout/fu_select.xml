@@ -320,7 +320,7 @@
                     app:dsb_progressColor="@color/egg_yellow"
                     app:dsb_scrubberHeight="2dp"
                     app:dsb_thumbSize="16dp"
-                    app:dsb_value="50" />
+                    app:dsb_value="100" />
             </LinearLayout>
         </LinearLayout>
     </ViewAnimator>

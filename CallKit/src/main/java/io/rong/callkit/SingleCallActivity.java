@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.SurfaceView;
 import android.view.View;
@@ -18,10 +17,9 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.faceunity.MRender;
+import com.faceunity.FUManager;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -89,7 +87,6 @@ public class SingleCallActivity extends BaseCallActivity implements Handler.Call
                 mediaType = RongCallCommon.CallMediaType.AUDIO;
             } else {
                 mediaType = RongCallCommon.CallMediaType.VIDEO;
-                MRender.create(this);
             }
         } else if (callAction.equals(RongCallAction.ACTION_INCOMING_CALL)) {
             callSession = intent.getParcelableExtra("callSession");
@@ -115,6 +112,16 @@ public class SingleCallActivity extends BaseCallActivity implements Handler.Call
             CallFloatBoxView.hideFloatBox();
             finish();
         }
+
+        RongCallClient.getInstance().registerVideoFrameListener(new IVideoFrameListener() {
+            @Override
+            public boolean onCaptureVideoFrame(AgoraVideoFrame agoraVideoFrame) {
+                FUManager.renderItemsToYUVFrame(agoraVideoFrame.getyBuffer(), agoraVideoFrame.getuBuffer(), agoraVideoFrame.getvBuffer(), agoraVideoFrame.getyStride(), agoraVideoFrame.getuStride(), agoraVideoFrame.getvStride(), agoraVideoFrame.getWidth(), agoraVideoFrame.getHeight(), 270);
+                return true;
+            }
+        });
+
+        FUManager.getInstance(this).loadItems();
     }
 
     @Override
@@ -233,22 +240,6 @@ public class SingleCallActivity extends BaseCallActivity implements Handler.Call
 
             List<String> userIds = new ArrayList<>();
             userIds.add(targetId);
-            RongCallClient.getInstance().registerVideoFrameListener(new IVideoFrameListener() {
-                @Override
-                public boolean onCaptureVideoFrame(AgoraVideoFrame agoraVideoFrame) {
-                    int yLength = agoraVideoFrame.getyBuffer().length;
-                    int uLength = agoraVideoFrame.getuBuffer().length;
-                    byte[] bytes = new byte[yLength + uLength + uLength];
-                    System.arraycopy(agoraVideoFrame.getyBuffer(), 0, bytes, 0, yLength);
-                    System.arraycopy(agoraVideoFrame.getuBuffer(), 0, bytes, yLength, uLength);
-                    System.arraycopy(agoraVideoFrame.getvBuffer(), 0, bytes, yLength + uLength, uLength);
-                    MRender.renderToI420Image(bytes, agoraVideoFrame.getyStride(), agoraVideoFrame.getHeight());
-                    System.arraycopy(bytes, 0, agoraVideoFrame.getyBuffer(), 0, yLength);
-                    System.arraycopy(bytes, yLength, agoraVideoFrame.getuBuffer(), 0, uLength);
-                    System.arraycopy(bytes, yLength + uLength, agoraVideoFrame.getvBuffer(), 0, uLength);
-                    return true;
-                }
-            });
             RongCallClient.getInstance().startCall(conversationType, targetId, userIds, mediaType, null);
         } else { // resume call
             callSession = RongCallClient.getInstance().getCallSession();
@@ -392,7 +383,7 @@ public class SingleCallActivity extends BaseCallActivity implements Handler.Call
         }
         RLog.d(TAG, "SingleCallActivity onDestroy");
 
-        MRender.destroy();
+        FUManager.getInstance(this).destroyItems();
 
         super.onDestroy();
     }

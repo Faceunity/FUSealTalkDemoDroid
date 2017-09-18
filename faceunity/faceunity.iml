@@ -117,13 +117,13 @@
     <orderEntry type="library" exported="" scope="TEST" name="hamcrest-integration-1.3" level="project" />
     <orderEntry type="library" exported="" name="appcompat-v7-21.0.3" level="project" />
     <orderEntry type="library" exported="" name="recyclerview-v7-23.0.0" level="project" />
-    <orderEntry type="library" exported="" scope="TEST" name="javawriter-2.1.1" level="project" />
     <orderEntry type="library" exported="" name="nama" level="project" />
+    <orderEntry type="library" exported="" scope="TEST" name="javawriter-2.1.1" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="hamcrest-core-1.3" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="junit-4.12" level="project" />
     <orderEntry type="library" exported="" name="support-v4-23.0.0" level="project" />
-    <orderEntry type="library" exported="" scope="TEST" name="jsr305-2.0.1" level="project" />
     <orderEntry type="library" exported="" name="discrete-seekbar-1.0.1" level="project" />
+    <orderEntry type="library" exported="" scope="TEST" name="jsr305-2.0.1" level="project" />
     <orderEntry type="library" exported="" name="support-annotations-23.0.0" level="project" />
   </component>
 </module>
