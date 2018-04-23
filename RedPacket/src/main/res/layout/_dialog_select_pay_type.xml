@@ -23,7 +23,7 @@
             android:layout_height="@dimen/btn_height"
             android:layout_centerInParent="true"
             android:gravity="center"
-            android:text="选择付款方式"
+            android:text="@string/jrmf_select_pay_style"
             android:textColor="@color/black"
             android:textSize="16sp"/>
     </RelativeLayout>

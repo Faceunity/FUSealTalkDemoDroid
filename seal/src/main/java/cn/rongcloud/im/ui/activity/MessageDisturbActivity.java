@@ -98,7 +98,7 @@ public class MessageDisturbActivity extends BaseActivity implements View.OnClick
                         SharedPreferences.Editor editor = getSharedPreferences("config", MODE_PRIVATE).edit();
                         editor.putString("startTime", "23:00:00");
                         editor.putString("endTime", "07:00:00");
-                        editor.apply();
+                        editor.commit();
                         setConversationTime("23:00:00", 480);
                     }
 
@@ -146,7 +146,7 @@ public class MessageDisturbActivity extends BaseActivity implements View.OnClick
                         mStartTimeNotification.setText(mStartTime);
                         SharedPreferences.Editor editor = getSharedPreferences("config", MODE_PRIVATE).edit();
                         editor.putString("startTime", mStartTime);
-                        editor.apply();
+                        editor.commit();
 
                         String endTime = getSharedPreferences("config", MODE_PRIVATE).getString("endTime", "");
                         if (!TextUtils.isEmpty(endTime)) {
@@ -174,7 +174,7 @@ public class MessageDisturbActivity extends BaseActivity implements View.OnClick
                         mEndTimeNotification.setText(mEndTime);
                         SharedPreferences.Editor editor = getSharedPreferences("config", MODE_PRIVATE).edit();
                         editor.putString("endTime", mEndTime);
-                        editor.apply();
+                        editor.commit();
 
                         String startTime = getSharedPreferences("config", MODE_PRIVATE).getString("startTime", "");
                         if (!TextUtils.isEmpty(startTime)) {
@@ -264,13 +264,13 @@ public class MessageDisturbActivity extends BaseActivity implements View.OnClick
         mIsShowSetting.setVisibility(View.VISIBLE);
         SharedPreferences.Editor editor = getSharedPreferences("config", MODE_PRIVATE).edit();
         editor.putBoolean("isDisturb", true);
-        editor.apply();
+        editor.commit();
     }
 
     private void unSelectCheckBox() {
         mIsShowSetting.setVisibility(View.GONE);
         SharedPreferences.Editor editor = getSharedPreferences("config", MODE_PRIVATE).edit();
         editor.putBoolean("isDisturb", false);
-        editor.apply();
+        editor.commit();
     }
 }

@@ -33,11 +33,14 @@ public class RongCallModule implements IExternalModule {
     @Override
     public void onInitialized(String appKey) {
         RongIM.registerMessageTemplate(new CallEndMessageItemProvider());
+        RongIM.registerMessageTemplate(new MultiCallEndMessageProvider());
     }
 
     @Override
     public void onConnected(String token) {
         RongCallClient.getInstance().setVoIPCallListener(RongCallProxy.getInstance());
+        // 开启音视频日志，如果不需要开启，则去掉下面这句。
+        RongCallClient.getInstance().setEnablePrintLog(true);
     }
 
     @Override
@@ -107,7 +110,8 @@ public class RongCallModule implements IExternalModule {
         RLog.d("VoIPReceiver", "startVoIPActivity");
         String action;
         if (callSession.getConversationType().equals(Conversation.ConversationType.DISCUSSION)
-                || callSession.getConversationType().equals(Conversation.ConversationType.GROUP)) {
+                || callSession.getConversationType().equals(Conversation.ConversationType.GROUP)
+                || callSession.getConversationType().equals(Conversation.ConversationType.NONE)) {
             if (callSession.getMediaType().equals(RongCallCommon.CallMediaType.VIDEO)) {
                 action = RongVoIPIntent.RONG_INTENT_ACTION_VOIP_MULTIVIDEO;
             } else {

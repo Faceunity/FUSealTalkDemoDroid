@@ -24,7 +24,16 @@ public class ContactCardExtensionModule implements IExtensionModule {
     public ContactCardExtensionModule() {
     }
 
-    public ContactCardExtensionModule(IContactCardInfoProvider iContactCardInfoProvider, IContactCardClickListener iContactCardClickListener) {
+    public ContactCardExtensionModule(IContactCardSelectListProvider iContactCardSelectListProvider
+            , IContactCardInfoProvider iContactCardInfoProvider
+            , IContactCardClickListener iContactCardClickListener) {
+        ContactCardContext.getInstance().setContactCardSelectListProvider(iContactCardSelectListProvider);
+        ContactCardContext.getInstance().setContactCardInfoProvider(iContactCardInfoProvider);
+        this.iContactCardClickListener = iContactCardClickListener;
+    }
+
+    public ContactCardExtensionModule(IContactCardInfoProvider iContactCardInfoProvider
+            , IContactCardClickListener iContactCardClickListener) {
         ContactCardContext.getInstance().setContactCardInfoProvider(iContactCardInfoProvider);
         this.iContactCardClickListener = iContactCardClickListener;
     }

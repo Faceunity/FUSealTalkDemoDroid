@@ -154,7 +154,7 @@ public class SealSearchActivity extends Activity {
                     int count = result.getMatchCount();
                     Conversation conversation = result.getConversation();
                     if (count == 1) {
-                        RongIM.getInstance().startConversation(SealSearchActivity.this, conversation.getConversationType(), conversation.getTargetId(), result.getTitle());
+                        RongIM.getInstance().startConversation(SealSearchActivity.this, conversation.getConversationType(), conversation.getTargetId(), result.getTitle(), result.getConversation().getSentTime());
                     } else {
                         Intent intent = new Intent(SealSearchActivity.this, SealSearchChattingDetailActivity.class);
                         intent.putExtra("filterString", mFilterString);
@@ -272,78 +272,78 @@ public class SealSearchActivity extends Activity {
                             }
                         }
                     }
-                } .executeOnExecutor(mExecutor, s.toString());
+                }.executeOnExecutor(mExecutor, s.toString());
 
 
                 RongIMClient.getInstance().searchConversations(mFilterString,
-                        new Conversation.ConversationType[] {Conversation.ConversationType.PRIVATE, Conversation.ConversationType.GROUP},
-                new String[] {"RC:TxtMsg", "RC:ImgTextMsg", "RC:FileMsg"}, new RongIMClient.ResultCallback<List<SearchConversationResult>>() {
-                    @Override
-                    public void onSuccess(List<SearchConversationResult> searchConversationResults) {
-                        mSearchConversationResultsList = searchConversationResults;
-                        mSearchConversationResultsArrayList = new ArrayList<>();
-                        for (SearchConversationResult result : searchConversationResults) {
-                            mSearchConversationResultsArrayList.add(result);
-                        }
-                        if (searchConversationResults.size() > 0) {
-                            mChattingRecordsLinearLayout.setVisibility(View.VISIBLE);
-                            if (searchConversationResults.size() > 3) {
-                                mMoreChattingRecordsLinearLayout.setVisibility(View.VISIBLE);
-                            } else {
-                                mMoreChattingRecordsLinearLayout.setVisibility(View.GONE);
-                            }
-                        } else {
-                            mChattingRecordsLinearLayout.setVisibility(View.GONE);
-                        }
-                        if (mFilterString.equals("")) {
-                            mChattingRecordsLinearLayout.setVisibility(View.GONE);
-                            mMoreChattingRecordsLinearLayout.setVisibility(View.GONE);
-                        }
-                        if (mFilterFriendList.size() == 0 && mFilterGroupId.size() == 0 && mSearchConversationResultsList.size() == 0) {
-                            if (mFilterString.equals("")) {
-                                mSearchNoResultsTextView.setVisibility(View.GONE);
-                            } else {
-                                mSearchNoResultsTextView.setVisibility(View.VISIBLE);
-                                SpannableStringBuilder spannableStringBuilder = new SpannableStringBuilder();
-                                spannableStringBuilder.append(getResources().getString(R.string.ac_search_no_result_pre));
-                                SpannableStringBuilder colorFilterStr = new SpannableStringBuilder(mFilterString);
-                                colorFilterStr.setSpan(new ForegroundColorSpan(Color.parseColor("#0099ff")), 0, mFilterString.length(), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
-                                spannableStringBuilder.append(colorFilterStr);
-                                spannableStringBuilder.append(getResources().getString(R.string.ac_search_no_result_suffix));
-                                mSearchNoResultsTextView.setText(spannableStringBuilder);
-                            }
-                        } else {
-                            mSearchNoResultsTextView.setVisibility(View.GONE);
-                        }
-                        ChattingRecordsAdapter chattingRecordsAdapter = new ChattingRecordsAdapter(mSearchConversationResultsList);
-                        mChattingRecordsListView.setAdapter(chattingRecordsAdapter);
+                        new Conversation.ConversationType[]{Conversation.ConversationType.PRIVATE, Conversation.ConversationType.GROUP},
+                        new String[]{"RC:TxtMsg", "RC:ImgTextMsg", "RC:FileMsg"}, new RongIMClient.ResultCallback<List<SearchConversationResult>>() {
+                            @Override
+                            public void onSuccess(List<SearchConversationResult> searchConversationResults) {
+                                mSearchConversationResultsList = searchConversationResults;
+                                mSearchConversationResultsArrayList = new ArrayList<>();
+                                for (SearchConversationResult result : searchConversationResults) {
+                                    mSearchConversationResultsArrayList.add(result);
+                                }
+                                if (searchConversationResults.size() > 0) {
+                                    mChattingRecordsLinearLayout.setVisibility(View.VISIBLE);
+                                    if (searchConversationResults.size() > 3) {
+                                        mMoreChattingRecordsLinearLayout.setVisibility(View.VISIBLE);
+                                    } else {
+                                        mMoreChattingRecordsLinearLayout.setVisibility(View.GONE);
+                                    }
+                                } else {
+                                    mChattingRecordsLinearLayout.setVisibility(View.GONE);
+                                }
+                                if (mFilterString.equals("")) {
+                                    mChattingRecordsLinearLayout.setVisibility(View.GONE);
+                                    mMoreChattingRecordsLinearLayout.setVisibility(View.GONE);
+                                }
+                                if (mFilterFriendList.size() == 0 && mFilterGroupId.size() == 0 && mSearchConversationResultsList.size() == 0) {
+                                    if (mFilterString.equals("")) {
+                                        mSearchNoResultsTextView.setVisibility(View.GONE);
+                                    } else {
+                                        mSearchNoResultsTextView.setVisibility(View.VISIBLE);
+                                        SpannableStringBuilder spannableStringBuilder = new SpannableStringBuilder();
+                                        spannableStringBuilder.append(getResources().getString(R.string.ac_search_no_result_pre));
+                                        SpannableStringBuilder colorFilterStr = new SpannableStringBuilder(mFilterString);
+                                        colorFilterStr.setSpan(new ForegroundColorSpan(Color.parseColor("#0099ff")), 0, mFilterString.length(), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+                                        spannableStringBuilder.append(colorFilterStr);
+                                        spannableStringBuilder.append(getResources().getString(R.string.ac_search_no_result_suffix));
+                                        mSearchNoResultsTextView.setText(spannableStringBuilder);
+                                    }
+                                } else {
+                                    mSearchNoResultsTextView.setVisibility(View.GONE);
+                                }
+                                ChattingRecordsAdapter chattingRecordsAdapter = new ChattingRecordsAdapter(mSearchConversationResultsList);
+                                mChattingRecordsListView.setAdapter(chattingRecordsAdapter);
 
-                    }
-
-                    @Override
-                    public void onError(RongIMClient.ErrorCode e) {
-                        if (mFilterString.equals("")) {
-                            mChattingRecordsLinearLayout.setVisibility(View.GONE);
-                            mMoreChattingRecordsLinearLayout.setVisibility(View.GONE);
-                        }
-                        if (mFilterFriendList.size() == 0 && mFilterGroupId.size() == 0 && mSearchConversationResultsList.size() == 0) {
-                            if (mFilterString.equals("")) {
-                                mSearchNoResultsTextView.setVisibility(View.GONE);
-                            } else {
-                                mSearchNoResultsTextView.setVisibility(View.VISIBLE);
-                                SpannableStringBuilder spannableStringBuilder = new SpannableStringBuilder();
-                                spannableStringBuilder.append(getResources().getString(R.string.ac_search_no_result_pre));
-                                SpannableStringBuilder colorFilterStr = new SpannableStringBuilder(mFilterString);
-                                colorFilterStr.setSpan(new ForegroundColorSpan(Color.parseColor("#0099ff")), 0, mFilterString.length(), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
-                                spannableStringBuilder.append(colorFilterStr);
-                                spannableStringBuilder.append(getResources().getString(R.string.ac_search_no_result_suffix));
-                                mSearchNoResultsTextView.setText(spannableStringBuilder);
                             }
-                        } else {
-                            mSearchNoResultsTextView.setVisibility(View.GONE);
-                        }
-                    }
-                });
+
+                            @Override
+                            public void onError(RongIMClient.ErrorCode e) {
+                                if (mFilterString.equals("")) {
+                                    mChattingRecordsLinearLayout.setVisibility(View.GONE);
+                                    mMoreChattingRecordsLinearLayout.setVisibility(View.GONE);
+                                }
+                                if (mFilterFriendList.size() == 0 && mFilterGroupId.size() == 0 && mSearchConversationResultsList.size() == 0) {
+                                    if (mFilterString.equals("")) {
+                                        mSearchNoResultsTextView.setVisibility(View.GONE);
+                                    } else {
+                                        mSearchNoResultsTextView.setVisibility(View.VISIBLE);
+                                        SpannableStringBuilder spannableStringBuilder = new SpannableStringBuilder();
+                                        spannableStringBuilder.append(getResources().getString(R.string.ac_search_no_result_pre));
+                                        SpannableStringBuilder colorFilterStr = new SpannableStringBuilder(mFilterString);
+                                        colorFilterStr.setSpan(new ForegroundColorSpan(Color.parseColor("#0099ff")), 0, mFilterString.length(), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+                                        spannableStringBuilder.append(colorFilterStr);
+                                        spannableStringBuilder.append(getResources().getString(R.string.ac_search_no_result_suffix));
+                                        mSearchNoResultsTextView.setText(spannableStringBuilder);
+                                    }
+                                } else {
+                                    mSearchNoResultsTextView.setVisibility(View.GONE);
+                                }
+                            }
+                        });
 
             }
 
@@ -428,17 +428,17 @@ public class SealSearchActivity extends Activity {
 
         QueryBuilder queryBuilder = DBManager.getInstance().getDaoSession().getFriendDao().queryBuilder();
         filterFriendList = queryBuilder.where(queryBuilder.or(FriendDao.Properties.Name.like("%" + filterStr + "%"),
-                                              FriendDao.Properties.DisplayName.like("%" + filterStr + "%"),
-                                              FriendDao.Properties.NameSpelling.like(filterStr + "%"),
-                                              FriendDao.Properties.DisplayNameSpelling.like(filterStr + "%"))).orderAsc(FriendDao.Properties.DisplayNameSpelling, FriendDao.Properties.NameSpelling).build().list();
+                FriendDao.Properties.DisplayName.like("%" + filterStr + "%"),
+                FriendDao.Properties.NameSpelling.like(filterStr + "%"),
+                FriendDao.Properties.DisplayNameSpelling.like(filterStr + "%"))).orderAsc(FriendDao.Properties.DisplayNameSpelling, FriendDao.Properties.NameSpelling).build().list();
 
         Cursor cursor = DBManager.getInstance().getDaoSession().getDatabase().rawQuery(SQL_DISTINCT_GROUP_ID
-                        + " WHERE " + GroupMemberDao.Properties.GroupName.columnName + " LIKE " + "'" + "%" + filterStr + "%" + "'" + " or "
-                        + GroupMemberDao.Properties.GroupNameSpelling.columnName + " like " + "'" + filterStr + "%" + "'" + " or "
-                        + GroupMemberDao.Properties.Name.columnName + " like " + "'" + "%" + filterStr + "%" + "'" + " or "
-                        + GroupMemberDao.Properties.NameSpelling.columnName + " like " + "'" + filterStr + "%" + "'" + " or "
-                        + GroupMemberDao.Properties.DisplayName.columnName + " like " + "'" + "%" + filterStr + "%" + "'" + " or "
-                        + GroupMemberDao.Properties.DisplayNameSpelling.columnName + " like " + "'" + filterStr + "%" + "'", null);
+                + " WHERE " + GroupMemberDao.Properties.GroupName.columnName + " LIKE " + "'" + "%" + filterStr + "%" + "'" + " or "
+                + GroupMemberDao.Properties.GroupNameSpelling.columnName + " like " + "'" + filterStr + "%" + "'" + " or "
+                + GroupMemberDao.Properties.Name.columnName + " like " + "'" + "%" + filterStr + "%" + "'" + " or "
+                + GroupMemberDao.Properties.NameSpelling.columnName + " like " + "'" + filterStr + "%" + "'" + " or "
+                + GroupMemberDao.Properties.DisplayName.columnName + " like " + "'" + "%" + filterStr + "%" + "'" + " or "
+                + GroupMemberDao.Properties.DisplayNameSpelling.columnName + " like " + "'" + filterStr + "%" + "'", null);
 
         try {
             if (cursor.moveToFirst()) {
@@ -453,15 +453,15 @@ public class SealSearchActivity extends Activity {
         for (String groupId : filterGroupId) {
             QueryBuilder groupNameQueryBuilder = DBManager.getInstance().getDaoSession().getGroupMemberDao().queryBuilder();
             List<GroupMember> filterGroupNameList = groupNameQueryBuilder.where(GroupMemberDao.Properties.GroupId.eq(groupId),
-                                                    groupNameQueryBuilder.or(GroupMemberDao.Properties.GroupName.like("%" + filterStr + "%"),
-                                                            GroupMemberDao.Properties.GroupNameSpelling.like(filterStr + "%"))).orderAsc(GroupMemberDao.Properties.GroupNameSpelling).build().list();
+                    groupNameQueryBuilder.or(GroupMemberDao.Properties.GroupName.like("%" + filterStr + "%"),
+                            GroupMemberDao.Properties.GroupNameSpelling.like(filterStr + "%"))).orderAsc(GroupMemberDao.Properties.GroupNameSpelling).build().list();
             QueryBuilder groupMemberNameQueryBuilder = DBManager.getInstance().getDaoSession().getGroupMemberDao().queryBuilder();
             List<GroupMember> filterGroupMemberNameList = groupMemberNameQueryBuilder.where(GroupMemberDao.Properties.GroupId.eq(groupId),
                     groupMemberNameQueryBuilder.or(GroupMemberDao.Properties.Name.like("%" + filterStr + "%"),
-                                                   GroupMemberDao.Properties.NameSpelling.like(filterStr + "%"),
-                                                   GroupMemberDao.Properties.DisplayName.like("%" + filterStr + "%"),
-                                                   GroupMemberDao.Properties.DisplayNameSpelling.like(filterStr + "%"))
-                                                                                           ).orderAsc(GroupMemberDao.Properties.NameSpelling, GroupMemberDao.Properties.DisplayNameSpelling).build().list();
+                            GroupMemberDao.Properties.NameSpelling.like(filterStr + "%"),
+                            GroupMemberDao.Properties.DisplayName.like("%" + filterStr + "%"),
+                            GroupMemberDao.Properties.DisplayNameSpelling.like(filterStr + "%"))
+            ).orderAsc(GroupMemberDao.Properties.NameSpelling, GroupMemberDao.Properties.DisplayNameSpelling).build().list();
             if (filterGroupNameList.size() != 0) {
                 filterGroupNameListMap.put(groupId, filterGroupNameList);
             } else {
@@ -637,7 +637,7 @@ public class SealSearchActivity extends Activity {
         private List<SealSearchConversationResult> searchConversationResults;
 
         public ChattingRecordsAdapter(List<SearchConversationResult> searchConversationResults) {
-            this.searchConversationResults= CommonUtils.convertSearchResult(searchConversationResults);
+            this.searchConversationResults = CommonUtils.convertSearchResult(searchConversationResults);
         }
 
         @Override
@@ -771,7 +771,7 @@ public class SealSearchActivity extends Activity {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if (null != this.getCurrentFocus()) {
+        if (null != this.getCurrentFocus() && event.getAction() == MotionEvent.ACTION_UP) {
             /**
              * 点击空白位置 隐藏软键盘
              */

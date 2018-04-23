@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               xmlns:app="http://schemas.android.com/apk/res-auto"
+              xmlns:tools="http://schemas.android.com/tools"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
               android:background="@color/background"
@@ -10,7 +11,7 @@
         android:id="@+id/actionbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:content="添加银行卡"/>
+        app:content="@string/jrmf_add_bank_card_title"/>
 
     <ScrollView
         android:layout_width="match_parent"
@@ -31,7 +32,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:gravity="center_vertical"
-                android:text="XXXX（xxxx）"/>
+                tools:text="XXXX（xxxx）"/>
 
             <com.jrmf360.rylib.rp.widget.FloatingLabelTextView
                 android:id="@+id/ftv_username"
@@ -39,7 +40,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="5dip"
                 app:allowEmpty="false"
-                app:hint="姓名"
+                app:hint="@string/jrmf_username"
                 app:validatorType="alpha"/>
 
             <com.jrmf360.rylib.rp.widget.FloatingLabelTextView
@@ -48,7 +49,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="5dip"
                 app:allowEmpty="false"
-                app:hint="身份证号"
+                app:hint="@string/jrmf_IDCard_num"
                 app:validatorType="alpha"/>
 
             <com.jrmf360.rylib.rp.widget.FloatingLabelTextView
@@ -57,7 +58,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="5dip"
                 app:allowEmpty="false"
-                app:hint="银行预留手机号"
+                app:hint="@string/jrmf_input_phone_hint"
                 app:validatorType="alpha"/>
 
             <TextView
@@ -66,7 +67,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="5dp"
                 android:paddingBottom="3dip"
-                android:text="银行会从您卡上扣除1分钱用于验证您所填卡的真实有效性"
+                android:text="@string/jrmf_verify_card_fee"
                 android:textColor="@color/gray"
                 android:textSize="10sp"/>
 
@@ -78,7 +79,7 @@
                 android:textSize="14sp"
                 android:layout_marginTop="25dp"
                 android:paddingBottom="3dip"
-                android:text="点击下一步视为您同意《金融魔方用户协议》"/>
+                tools:text="点击下一步视为您同意《金融魔方用户协议》"/>
 
             <Button
                 android:id="@+id/btn_next"
@@ -87,7 +88,7 @@
                 android:layout_height="@dimen/btn_height"
                 android:layout_marginTop="@dimen/base_padding"
                 android:background="@drawable/selector_common_btn"
-                android:text="下一步"/>
+                android:text="@string/jrmf_next"/>
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

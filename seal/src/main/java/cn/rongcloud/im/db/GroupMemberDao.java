@@ -81,9 +81,9 @@ public class GroupMemberDao extends AbstractDao<GroupMember, Void> {
             stmt.bindString(3, name);
         }
 
-        String portraitUri = entity.getPortraitUri().toString();
+        Uri portraitUri = entity.getPortraitUri();
         if (portraitUri != null) {
-            stmt.bindString(4, portraitUri);
+            stmt.bindString(4, portraitUri.toString());
         }
 
         String displayName = entity.getDisplayName();

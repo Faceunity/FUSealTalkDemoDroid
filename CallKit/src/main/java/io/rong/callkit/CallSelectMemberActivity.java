@@ -1,8 +1,8 @@
 package io.rong.callkit;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,25 +20,30 @@ import java.util.List;
 
 import io.rong.calllib.RongCallCommon;
 import io.rong.imkit.RongContext;
+import io.rong.imkit.model.GroupUserInfo;
+import io.rong.imkit.userInfoCache.RongUserInfoManager;
 import io.rong.imkit.widget.AsyncImageView;
+import io.rong.imlib.model.Conversation;
 import io.rong.imlib.model.UserInfo;
 
 /**
  * Created by weiqinxiao on 16/3/15.
  */
-public class CallSelectMemberActivity extends Activity {
+public class CallSelectMemberActivity extends BaseNoActionBarActivity {
 
     ArrayList<String> selectedMember;
     TextView txtvStart;
     ListAdapter mAdapter;
     ListView mList;
     RongCallCommon.CallMediaType mMediaType;
+    private String groupId;
+    private Conversation.ConversationType conversationType;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN,
-                             WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+                WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
 
         setContentView(R.layout.rc_voip_activity_select_member);
@@ -69,9 +74,11 @@ public class CallSelectMemberActivity extends Activity {
         Intent intent = getIntent();
         int type = intent.getIntExtra("mediaType", RongCallCommon.CallMediaType.VIDEO.getValue());
         mMediaType = RongCallCommon.CallMediaType.valueOf(type);
+        int conType = intent.getIntExtra("conversationType", 0);
+        conversationType = Conversation.ConversationType.setValue(conType);
         final ArrayList<String> invitedMembers = intent.getStringArrayListExtra("invitedMembers");
         ArrayList<String> allMembers = intent.getStringArrayListExtra("allMembers");
-        String groupId = intent.getStringExtra("groupId");
+        groupId = intent.getStringExtra("groupId");
         RongCallKit.GroupMembersProvider provider = RongCallKit.getGroupMemberProvider();
         if (groupId != null && allMembers == null && provider != null) {
             allMembers = provider.getMemberList(groupId, new RongCallKit.OnGroupMembersResult() {
@@ -103,7 +110,10 @@ public class CallSelectMemberActivity extends Activity {
                     if (!invitedMembers.contains(userId)) {
                         if (mMediaType.equals(RongCallCommon.CallMediaType.VIDEO)
                                 && !v.isSelected() && selectedMember.size() + invitedMembers.size() >= 9) {
-                            Toast.makeText(CallSelectMemberActivity.this, "您最多只能选择9人", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(CallSelectMemberActivity.this,
+                                    String.format(getString(R.string.rc_voip_over_limit), 9),
+                                    Toast.LENGTH_SHORT)
+                                    .show();
                             return;
                         }
                         if (selectedMember.contains(userId)) {
@@ -174,7 +184,7 @@ public class CallSelectMemberActivity extends Activity {
                 convertView.setTag(holder);
             }
 
-            holder = (ViewHolder)convertView.getTag();
+            holder = (ViewHolder) convertView.getTag();
             holder.checkbox.setTag(allMembers.get(position));
             if (invitedMembers.contains(allMembers.get(position))) {
                 holder.checkbox.setClickable(false);
@@ -188,16 +198,28 @@ public class CallSelectMemberActivity extends Activity {
                     holder.checkbox.setImageResource(R.drawable.rc_voip_checkbox);
                     holder.checkbox.setSelected(false);
                 }
-                holder.checkbox.setClickable(true);
+                holder.checkbox.setClickable(false);
                 holder.checkbox.setEnabled(true);
             }
-
             UserInfo userInfo = RongContext.getInstance().getUserInfoFromCache(allMembers.get(position));
+            String displayName = "";
+            if (conversationType != null && conversationType.equals(Conversation.ConversationType.GROUP)) {
+                GroupUserInfo groupUserInfo = RongUserInfoManager.getInstance().getGroupUserInfo(groupId, allMembers.get(position));
+                if (groupUserInfo != null && !TextUtils.isEmpty(groupUserInfo.getNickname())) {
+                    displayName = groupUserInfo.getNickname();
+                    holder.name.setText(displayName);
+                }
+            }
+            if (TextUtils.isEmpty(displayName)) {
+                if (userInfo != null) {
+                    holder.name.setText(userInfo.getName());
+                } else {
+                    holder.name.setText(allMembers.get(position));
+                }
+            }
             if (userInfo != null) {
-                holder.name.setText(userInfo.getName());
                 holder.portrait.setAvatar(userInfo.getPortraitUri());
             } else {
-                holder.name.setText(allMembers.get(position));
                 holder.portrait.setAvatar(null);
             }
             return convertView;

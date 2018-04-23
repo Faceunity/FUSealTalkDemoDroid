@@ -6,6 +6,8 @@
     <color name="rc_text_color_primary_inverse">@android:color/white</color>
     <color name="rc_normal_bg">#EBEBEB</color>
     <color name="rc_message_user_name">#828282</color>
+    <color name="rc_rich_title">#262626</color>
+    <color name="rc_rich_content">#939393</color>
 
     <color name="rc_notification_bg">#D3D3D3</color>
     <color name="rc_conversation_top_bg">#f2faff</color>

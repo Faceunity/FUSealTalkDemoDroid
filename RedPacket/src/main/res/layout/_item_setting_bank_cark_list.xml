@@ -45,14 +45,18 @@
     
     <TextView 
         android:id="@+id/tv_unbind"
-        android:layout_width="40dp"
-        android:layout_height="25dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:textColor="@color/white"
+        android:paddingLeft="@dimen/half_base_margin"
+        android:paddingRight="@dimen/half_base_margin"
+        android:paddingTop="@dimen/jrmf_dimen_4"
+        android:paddingBottom="@dimen/jrmf_dimen_4"
         android:textSize="14sp"
         android:gravity="center"
         android:background="@drawable/shape_unbind"
         android:layout_marginRight="@dimen/base_margin2"
-        android:text="解绑"
+        android:text="@string/jrmf_unbind"
         />
     
 

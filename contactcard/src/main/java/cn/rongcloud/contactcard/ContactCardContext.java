@@ -5,6 +5,7 @@ package cn.rongcloud.contactcard;
  */
 
 public class ContactCardContext {
+    private IContactCardSelectListProvider iContactCardSelectListProvider;
     private IContactCardInfoProvider iContactCardInfoProvider;
     private static volatile ContactCardContext contactCardContext = null;
 
@@ -21,6 +22,14 @@ public class ContactCardContext {
             }
         }
         return contactCardContext;
+    }
+
+    public void setContactCardSelectListProvider(IContactCardSelectListProvider iContactCardSelectListProvider) {
+        this.iContactCardSelectListProvider = iContactCardSelectListProvider;
+    }
+
+    public IContactCardSelectListProvider getContactCardSelectListProvider() {
+        return iContactCardSelectListProvider;
     }
 
     public void setContactCardInfoProvider(IContactCardInfoProvider iContactCardInfoProvider) {

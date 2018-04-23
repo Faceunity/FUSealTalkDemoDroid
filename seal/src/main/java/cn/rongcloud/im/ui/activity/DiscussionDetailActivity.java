@@ -175,25 +175,26 @@ public class DiscussionDetailActivity extends BaseActivity implements CompoundBu
         switch (v.getId()) {
             case R.id.discu_clean:
                 PromptPopupDialog.newInstance(mContext,
-                                              getString(R.string.clean_discussion_chat_history)).setLayoutRes(io.rong.imkit.R.layout.rc_dialog_popup_prompt_warning)
-                .setPromptButtonClickedListener(new PromptPopupDialog.OnPromptButtonClickedListener() {
-                    @Override
-                    public void onPositiveButtonClicked() {
-                        if (RongIM.getInstance() != null) {
-                            RongIM.getInstance().clearMessages(Conversation.ConversationType.DISCUSSION, targetId, new RongIMClient.ResultCallback<Boolean>() {
-                                @Override
-                                public void onSuccess(Boolean aBoolean) {
-                                    NToast.shortToast(mContext, "清除成功");
-                                }
+                        getString(R.string.clean_discussion_chat_history)).setLayoutRes(io.rong.imkit.R.layout.rc_dialog_popup_prompt_warning)
+                        .setPromptButtonClickedListener(new PromptPopupDialog.OnPromptButtonClickedListener() {
+                            @Override
+                            public void onPositiveButtonClicked() {
+                                if (RongIM.getInstance() != null) {
+                                    RongIM.getInstance().clearMessages(Conversation.ConversationType.DISCUSSION, targetId, new RongIMClient.ResultCallback<Boolean>() {
+                                        @Override
+                                        public void onSuccess(Boolean aBoolean) {
+                                            NToast.shortToast(mContext, getString(R.string.clear_success));
+                                        }
 
-                                @Override
-                                public void onError(RongIMClient.ErrorCode errorCode) {
-                                    NToast.shortToast(mContext, "清除失败");
+                                        @Override
+                                        public void onError(RongIMClient.ErrorCode errorCode) {
+                                            NToast.shortToast(mContext, getString(R.string.clear_failure));
+                                        }
+                                    });
+                                    RongIMClient.getInstance().cleanRemoteHistoryMessages(Conversation.ConversationType.DISCUSSION, targetId, System.currentTimeMillis(), null);
                                 }
-                            });
-                        }
-                    }
-                }).show();
+                            }
+                        }).show();
                 break;
             case R.id.discu_quit:
                 DialogWithYesOrNoUtils.getInstance().showDialog(mContext, "是否退出并删除当前讨论组?", new DialogWithYesOrNoUtils.DialogCallBack() {

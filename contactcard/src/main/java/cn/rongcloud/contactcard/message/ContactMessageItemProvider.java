@@ -1,7 +1,6 @@
 package cn.rongcloud.contactcard.message;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
@@ -12,26 +11,27 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import java.util.List;
+
+import cn.rongcloud.contactcard.ContactCardContext;
 import cn.rongcloud.contactcard.IContactCardClickListener;
+import cn.rongcloud.contactcard.IContactCardInfoProvider;
 import cn.rongcloud.contactcard.R;
-import io.rong.common.RLog;
 import io.rong.imkit.RongContext;
 import io.rong.imkit.RongIM;
 import io.rong.imkit.emoticon.AndroidEmoji;
 import io.rong.imkit.model.ProviderTag;
 import io.rong.imkit.model.UIMessage;
-import io.rong.imkit.userInfoCache.RongUserInfoManager;
-import io.rong.imkit.utilities.OptionsPopupDialog;
 import io.rong.imkit.widget.AsyncImageView;
 import io.rong.imkit.widget.provider.IContainerItemProvider;
-import io.rong.imlib.model.Conversation;
 import io.rong.imlib.model.Message;
+import io.rong.imlib.model.UserInfo;
 
 /**
  * Created by Beyond on 2016/12/5.
  */
 
-@ProviderTag(messageContent = ContactMessage.class, showProgress = false, showReadState = true, showSummaryWithName = false)
+@ProviderTag(messageContent = ContactMessage.class, showProgress = false, showReadState = true)
 public class ContactMessageItemProvider extends IContainerItemProvider.MessageProvider<ContactMessage> {
     private final static String TAG = "ContactMessageItemProvider";
     private IContactCardClickListener iContactCardClickListener;
@@ -58,18 +58,46 @@ public class ContactMessageItemProvider extends IContainerItemProvider.MessagePr
     }
 
     @Override
-    public void bindView(View v, int position, ContactMessage content, UIMessage message) {
-        ViewHolder viewHolder = (ViewHolder) v.getTag();
+    public void bindView(View v, int position, final ContactMessage content, final UIMessage message) {
+        final ViewHolder viewHolder = (ViewHolder) v.getTag();
+
         if (!TextUtils.isEmpty(content.getImgUrl())) {
             viewHolder.mImage.setAvatar(content.getImgUrl(), R.drawable.rc_default_portrait);
-        } else {
-            if (RongUserInfoManager.getInstance().getUserInfo(content.getId()) != null)
-                viewHolder.mImage.setAvatar(RongUserInfoManager.getInstance().getUserInfo(content.getId()).getPortraitUri());
+        }
+        if (!TextUtils.isEmpty(content.getName())) {
+            SpannableStringBuilder spannable = new SpannableStringBuilder(content.getName());
+            AndroidEmoji.ensure(spannable);
+            viewHolder.mName.setText(spannable);
         }
 
-        SpannableStringBuilder spannable = new SpannableStringBuilder(content.getName());
-        AndroidEmoji.ensure(spannable);
-        viewHolder.mName.setText(spannable);
+        IContactCardInfoProvider iContactCardInfoProvider
+                = ContactCardContext.getInstance().getContactCardInfoProvider();
+        if (iContactCardInfoProvider != null) {
+            iContactCardInfoProvider.getContactAppointedInfoProvider(
+                    content.getId(), content.getName(), content.getImgUrl(),
+                    new IContactCardInfoProvider.IContactCardInfoCallback() {
+                        @Override
+                        public void getContactCardInfoCallback(List<? extends UserInfo> list) {
+                            if (list != null && list.size() > 0) {
+                                UserInfo userInfo = list.get(0);
+                                if (userInfo != null && userInfo.getPortraitUri() != null) {
+                                    /* 如果名片发送的推荐人头像信息，与本地数据库的对应头像信息不一致，
+                                       则优先显示本地数据库的对应头像信息 */
+                                    if (TextUtils.isEmpty(content.getImgUrl()) ||
+                                            !content.getImgUrl().equals(userInfo.getPortraitUri().toString())) {
+                                        viewHolder.mImage.setAvatar(userInfo.getPortraitUri());
+                                        ((ContactMessage) (message.getContent()))
+                                                .setImgUrl(userInfo.getPortraitUri().toString());
+                                    }
+                                    // 如果本端设置了该用户信息的别名(备注、昵称)，优先显示这个别名
+                                    if (!TextUtils.isEmpty(content.getName()) && !content.getName().equals(userInfo.getName())) {
+                                        viewHolder.mName.setText(userInfo.getName());
+                                    }
+                                }
+                            }
+                        }
+                    });
+        }
 
         if (message.getMessageDirection() == Message.MessageDirection.RECEIVE)
             viewHolder.mLayout.setBackgroundResource(R.drawable.rc_ic_bubble_left_file);
@@ -78,18 +106,23 @@ public class ContactMessageItemProvider extends IContainerItemProvider.MessagePr
     }
 
     @Override
-    public Spannable getContentSummary(ContactMessage contactMessage) {
-        if (contactMessage != null && contactMessage.getUserInfo() != null && contactMessage.getUserInfo().getUserId() != null && contactMessage.getName() != null) {
-            if (contactMessage.getUserInfo().getUserId().equals(RongIM.getInstance().getCurrentUserId())) {
-                String str_RecommendClause = RongContext.getInstance().getResources().getString(R.string.rc_recommend_clause_to_others);
+    public Spannable getContentSummary(final ContactMessage contactMessage) {
+        return null;
+    }
+
+    @Override
+    public Spannable getContentSummary(Context context, final ContactMessage contactMessage) {
+        if (contactMessage != null && !TextUtils.isEmpty(contactMessage.getSendUserId())
+                && !TextUtils.isEmpty(contactMessage.getSendUserName())) {
+            if (contactMessage.getSendUserId().equals(RongIM.getInstance().getCurrentUserId())) {
+                String str_RecommendClause = context.getResources().getString(R.string.rc_recommend_clause_to_others);
                 return new SpannableString(String.format(str_RecommendClause, contactMessage.getName()));
             } else {
-                String str_RecommendClause = RongContext.getInstance().getResources().getString(R.string.rc_recommend_clause_to_me);
-                return new SpannableString(String.format(str_RecommendClause, contactMessage.getUserInfo().getName(), contactMessage.getName()));
+                String str_RecommendClause = context.getResources().getString(R.string.rc_recommend_clause_to_me);
+                return new SpannableString(String.format(str_RecommendClause, contactMessage.getSendUserName(), contactMessage.getName()));
             }
-        } else {
-            return new SpannableString("[" + R.string.rc_plugins_contact + "]");
         }
+        return new SpannableString("[" + context.getResources().getString(R.string.rc_plugins_contact) + "]");
     }
 
     @Override
@@ -97,51 +130,5 @@ public class ContactMessageItemProvider extends IContainerItemProvider.MessagePr
         if (iContactCardClickListener != null) {
             iContactCardClickListener.onContactCardClick(view, content);
         }
-    }
-
-    @Override
-    public void onItemLongClick(final View view, int position, ContactMessage content, final UIMessage message) {
-        String[] items;
-
-        long deltaTime = RongIM.getInstance().getDeltaTime();
-        long normalTime = System.currentTimeMillis() - deltaTime;
-        boolean enableMessageRecall = false;
-        int messageRecallInterval = -1;
-
-        try {
-            enableMessageRecall = RongContext.getInstance().getResources().getBoolean(R.bool.rc_enable_message_recall);
-            messageRecallInterval = RongContext.getInstance().getResources().getInteger(R.integer.rc_message_recall_interval);
-        } catch (Resources.NotFoundException e) {
-            RLog.e(TAG, "rc_message_recall_interval not configure in rc_config.xml");
-            e.printStackTrace();
-        }
-        if (message.getSentStatus().equals(Message.SentStatus.SENDING) && message.getProgress() < 100) {
-            return;
-        }
-        if (message.getSentStatus().equals(Message.SentStatus.SENT)
-                && enableMessageRecall
-                && (normalTime - message.getSentTime()) <= messageRecallInterval * 1000
-                && message.getSenderUserId().equals(RongIM.getInstance().getCurrentUserId())
-                && !message.getConversationType().equals(Conversation.ConversationType.CUSTOMER_SERVICE)
-                && !message.getConversationType().equals(Conversation.ConversationType.APP_PUBLIC_SERVICE)
-                && !message.getConversationType().equals(Conversation.ConversationType.PUBLIC_SERVICE)
-                && !message.getConversationType().equals(Conversation.ConversationType.SYSTEM)
-                && !message.getConversationType().equals(Conversation.ConversationType.CHATROOM)) {
-            items = new String[]{view.getContext().getResources().getString(R.string.rc_dialog_item_message_delete), view.getContext().getResources().getString(R.string.rc_dialog_item_message_recall)};
-        } else {
-            items = new String[]{view.getContext().getResources().getString(R.string.rc_dialog_item_message_delete)};
-        }
-
-        OptionsPopupDialog.newInstance(view.getContext(), items).setOptionsPopupDialogListener(new OptionsPopupDialog.OnOptionsItemClickedListener() {
-            @Override
-            public void onOptionsItemClicked(int which) {
-                if (which == 0) {
-                    RongIM.getInstance().cancelSendMediaMessage(message.getMessage(), null);
-                    RongIM.getInstance().deleteMessages(new int[]{message.getMessageId()}, null);
-                } else if (which == 1) {
-                    RongIM.getInstance().recallMessage(message.getMessage(), getPushContent(view.getContext(), message));
-                }
-            }
-        }).show();
     }
 }

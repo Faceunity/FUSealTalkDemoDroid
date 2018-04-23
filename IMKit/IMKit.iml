@@ -23,7 +23,7 @@
       </configuration>
     </facet>
   </component>
-  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_7" inherit-compiler-output="false">
+  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_7">
     <output url="file://$MODULE_DIR$/build/intermediates/classes/debug" />
     <output-test url="file://$MODULE_DIR$/build/intermediates/classes/test/debug" />
     <exclude-output />
@@ -80,7 +80,6 @@
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/blame" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/bundles" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/classes" />
-      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/exploded-aar/com.android.support/support-v4/23.0.1/jars" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/incremental" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/incremental-safeguard" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/jniLibs" />
@@ -89,18 +88,21 @@
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/res" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/rs" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/shaders" />
-      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/symbols" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/transforms" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/typedefs.txt" />
       <excludeFolder url="file://$MODULE_DIR$/build/outputs" />
       <excludeFolder url="file://$MODULE_DIR$/build/tmp" />
     </content>
-    <orderEntry type="jdk" jdkName="Android API 23 Platform" jdkType="Android SDK" />
+    <orderEntry type="jdk" jdkName="Android API 26 Platform" jdkType="Android SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" exported="" name="Rong_IMKit" level="project" />
-    <orderEntry type="library" exported="" name="support-v4-23.0.1" level="project" />
-    <orderEntry type="library" exported="" name="support-annotations-23.0.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: com.android.support:support-annotations:26.0.0@jar" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: com.android.support:support-fragment-26.0.0" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: __local_jars__:D.\GitHub\FUSealTalkDemoDroid\IMKit\src\main\libs\Rong_IMKit.jar:unspecified@jar" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: com.android.support:support-media-compat-26.0.0" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: com.android.support:support-core-ui-26.0.0" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: com.android.support:support-core-utils-26.0.0" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: com.android.support:support-compat-26.0.0" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: com.android.support:support-v4-26.0.0" level="project" />
     <orderEntry type="module" module-name="IMLib" exported="" />
-    <orderEntry type="library" exported="" name="Rong_IMLib" level="project" />
   </component>
 </module>

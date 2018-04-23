@@ -25,7 +25,7 @@
             android:layout_width="100dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
-            android:text="银行卡号"
+            android:text="@string/jrmf_input_card_num"
             android:textColor="@color/color_959595"
             android:textSize="14sp" />
 
@@ -36,7 +36,7 @@
             android:layout_weight="1"
             android:background="@null"
             android:gravity="center_vertical"
-            android:hint="请输入银行卡号"
+            android:hint="@string/jrmf_input_bank_card_num"
             android:inputType="number"
             android:paddingRight="@dimen/base_padding"
             android:textColorHint="@color/color_b7b7b7"
@@ -67,7 +67,7 @@
         android:layout_marginLeft="20dp"
         android:layout_marginRight="20dp"
         android:background="@drawable/selector_round_btn"
-        android:text="下一步"
+        android:text="@string/jrmf_next"
         android:textColor="@color/white"
         android:textSize="16sp" />
 

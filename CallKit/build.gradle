@@ -1,14 +1,14 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion '23.0.3'
+    compileSdkVersion 26
+    buildToolsVersion '27.0.0'
 
     defaultConfig {
-        minSdkVersion 15
+        minSdkVersion 16
         targetSdkVersion 23
-        versionCode 1
-        versionName "1.0"
+        versionCode 2018040917
+        versionName "2.8.30"
     }
     buildTypes {
         release {
@@ -22,10 +22,9 @@ android {
 }
 
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'com.android.support:support-v4:23.4.0'
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile 'com.android.support:support-v4:26.0.0'
     compile project(':IMKit')
     compile project(':CallLib')
-    compile project(':faceunity')
+    compile project(':beautycontrolview')
 }
-repositories { flatDir { dirs '../push/aars' } }

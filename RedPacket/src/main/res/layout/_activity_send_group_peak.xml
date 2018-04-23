@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               xmlns:app="http://schemas.android.com/apk/res-auto"
+              xmlns:tools="http://schemas.android.com/tools"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
               android:background="@color/background"
@@ -11,7 +12,7 @@
         android:id="@+id/actionbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:content="发红包"/>
+        app:content="@string/jrmf_send_rp_title"/>
 
     <ScrollView
         android:layout_width="match_parent"
@@ -32,7 +33,7 @@
                 android:layout_marginTop="3dip"
                 android:background="@color/red"
                 android:gravity="center"
-                android:text="提示信息"
+                tools:text="提示信息"
                 android:textColor="@color/red_dark"/>
 
             <LinearLayout
@@ -49,7 +50,7 @@
                     android:layout_marginLeft="@dimen/base_padding"
                     android:layout_marginRight="@dimen/base_padding"
                     android:gravity="center_vertical"
-                    android:text="红包个数"/>
+                    android:text="@string/jrmf_rp_num"/>
 
                 <EditText
                     android:id="@+id/et_peak_num"
@@ -65,12 +66,13 @@
                     android:textCursorDrawable="@drawable/selector_cursor"/>
 
                 <TextView
+                    android:id="@+id/tv_ge"
                     style="@style/text_black_16"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:layout_marginRight="@dimen/base_padding"
                     android:gravity="center_vertical"
-                    android:text="个"/>
+                    android:text="@string/jrmf_ge"/>
             </LinearLayout>
 
             <TextView
@@ -80,7 +82,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="@dimen/base_padding"
                 android:layout_marginTop="7dip"
-                android:text="100"
+                tools:text="100"
                 android:visibility="invisible"/>
 
 
@@ -100,7 +102,7 @@
                     android:layout_marginLeft="@dimen/base_padding"
                     android:layout_marginRight="@dimen/base_padding"
                     android:gravity="center_vertical"
-                    android:text="总金额"/>
+                    android:text="@string/jrmf_rp_all_amount"/>
 
                 <EditText
                     android:id="@+id/et_peak_amount"
@@ -121,7 +123,7 @@
                     android:layout_height="match_parent"
                     android:layout_marginRight="@dimen/base_padding"
                     android:gravity="center_vertical"
-                    android:text="元"/>
+                    android:text="@string/jrmf_money_yuan2"/>
             </LinearLayout>
 
             <TextView
@@ -131,7 +133,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="@dimen/base_padding"
                 android:layout_marginTop="7dip"
-                android:text="红包类型切换"/>
+                tools:text="红包类型切换"/>
 
 
             <EditText
@@ -170,7 +172,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="@dimen/actionbar_height"
                     android:gravity="center"
-                    android:text="0.01"
+                    tools:text="0.01"
                     android:textStyle="normal"
                     android:typeface="serif"/>
 

@@ -27,7 +27,7 @@
                 android:layout_gravity="center_vertical"
                 android:textSize="14sp"
                 android:textColor="@color/color_959595"
-                android:text="支付密码" />
+                android:text="@string/jrmf_pwd_tip" />
 
             <com.jrmf360.rylib.wallet.widget.ClearEditText
                 android:id="@+id/cet_pwd"
@@ -38,12 +38,12 @@
                 android:gravity="center_vertical"
                 android:inputType="numberPassword"
                 android:maxLines="1"
-                android:hint="密码为6位数字"
+                android:hint="@string/jrmf_pwd_hint"
                 android:maxLength="6"
                 android:paddingRight="@dimen/base_padding"
                 android:textColor="@color/black"
                 android:textColorHint="@color/color_b7b7b7"
-                android:textSize="16sp" />
+                android:textSize="14sp" />
         </LinearLayout>
 
         <ImageView
@@ -64,7 +64,7 @@
                 android:layout_gravity="center_vertical"
                 android:textSize="14sp"
                 android:textColor="@color/color_959595"
-                android:text="确认支付密码" />
+                android:text="@string/jrmf_confirm_payment_pwd" />
 
             <com.jrmf360.rylib.wallet.widget.ClearEditText
                 android:id="@+id/cet_confirm_pwd"
@@ -73,14 +73,14 @@
                 android:layout_weight="1"
                 android:background="@null"
                 android:gravity="center_vertical"
-                android:hint="请再次输入支付密码"
+                android:hint="@string/jrmf_confirm_pwd_hint"
                 android:maxLines="1"
                 android:inputType="numberPassword"
                 android:maxLength="6"
                 android:paddingRight="@dimen/base_padding"
                 android:textColor="@color/black"
                 android:textColorHint="@color/color_b7b7b7"
-                android:textSize="16sp" />
+                android:textSize="14sp" />
         </LinearLayout>
 
         <ImageView
@@ -102,7 +102,7 @@
                 android:layout_marginRight="20dp"
                 android:layout_marginTop="@dimen/base_margin"
                 android:background="@drawable/selector_round_btn"
-                android:text="确认提交"
+                android:text="@string/jrmf_confirm_submit"
                 android:textColor="@color/white"
                 android:textSize="16sp" />
         </LinearLayout>

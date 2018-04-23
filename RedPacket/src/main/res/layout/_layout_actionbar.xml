@@ -9,7 +9,7 @@
         android:id="@+id/tv_content"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="发红包"
+        android:text="@string/jrmf_send_rp_title"
         android:gravity="center"
         android:textColor="@color/white"
         android:textSize="17sp"/>

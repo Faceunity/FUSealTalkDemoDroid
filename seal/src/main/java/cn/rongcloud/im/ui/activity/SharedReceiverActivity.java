@@ -67,7 +67,7 @@ public class SharedReceiverActivity extends BaseActivity {
         if (intent != null) {
             /** 截获 Intent 部分 **/
             try {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                if (Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN) {
                     String linkInfo = getIntent().getClipData().toString();
                     if (linkInfo != null) {
                         if (linkInfo.contains("file://")) {
@@ -363,15 +363,17 @@ public class SharedReceiverActivity extends BaseActivity {
                 mFriendData = friendList;
                 //双重循环过滤已经被解散或者退出的群组数据
                 List<Conversation> tempList = new ArrayList<>();
-                for (Conversation c : conversationsList) {
-                    if (c.getConversationType().equals(Conversation.ConversationType.GROUP)) {
-                        for (Groups group : mGroupData) {
-                            if (group.getGroupsId().equals(c.getTargetId())) {
-                                tempList.add(c);
+                if (conversationsList != null) {
+                    for (Conversation conversation : conversationsList) {
+                        if (conversation.getConversationType().equals(Conversation.ConversationType.GROUP)) {
+                            for (Groups group : mGroupData) {
+                                if (group.getGroupsId().equals(conversation.getTargetId())) {
+                                    tempList.add(conversation);
+                                }
                             }
+                        } else { // 后期如果做删除好友接口后也可能需要处理 private 类型的数据
+                            tempList.add(conversation);
                         }
-                    } else { // 后期如果做删除好友接口后也可能需要处理 private 类型的数据
-                        tempList.add(c);
                     }
                 }
 

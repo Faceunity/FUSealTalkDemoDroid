@@ -31,7 +31,7 @@
                 android:layout_width="100dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:text="银行卡号"
+                android:text="@string/jrmf_input_card_num2"
                 android:textColor="@color/color_959595"
                 android:textSize="14sp" />
 
@@ -63,7 +63,7 @@
                 android:layout_width="100dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:text="姓名"
+                android:text="@string/jrmf_username"
                 android:textColor="@color/color_959595"
                 android:textSize="14sp" />
 
@@ -74,7 +74,7 @@
                 android:layout_weight="1"
                 android:background="@null"
                 android:gravity="center_vertical"
-                android:hint="请输入姓名"
+                android:hint="@string/name_tip"
                 android:textCursorDrawable="@drawable/selector_cursor"
                 android:paddingRight="@dimen/base_padding"
                 android:textColorHint="@color/color_b7b7b7"
@@ -87,7 +87,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:gravity="center_vertical"
-                android:text="刘洪林"
+                tools:text="刘洪林"
                 android:textColor="@color/black"
                 android:textSize="16sp"
                 android:visibility="gone" />
@@ -110,7 +110,7 @@
                 android:layout_width="100dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:text="身份证号"
+                android:text="@string/jrmf_IDCard_num"
                 android:textColor="@color/color_959595"
                 android:textSize="14sp" />
 
@@ -121,8 +121,7 @@
                 android:layout_weight="1"
                 android:background="@null"
                 android:gravity="center_vertical"
-                android:hint="请输入身份证号"
-                android:inputType="number"
+                android:hint="@string/jrmf_input_IDCard_num"
                 android:digits="0123456789xyzXYZ"
                 android:paddingRight="@dimen/base_padding"
                 android:textColor="@color/black"
@@ -160,7 +159,7 @@
                 android:layout_width="100dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:text="手机号"
+                android:text="@string/jrmf_phone_num"
                 android:textColor="@color/color_959595"
                 android:textSize="14sp" />
 
@@ -171,7 +170,7 @@
                 android:layout_weight="1"
                 android:background="@null"
                 android:gravity="center_vertical"
-                android:hint="银行预留手机号"
+                android:hint="@string/jrmf_input_phone_hint"
                 android:inputType="number"
                 android:paddingRight="@dimen/base_padding"
                 android:textColor="@color/black"
@@ -198,7 +197,7 @@
                 android:layout_width="100dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:text="验证码"
+                android:text="@string/jrmf_verify_code"
                 android:textColor="@color/color_959595"
                 android:textSize="14sp" />
 
@@ -209,7 +208,7 @@
                 android:layout_weight="1"
                 android:background="@null"
                 android:gravity="center_vertical"
-                android:hint="请输入验证码"
+                android:hint="@string/verify_code_empty2"
                 android:inputType="number"
                 android:maxLength="6"
                 android:paddingRight="@dimen/base_padding"
@@ -226,7 +225,7 @@
                 android:layout_marginRight="@dimen/base_margin2"
                 android:background="@drawable/shape_code_bg"
                 android:gravity="center"
-                android:text="发送验证码"
+                android:text="@string/jrmf_send_sms_code"
                 android:textSize="14sp"
                 android:textColor="@color/color_323232" />
         </LinearLayout>
@@ -268,7 +267,7 @@
         android:layout_marginLeft="20dp"
         android:layout_marginRight="20dp"
         android:background="@drawable/selector_round_btn"
-        android:text="确认提交"
+        android:text="@string/jrmf_confirm_submit2"
         android:textColor="@color/white"
         android:textSize="16sp" />
 

@@ -20,7 +20,7 @@
             android:id="@+id/tv_no_trade"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="暂无数据"
+            android:text="@string/jrmf_not_data"
             android:textSize="14sp"
             android:textColor="@color/color_959595"
             android:layout_centerHorizontal="true"

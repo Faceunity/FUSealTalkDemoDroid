@@ -27,7 +27,7 @@
                 android:layout_gravity="center_vertical"
                 android:textSize="14sp"
                 android:textColor="@color/color_959595"
-                android:text="支付密码" />
+                android:text="@string/jrmf_pwd_tip" />
 
             <com.jrmf360.rylib.wallet.widget.ClearEditText
                 android:id="@+id/cet_pwd"
@@ -36,7 +36,7 @@
                 android:layout_weight="1"
                 android:background="@null"
                 android:gravity="center_vertical"
-                android:hint="请输入支付密码"
+                android:hint="@string/input_pwd"
                 android:inputType="number"
                 android:maxLength="6"
                 android:maxLines="1"
@@ -69,7 +69,7 @@
                 android:layout_marginRight="20dp"
                 android:layout_marginTop="@dimen/base_margin"
                 android:background="@drawable/selector_round_btn"
-                android:text="确认提交"
+                android:text="@string/jrmf_confirm_submit"
                 android:textColor="@color/white"
                 android:textSize="16sp" />
         </LinearLayout>

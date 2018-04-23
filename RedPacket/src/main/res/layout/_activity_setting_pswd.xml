@@ -11,7 +11,7 @@
         android:id="@+id/actionbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:content="设置支付密码" />
+        app:content="@string/jrmf_set_pwd_title" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -123,7 +123,7 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/btn_height"
             android:background="@drawable/selector_common_btn"
-            android:text="确定" />
+            android:text="@string/jrmf_confirm" />
     </LinearLayout>
 
 

@@ -3,16 +3,15 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/dialog_paytype_bg"
-                android:gravity="center_horizontal"
-                android:orientation="vertical">
+                android:gravity="center_horizontal">
 
     <LinearLayout
         android:id="@+id/pop_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/white"
+        android:layout_marginBottom="@dimen/half_base_padding"
         android:layout_marginTop="@dimen/half_base_padding"
-        android:layout_centerInParent="true"
+        android:background="@color/white"
         android:orientation="vertical">
 
         <FrameLayout
@@ -28,14 +27,14 @@
                 android:gravity="center_vertical"
                 android:paddingLeft="@dimen/base_padding"
                 android:paddingRight="@dimen/base_padding"
-                android:text="取消"/>
+                android:text="@string/jrmf_quit"/>
 
             <TextView
                 style="@style/text_black_16"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/btn_height"
                 android:gravity="center"
-                android:text="选择付款方式"/>
+                android:text="@string/jrmf_select_pay_style"/>
 
         </FrameLayout>
 

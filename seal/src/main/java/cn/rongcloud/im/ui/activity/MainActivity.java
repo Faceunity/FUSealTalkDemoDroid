@@ -408,7 +408,7 @@ public class MainActivity extends FragmentActivity implements
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if (null != this.getCurrentFocus()) {
+        if (null != this.getCurrentFocus() && event.getAction() == MotionEvent.ACTION_UP) {
             InputMethodManager mInputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
             return mInputMethodManager.hideSoftInputFromWindow(this.getCurrentFocus().getWindowToken(), 0);
         }

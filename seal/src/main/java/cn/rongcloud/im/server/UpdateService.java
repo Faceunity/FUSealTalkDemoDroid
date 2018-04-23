@@ -29,10 +29,11 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import cn.rongcloud.im.R;
+import io.rong.common.RLog;
 
 
 public class UpdateService extends Service {
-    public static final String TAG =  "UpdateService";
+    public static final String TAG = "UpdateService";
     public static final String ACTION = "me.shenfan.UPDATE_APP";
     public static final String STATUS = "status";
     public static final String PROGRESS = "progress";
@@ -77,6 +78,7 @@ public class UpdateService extends Service {
     public class LocalBinder extends Binder {
         /**
          * set update progress call back
+         *
          * @param listener
          */
         public void setUpdateProgressListener(UpdateProgressListener listener) {
@@ -127,7 +129,7 @@ public class UpdateService extends Service {
     private static File getDownloadDir(UpdateService service) {
         File downloadDir = null;
         if (Environment.getExternalStorageState().equals(
-                    Environment.MEDIA_MOUNTED)) {
+                Environment.MEDIA_MOUNTED)) {
             if (service.storeDir != null) {
                 downloadDir = new File(Environment.getExternalStorageDirectory(), service.storeDir);
             } else {
@@ -225,7 +227,7 @@ public class UpdateService extends Service {
             applicationInfo = null;
         }
         String applicationName =
-            (String) packageManager.getApplicationLabel(applicationInfo);
+                (String) packageManager.getApplicationLabel(applicationInfo);
         return applicationName;
     }
 
@@ -261,10 +263,10 @@ public class UpdateService extends Service {
         builder.setContentTitle(getString(R.string.update_app_model_prepare))
                 .setWhen(System.currentTimeMillis())
                 .setProgress(100, 1, false)
-        .setSmallIcon(smallIcon)
-        .setLargeIcon(BitmapFactory.decodeResource(
-                          getResources(), icoResId))
-        .setDefaults(downloadNotificationFlag);
+                .setSmallIcon(smallIcon)
+                .setLargeIcon(BitmapFactory.decodeResource(
+                        getResources(), icoResId))
+                .setDefaults(downloadNotificationFlag);
 
         manager.notify(notifyId, builder.build());
     }
@@ -280,7 +282,6 @@ public class UpdateService extends Service {
     }
 
     /**
-     *
      * @param progress download percent , max 100
      */
     private void update(int progress) {
@@ -317,7 +318,7 @@ public class UpdateService extends Service {
     private void error() {
         Intent i = webLauncher(downloadUrl);
         PendingIntent intent = PendingIntent.getActivity(this, 0, i,
-                               PendingIntent.FLAG_UPDATE_CURRENT);
+                PendingIntent.FLAG_UPDATE_CURRENT);
         builder.setContentText(getString(R.string.update_app_model_error));
         builder.setContentIntent(intent);
         builder.setProgress(0, 0, false);
@@ -355,7 +356,7 @@ public class UpdateService extends Service {
             final String downloadUrl = params[0];
 
             final File file = new File(UpdateService.getDownloadDir(updateServiceWeakReference.get()),
-                                       UpdateService.getSaveFileName(downloadUrl));
+                    UpdateService.getSaveFileName(downloadUrl));
             if (DEBUG) {
                 Log.d(TAG, "download url is " + downloadUrl);
                 Log.d(TAG, "download apk cache at " + file.getAbsolutePath());
@@ -588,7 +589,11 @@ public class UpdateService extends Service {
             intent.putExtra(DOWNLOAD_SUCCESS_NOTIFICATION_FLAG, downloadSuccessNotificationFlag);
             intent.putExtra(DOWNLOAD_ERROR_NOTIFICATION_FLAG, downloadErrorNotificationFlag);
             intent.putExtra(IS_SEND_BROADCAST, isSendBroadcast);
-            context.startService(intent);
+            try {
+                context.startService(intent);
+            } catch (SecurityException e) {
+                RLog.e(TAG, "SecurityException. Failed to start pushService.");
+            }
 
             return this;
         }

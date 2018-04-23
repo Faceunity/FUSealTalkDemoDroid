@@ -9,31 +9,32 @@
     android:orientation="vertical">
 
     <LinearLayout
-        android:layout_width="210dp"
+        android:layout_width="227.5dp"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
         <io.rong.imkit.widget.AsyncImageView
             android:id="@+id/rc_img"
-            android:layout_width="41dp"
-            android:layout_height="41dp"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
             android:layout_marginStart="12dp"
             android:layout_marginLeft="12dp"
-            android:layout_marginEnd="6dp"
-            android:layout_marginRight="6dp"
-            android:layout_marginTop="12dp"
-            android:layout_marginBottom="12dp"
+            android:layout_marginEnd="5dp"
+            android:layout_marginRight="5dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
             android:background="@android:color/transparent"
             android:scaleType="fitXY"
             android:src="@drawable/rc_default_portrait"
+            app:RCCornerRadius="@dimen/contactcard_dimen_size_3"
             app:RCDefDrawable="@drawable/rc_default_portrait"/>
 
         <TextView
             android:id="@+id/rc_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="6dp"
-            android:layout_marginLeft="6dp"
+            android:layout_marginStart="5dp"
+            android:layout_marginLeft="5dp"
             android:layout_marginEnd="12dp"
             android:layout_marginRight="12dp"
             android:textSize="16sp"
@@ -46,13 +47,13 @@
     </LinearLayout>
 
     <View
-        android:layout_width="210dp"
+        android:layout_width="227.5dp"
         android:layout_height="0.5dp"
         android:background="#c1c1c1"/>
 
     <LinearLayout
-        android:layout_width="210dp"
-        android:layout_height="20dp">
+        android:layout_width="227.5dp"
+        android:layout_height="21dp">
 
         <TextView
             android:layout_width="wrap_content"

@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:background="@color/white"
-    android:paddingBottom="@dimen/base_padding"
-    android:paddingLeft="@dimen/base_padding"
-    android:paddingRight="@dimen/base_padding">
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/white"
+                android:paddingBottom="@dimen/base_padding"
+                android:paddingLeft="@dimen/base_padding"
+                android:paddingRight="@dimen/base_padding">
 
     <ImageView
         android:id="@+id/iv_exit"
@@ -15,7 +16,7 @@
         android:layout_alignParentRight="true"
         android:layout_gravity="right|top"
         android:scaleType="fitCenter"
-        android:src="@drawable/_btn_exit" />
+        android:src="@drawable/_btn_exit"/>
 
     <TextView
         android:id="@+id/tv_title"
@@ -24,17 +25,17 @@
         android:layout_height="@dimen/input_height"
         android:layout_marginTop="@dimen/base_padding"
         android:gravity="center"
-        android:text="验证短信验证码" />
+        android:text="@string/jrmf_check_code"/>
 
     <TextView
         android:id="@+id/tv_messamge"
         style="@style/text_gray_16"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/input_height"
+        android:layout_height="wrap_content"
         android:layout_below="@+id/tv_title"
         android:layout_marginTop="@dimen/base_padding"
         android:gravity="center"
-        android:text="请输入手机尾号XXX接收到的短信验证码" />
+        tools:text="请输入手机尾号XXX接收到的短信验证码"/>
 
     <LinearLayout
         android:id="@+id/layout"
@@ -53,11 +54,11 @@
             android:layout_marginRight="5dip"
             android:layout_weight="1"
             android:background="@drawable/_ic_case"
-            android:hint="输入短信验证码"
-            android:paddingRight="7dip"
             android:gravity="center"
+            android:hint="@string/input_verify_code_title"
+            android:inputType="number"
             android:maxLength="6"
-            android:inputType="number"/>
+            android:paddingRight="7dip"/>
 
         <TextView
             android:id="@+id/tv_send_code"
@@ -67,18 +68,18 @@
             android:layout_weight="1"
             android:background="@drawable/_ic_case"
             android:gravity="center"
-            android:text="发送验证码" />
+            android:text="@string/jrmf_send_sms_code"/>
     </LinearLayout>
 
     <Button
         android:id="@+id/btn_next"
         style="@style/text_white_16"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/actionbar_height"
+        android:layout_height="@dimen/btn_height"
         android:layout_below="@id/layout"
         android:layout_marginTop="@dimen/base_padding"
         android:background="@drawable/_bg_red_round"
-        android:text="确定" />
+        android:text="@string/jrmf_confirm"/>
 
 
 </RelativeLayout>

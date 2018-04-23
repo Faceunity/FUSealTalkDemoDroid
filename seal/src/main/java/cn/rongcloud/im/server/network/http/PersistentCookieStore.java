@@ -92,7 +92,7 @@ public class PersistentCookieStore implements CookieStore {
         SharedPreferences.Editor prefsWriter = cookiePrefs.edit();
         prefsWriter.putString(COOKIE_NAME_STORE, TextUtils.join(",", cookies.keySet()));
         prefsWriter.putString(COOKIE_NAME_PREFIX + name, encodeCookie(new SerializableCookie(cookie)));
-        prefsWriter.apply();
+        prefsWriter.commit();
     }
 
     @Override
@@ -103,7 +103,7 @@ public class PersistentCookieStore implements CookieStore {
             prefsWriter.remove(COOKIE_NAME_PREFIX + name);
         }
         prefsWriter.remove(COOKIE_NAME_STORE);
-        prefsWriter.apply();
+        prefsWriter.commit();
 
         // Clear cookies from local store
         cookies.clear();
@@ -133,7 +133,7 @@ public class PersistentCookieStore implements CookieStore {
         if (clearedAny) {
             prefsWriter.putString(COOKIE_NAME_STORE, TextUtils.join(",", cookies.keySet()));
         }
-        prefsWriter.apply();
+        prefsWriter.commit();
 
         return clearedAny;
     }

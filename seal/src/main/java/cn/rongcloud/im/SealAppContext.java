@@ -31,6 +31,8 @@ import cn.rongcloud.im.ui.activity.LoginActivity;
 import cn.rongcloud.im.ui.activity.MainActivity;
 import cn.rongcloud.im.ui.activity.NewFriendListActivity;
 import cn.rongcloud.im.ui.activity.UserDetailActivity;
+import io.rong.calllib.RongCallClient;
+import io.rong.calllib.RongCallSession;
 import io.rong.imkit.DefaultExtensionModule;
 import io.rong.imkit.IExtensionModule;
 import io.rong.imkit.RongExtensionManager;
@@ -77,7 +79,7 @@ public class SealAppContext implements RongIM.ConversationListBehaviorListener,
 
     private static SealAppContext mRongCloudInstance;
 
-    private LocationCallback mLastLocationCallback;
+    private RongIM.LocationProvider.LocationCallback mLastLocationCallback;
 
     private static ArrayList<Activity> mActivities;
 
@@ -212,6 +214,11 @@ public class SealAppContext implements RongIM.ConversationListBehaviorListener,
         return false;
     }
 
+    /**
+     * @param message 收到的消息实体。
+     * @param i
+     * @return
+     */
     @Override
     public boolean onReceived(Message message, int i) {
         MessageContent messageContent = message.getContent();
@@ -222,9 +229,9 @@ public class SealAppContext implements RongIM.ConversationListBehaviorListener,
                 BroadcastManager.getInstance(mContext).sendBroadcast(UPDATE_RED_DOT);
             } else if (contactNotificationMessage.getOperation().equals("AcceptResponse")) {
                 //对方同意我的好友请求
-                ContactNotificationMessageData c = null;
+                ContactNotificationMessageData contactNotificationMessageData;
                 try {
-                    c = JsonMananger.jsonToBean(contactNotificationMessage.getExtra(), ContactNotificationMessageData.class);
+                    contactNotificationMessageData = JsonMananger.jsonToBean(contactNotificationMessage.getExtra(), ContactNotificationMessageData.class);
                 } catch (HttpException e) {
                     e.printStackTrace();
                     return false;
@@ -232,16 +239,16 @@ public class SealAppContext implements RongIM.ConversationListBehaviorListener,
                     e.printStackTrace();
                     return false;
                 }
-                if (c != null) {
+                if (contactNotificationMessageData != null) {
                     if (SealUserInfoManager.getInstance().isFriendsRelationship(contactNotificationMessage.getSourceUserId())) {
                         return false;
                     }
                     SealUserInfoManager.getInstance().addFriend(
                             new Friend(contactNotificationMessage.getSourceUserId(),
-                                    c.getSourceUserNickname(),
+                                    contactNotificationMessageData.getSourceUserNickname(),
                                     null, null, null, null,
                                     null, null,
-                                    CharacterParser.getInstance().getSpelling(c.getSourceUserNickname()),
+                                    CharacterParser.getInstance().getSpelling(contactNotificationMessageData.getSourceUserNickname()),
                                     null));
                 }
                 BroadcastManager.getInstance(mContext).sendBroadcast(UPDATE_FRIEND);
@@ -263,16 +270,21 @@ public class SealAppContext implements RongIM.ConversationListBehaviorListener,
                     e.printStackTrace();
                 }
                 if (groupNotificationMessage.getOperation().equals("Create")) {
+                    //创建群组
                     SealUserInfoManager.getInstance().getGroups(groupID);
                     SealUserInfoManager.getInstance().getGroupMember(groupID);
                 } else if (groupNotificationMessage.getOperation().equals("Dismiss")) {
+                    //解散群组
+                    hangUpWhenQuitGroup();      //挂断电话
                     handleGroupDismiss(groupID);
                 } else if (groupNotificationMessage.getOperation().equals("Kicked")) {
+                    //群组踢人
                     if (data != null) {
                         List<String> memberIdList = data.getTargetUserIds();
                         if (memberIdList != null) {
                             for (String userId : memberIdList) {
                                 if (currentID.equals(userId)) {
+                                    hangUpWhenQuitGroup();
                                     RongIM.getInstance().removeConversation(Conversation.ConversationType.GROUP, message.getTargetId(), new RongIMClient.ResultCallback<Boolean>() {
                                         @Override
                                         public void onSuccess(Boolean aBoolean) {
@@ -293,16 +305,22 @@ public class SealAppContext implements RongIM.ConversationListBehaviorListener,
                         BroadcastManager.getInstance(mContext).sendBroadcast(UPDATE_GROUP_MEMBER, groupID);
                     }
                 } else if (groupNotificationMessage.getOperation().equals("Add")) {
+                    //群组添加人员
                     SealUserInfoManager.getInstance().getGroups(groupID);
                     SealUserInfoManager.getInstance().getGroupMember(groupID);
                     BroadcastManager.getInstance(mContext).sendBroadcast(UPDATE_GROUP_MEMBER, groupID);
                 } else if (groupNotificationMessage.getOperation().equals("Quit")) {
+                    //退出群组
                     if (data != null) {
                         List<String> quitUserIDs = data.getTargetUserIds();
+                        if (quitUserIDs.contains(currentID)) {
+                            hangUpWhenQuitGroup();
+                        }
                         SealUserInfoManager.getInstance().deleteGroupMembers(groupID, quitUserIDs);
                         BroadcastManager.getInstance(mContext).sendBroadcast(UPDATE_GROUP_MEMBER, groupID);
                     }
                 } else if (groupNotificationMessage.getOperation().equals("Rename")) {
+                    //群组重命名
                     if (data != null) {
                         String targetGroupName = data.getTargetGroupName();
                         SealUserInfoManager.getInstance().updateGroupsName(groupID, targetGroupName);
@@ -445,11 +463,11 @@ public class SealAppContext implements RongIM.ConversationListBehaviorListener,
     }
 
 
-    public LocationCallback getLastLocationCallback() {
+    public RongIM.LocationProvider.LocationCallback getLastLocationCallback() {
         return mLastLocationCallback;
     }
 
-    public void setLastLocationCallback(LocationCallback lastLocationCallback) {
+    public void setLastLocationCallback(RongIM.LocationProvider.LocationCallback lastLocationCallback) {
         this.mLastLocationCallback = lastLocationCallback;
     }
 
@@ -500,7 +518,7 @@ public class SealAppContext implements RongIM.ConversationListBehaviorListener,
             public void onSuccess(String s) {
                 NLog.d(TAG, "ConnectCallback connect onSuccess");
                 SharedPreferences sp = mContext.getSharedPreferences("config", Context.MODE_PRIVATE);
-                sp.edit().putString(SealConst.SEALTALK_LOGIN_ID, s).apply();
+                sp.edit().putString(SealConst.SEALTALK_LOGIN_ID, s).commit();
             }
 
             @Override
@@ -564,7 +582,7 @@ public class SealAppContext implements RongIM.ConversationListBehaviorListener,
         editor.putString("loginToken", "");
         editor.putString(SealConst.SEALTALK_LOGIN_ID, "");
         editor.putInt("getAllUserInfoState", 0);
-        editor.apply();
+        editor.commit();
         /*//这些数据清除操作之前一直是在login界面,因为app的数据库改为按照userID存储,退出登录时先直接删除
         //这种方式是很不友好的方式,未来需要修改同app server的数据同步方式
         //SealUserInfoManager.getInstance().deleteAllUserInfo();*/
@@ -601,5 +619,12 @@ public class SealAppContext implements RongIM.ConversationListBehaviorListener,
                 callback.onGetGroupMembersResult(null);
             }
         });
+    }
+
+    private void hangUpWhenQuitGroup() {
+        RongCallSession session = RongCallClient.getInstance().getCallSession();
+        if (session != null) {
+            RongCallClient.getInstance().hangUpCall(session.getCallId());
+        }
     }
 }

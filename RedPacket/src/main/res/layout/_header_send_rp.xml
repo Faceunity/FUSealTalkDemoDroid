@@ -11,7 +11,7 @@
         android:layout_height="45dp"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="15dp"
-        android:src="@drawable/rc_default_portrait"
+        android:src="@drawable/jrmf_default_portrait"
         android:scaleType="centerCrop"/>
 
     <LinearLayout
@@ -36,7 +36,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="5dp"
-            android:text="共发出"
+            android:text="@string/jrmf_rp_all_send"
             android:textColor="@color/color_a0a0a0"
             android:textSize="10sp"/>
     </LinearLayout>
@@ -59,7 +59,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="元"
+            android:text="@string/jrmf_money_yuan2"
             android:textColor="@color/color_a0a0a0"
             android:textSize="10sp"/>
     </LinearLayout>

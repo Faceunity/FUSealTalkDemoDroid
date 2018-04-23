@@ -215,7 +215,7 @@ public class SealSearchChattingDetailActivity extends Activity {
                 if (object instanceof Message) {
                     Message message = (Message)object;
                     Conversation conversation = mResult.getConversation();
-                    RongIM.getInstance().startConversation(SealSearchChattingDetailActivity.this, conversation.getConversationType(), conversation.getTargetId(), mResult.getTitle());
+                    RongIM.getInstance().startConversation(SealSearchChattingDetailActivity.this, conversation.getConversationType(), conversation.getTargetId(), mResult.getTitle(),mAdapterMessages.get(position).getSentTime());
                 }
             }
         });

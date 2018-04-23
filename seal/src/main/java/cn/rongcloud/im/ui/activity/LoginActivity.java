@@ -156,7 +156,7 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
                 }
                 LoadDialog.show(mContext);
                 editor.putBoolean("exit", false);
-                editor.apply();
+                editor.commit();
                 String oldPhone = sp.getString(SealConst.SEALTALK_LOGING_PHONE, "");
                 request(LOGIN, true);
                 break;
@@ -189,7 +189,7 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
                 editor.putString(SealConst.SEALTALK_LOGING_PASSWORD, password);
                 editor.putString(SealConst.SEALTALK_LOGIN_ID, id);
                 editor.putString(SealConst.SEALTALK_LOGIN_NAME, nickname);
-                editor.apply();
+                editor.commit();
             }
 
         }
@@ -231,7 +231,7 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
                                     connectResultId = s;
                                     NLog.e("connect", "onSuccess userid:" + s);
                                     editor.putString(SealConst.SEALTALK_LOGIN_ID, s);
-                                    editor.apply();
+                                    editor.commit();
                                     SealUserInfoManager.getInstance().openDB();
                                     request(SYNC_USER_INFO, true);
                                 }
@@ -260,7 +260,7 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
                         String portraitUri = userInfoByIdResponse.getResult().getPortraitUri();
                         editor.putString(SealConst.SEALTALK_LOGIN_NAME, nickName);
                         editor.putString(SealConst.SEALTALK_LOGING_PORTRAIT, portraitUri);
-                        editor.apply();
+                        editor.commit();
                         RongIM.getInstance().refreshUserInfoCache(new UserInfo(connectResultId, nickName, Uri.parse(portraitUri)));
                     }
                     //不继续在login界面同步好友,群组,群组成员信息
@@ -283,7 +283,7 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
                                     connectResultId = s;
                                     NLog.e("connect", "onSuccess userid:" + s);
                                     editor.putString(SealConst.SEALTALK_LOGIN_ID, s);
-                                    editor.apply();
+                                    editor.commit();
                                     SealUserInfoManager.getInstance().openDB();
                                     request(SYNC_USER_INFO, true);
                                 }
@@ -336,7 +336,7 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
         editor.putString("loginToken", loginToken);
         editor.putString(SealConst.SEALTALK_LOGING_PHONE, phoneString);
         editor.putString(SealConst.SEALTALK_LOGING_PASSWORD, passwordString);
-        editor.apply();
+        editor.commit();
         LoadDialog.dismiss(mContext);
         NToast.shortToast(mContext, R.string.login_success);
         startActivity(new Intent(LoginActivity.this, MainActivity.class));

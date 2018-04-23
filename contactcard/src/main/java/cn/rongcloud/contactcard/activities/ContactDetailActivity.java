@@ -1,7 +1,6 @@
 package cn.rongcloud.contactcard.activities;
 
 import android.animation.ObjectAnimator;
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
@@ -24,6 +23,8 @@ import java.util.List;
 
 import cn.rongcloud.contactcard.R;
 import cn.rongcloud.contactcard.message.ContactMessage;
+import io.rong.eventbus.EventBus;
+import io.rong.imkit.RongBaseNoActionbarActivity;
 import io.rong.imkit.RongContext;
 import io.rong.imkit.RongIM;
 import io.rong.imkit.emoticon.AndroidEmoji;
@@ -43,7 +44,7 @@ import io.rong.message.TextMessage;
  * Created by Beyond on 2016/11/24.
  */
 
-public class ContactDetailActivity extends Activity {
+public class ContactDetailActivity extends RongBaseNoActionbarActivity {
 
     private AsyncImageView mTargetPortrait;
     private TextView mTargetName;
@@ -58,6 +59,7 @@ public class ContactDetailActivity extends Activity {
     private Conversation.ConversationType mConversationType;
     private String mTargetId;
     private UserInfo mContactFriend;
+    private Group group;
     private List<UserInfo> mGroupMember;
     private boolean mGroupMemberShown = false;
 
@@ -67,8 +69,15 @@ public class ContactDetailActivity extends Activity {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.rc_ac_contact_detail);
         getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
+        EventBus.getDefault().register(this);
         initView();
         initData();
+    }
+
+    @Override
+    protected void onDestroy() {
+        EventBus.getDefault().unregister(this);
+        super.onDestroy();
     }
 
     private void initView() {
@@ -94,25 +103,11 @@ public class ContactDetailActivity extends Activity {
         switch (mConversationType) {
             case PRIVATE:
                 UserInfo mine = RongUserInfoManager.getInstance().getUserInfo(mTargetId);
-                if (mine == null) {
-                    finish();
-                    return;
-                }
-                if (mine.getPortraitUri() != null)
-                    mTargetPortrait.setAvatar(mine.getPortraitUri());
-                if (mine.getName() != null)
-                    mTargetName.setText(mine.getName());
+                onEventMainThread(mine);
                 break;
             case GROUP:
-                final Group group = RongUserInfoManager.getInstance().getGroupInfo(mTargetId);
-                if (group == null) {
-                    finish();
-                    return;
-                }
-                if (group.getPortraitUri() != null)
-                    mTargetPortrait.setAvatar(group.getPortraitUri());
-                if (group.getName() != null)
-                    mTargetName.setText(group.getName());
+                group = RongUserInfoManager.getInstance().getGroupInfo(mTargetId);
+                onEventMainThread(group);
 
                 RongIM.IGroupMembersProvider groupMembersProvider = RongMentionManager.getInstance().getGroupMembersProvider();
                 if (groupMembersProvider != null) {
@@ -121,14 +116,17 @@ public class ContactDetailActivity extends Activity {
                         public void onGetGroupMembersResult(final List<UserInfo> members) {
                             mGroupMember = members;
                             if (mGroupMember != null) {
-                                mTargetName.setText(group.getName() + "(" + mGroupMember.size() + getString(R.string.rc_contact_group_member_count_unit) + ")");
+                                if (group != null) {
+                                    mTargetName.setText(String.format(getResources().getString(R.string.rc_contact_group_member_count),
+                                            group.getName(), mGroupMember.size()));
+                                }
                                 mGridView.setAdapter(new GridAdapter(ContactDetailActivity.this, mGroupMember));
                             }
                         }
                     });
+                    mArrow.setVisibility(View.VISIBLE);
                 }
 
-                mArrow.setVisibility(View.VISIBLE);
                 mArrow.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -160,7 +158,7 @@ public class ContactDetailActivity extends Activity {
         }
 
         if (mContactFriend != null)
-            mContactName.setText("[" + getString(R.string.rc_plugins_contact) + "]" + mContactFriend.getName());
+            mContactName.setText(getString(R.string.rc_plugins_contact) + ": " + mContactFriend.getName());
 
         mMessage.addTextChangedListener(new TextWatcher() {
             @Override
@@ -189,12 +187,15 @@ public class ContactDetailActivity extends Activity {
         mSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ContactMessage contactMessage = ContactMessage.obtain(mContactFriend.getUserId(), mContactFriend.getName(), mContactFriend.getPortraitUri().toString());
-                contactMessage.setUserInfo(RongUserInfoManager.getInstance().getUserInfo(RongIMClient.getInstance().getCurrentUserId()));
-                String pushContent = String.format(RongContext.getInstance().getResources().getString(R.string.rc_recommend_clause_to_me),
-                        contactMessage.getUserInfo().getName(), contactMessage.getName());
-                RongIM.getInstance().sendMessage(Message.obtain(mTargetId, mConversationType, contactMessage), pushContent, null,
-                        new IRongCallback.ISendMessageCallback() {
+                UserInfo sendUserInfo = RongUserInfoManager.getInstance().
+                        getUserInfo(RongIMClient.getInstance().getCurrentUserId());
+                String sendUserName = sendUserInfo == null ? "" : sendUserInfo.getName();
+                ContactMessage contactMessage = ContactMessage.obtain(mContactFriend.getUserId(),
+                        mContactFriend.getName(), mContactFriend.getPortraitUri().toString(),
+                        RongIMClient.getInstance().getCurrentUserId(), sendUserName, "");
+                String pushContent = String.format(RongContext.getInstance().getResources().getString(R.string.rc_recommend_clause_to_me), sendUserName, contactMessage.getName());
+                RongIM.getInstance().sendMessage(Message.obtain(mTargetId, mConversationType, contactMessage),
+                        pushContent, null, new IRongCallback.ISendMessageCallback() {
                             @Override
                             public void onAttached(Message message) {
 
@@ -245,6 +246,31 @@ public class ContactDetailActivity extends Activity {
                 finish();
             }
         });
+    }
+
+    public void onEventMainThread(UserInfo mine) {
+        if (mine != null) {
+            if (mine.getPortraitUri() != null)
+                mTargetPortrait.setAvatar(mine.getPortraitUri());
+            if (mine.getName() != null)
+                mTargetName.setText(mine.getName());
+        }
+    }
+
+    public void onEventMainThread(Group group) {
+        if (group != null) {
+            this.group = group;
+            if (group.getPortraitUri() != null)
+                mTargetPortrait.setAvatar(group.getPortraitUri());
+            if (group.getName() != null) {
+                if (mGroupMember != null && mGroupMember.size() > 0) {
+                    mTargetName.setText(String.format(getResources().getString(R.string.rc_contact_group_member_count),
+                            group.getName(), mGroupMember.size()));
+                } else {
+                    mTargetName.setText(group.getName());
+                }
+            }
+        }
     }
 
     private static class GridAdapter extends BaseAdapter {
@@ -307,5 +333,6 @@ public class ContactDetailActivity extends Activity {
 
     @Override
     public void onBackPressed() {
+
     }
 }

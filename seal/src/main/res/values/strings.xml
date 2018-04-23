@@ -233,6 +233,7 @@
     <string name="sdk_version_update">SDK版本</string>
     <string name="sealtalk_version_update">SealTalk版本</string>
     <string name="all_group_member">全部群成员</string>
+    <string name="group_member_online_status">群成员在线状态</string>
     <string name="group_announcement">群公告</string>
     <string name="group_code">群二维码</string>
     <string name="total_member">群成员</string>
@@ -281,10 +282,14 @@
     <string name="ac_search_more_chatting_records">查看更多聊天记录</string>
 
     <string name="search_item_chat_records">%d条相关记录</string>
+    <string name="online">在线</string>
     <string name="offline">离线</string>
     <string name="web_online">网页在线</string>
     <string name="pc_online">电脑在线</string>
     <string name="phone_online">手机在线</string>
+    <string name="ipad_online">iPad在线</string>
+    <string name="imac_online">iMac 在线</string>
+    <string name="set_user_online_status">设置用户在线状态</string>
     <string name="read_receipt_detail">回执详情</string>
     <string name="read_receipt_unread_persons">%1$d人未读</string>
     <string name="read_receipt_read_persons">%1$d人已读</string>
@@ -347,5 +352,14 @@
     <string name="seal_set_push_language">设置 Push 中文</string>
     <string name="seal_set_push_detail">显示 Push 内容</string>
     <string name="seal_set_push_receive">接收 Push 消息</string>
-
+    <string name="cs_evaluation">评价</string>
+    <string name="cs_submit_evaluation">提交评价</string>
+    <string name="cs_evaluate_resolved_title">请问客服是否解决了您的问题</string>
+    <string name="cs_evaluate_resolved">已解决</string>
+    <string name="cs_evaluate_unresolved">未解决</string>
+    <string name="cs_evaluate_star_title">请您对客服进行评价</string>
+    <string name="cs_evaluate_problem_title">存在哪些问题</string>
+    <string name="cs_evaluate_tag_must">必须选择标签</string>
+    <string name="cs_evaluate_input_must">必须输入建议</string>
+    <string name="cs_evaluate_select_must">必选</string>
 </resources>

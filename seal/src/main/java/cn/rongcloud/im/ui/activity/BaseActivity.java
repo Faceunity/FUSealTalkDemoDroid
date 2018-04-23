@@ -15,6 +15,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.ViewFlipper;
 
+import com.umeng.analytics.MobclickAgent;
 
 import cn.rongcloud.im.R;
 import cn.rongcloud.im.server.SealAction;
@@ -179,10 +180,12 @@ public abstract class BaseActivity extends FragmentActivity implements OnDataLis
 
     protected void onResume() {
         super.onResume();
+        MobclickAgent.onResume(this);
     }
 
     protected void onPause() {
         super.onPause();
+        MobclickAgent.onPause(this);
     }
 
 
@@ -267,7 +270,7 @@ public abstract class BaseActivity extends FragmentActivity implements OnDataLis
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if (null != this.getCurrentFocus()) {
+        if (null != this.getCurrentFocus() && event.getAction() == MotionEvent.ACTION_UP) {
             InputMethodManager mInputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
             return mInputMethodManager.hideSoftInputFromWindow(this.getCurrentFocus().getWindowToken(), 0);
         }

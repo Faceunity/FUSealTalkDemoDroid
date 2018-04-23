@@ -155,7 +155,7 @@ public class SyncHttpClient {
      * @param httpsPort                  HTTPS port to be used, must be greater than 0
      */
     private static SchemeRegistry getDefaultSchemeRegistry(
-        boolean fixNoHttpResponseException, int httpPort, int httpsPort) {
+            boolean fixNoHttpResponseException, int httpPort, int httpsPort) {
         if (fixNoHttpResponseException) {
             Log.d(LOG_TAG, "Beware! Using the fix is insecure, as it doesn't verify SSL certificates.");
         }
@@ -204,7 +204,7 @@ public class SyncHttpClient {
         HttpConnectionParams.setSocketBufferSize(httpParams, DEFAULT_SOCKET_BUFFER_SIZE);
 
         HttpProtocolParams.setVersion(httpParams, HttpVersion.HTTP_1_1);
-        HttpProtocolParams.setUserAgent(httpParams, "SealTalk v" + SealConst.SEALTALKVERSION + " (Android; targetsdkversion " + Build.VERSION.SDK_INT + ";)");
+        HttpProtocolParams.setUserAgent(httpParams, " (Android; targetsdkversion " + Build.VERSION.SDK_INT + ";)");
 
         ThreadSafeClientConnManager cm = new ThreadSafeClientConnManager(httpParams, schemeRegistry);
 
@@ -442,7 +442,7 @@ public class SyncHttpClient {
      */
     public void setBasicAuth(String username, String password, AuthScope scope) {
         UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(
-            username, password);
+                username, password);
         this.httpClient.getCredentialsProvider().setCredentials(scope,
                 credentials);
     }
@@ -516,8 +516,8 @@ public class SyncHttpClient {
      *
      * @param context the Android Context which initiated the request.
      * @param url     the URL to send the request to.
-     * @throws HttpException
      * @return String
+     * @throws HttpException
      */
     public String get(Context context, String url) throws HttpException {
         return get(context, url, null);
@@ -821,7 +821,7 @@ public class SyncHttpClient {
      * @return encoded url if requested with params appended if any available
      */
     public static String getUrlWithQueryString(boolean shouldEncodeUrl,
-            String url, RequestParams params) {
+                                               String url, RequestParams params) {
         if (shouldEncodeUrl)
             url = url.replace(" ", "%20");
 
@@ -869,7 +869,7 @@ public class SyncHttpClient {
      * @param requestBase HttpRequest instance, must not be null
      */
     private HttpEntityEnclosingRequestBase addEntityToRequestBase(
-        HttpEntityEnclosingRequestBase requestBase, HttpEntity entity) {
+            HttpEntityEnclosingRequestBase requestBase, HttpEntity entity) {
         if (entity != null) {
             requestBase.setEntity(entity);
         }

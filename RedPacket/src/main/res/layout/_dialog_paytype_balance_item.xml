@@ -35,23 +35,23 @@
                 android:paddingLeft="10dp"
                 android:text="零钱支付 ( 余额 "
                 android:textColor="@color/color_434343"/>
-            <ImageView
-                android:id="@+id/iv_paytype_rmb"
-                android:layout_width="14dp"
-                android:layout_height="14dp"
-                android:layout_gravity="center_vertical"
-                android:layout_marginTop="1dp"
-                android:background="@drawable/_rmb"
-                />
+            <!--<ImageView-->
+                <!--android:id="@+id/iv_paytype_rmb"-->
+                <!--android:layout_width="14dp"-->
+                <!--android:layout_height="14dp"-->
+                <!--android:layout_gravity="center_vertical"-->
+                <!--android:layout_marginTop="1dp"-->
+                <!--android:background="@drawable/_rmb"-->
+                <!--/>-->
 
-            <TextView
-                android:id="@+id/tv_paytype_balance"
-                style="@style/text_black_16"
-                android:layout_width="wrap_content"
-                android:layout_height="@dimen/btn_height"
-                android:gravity="center_vertical"
-                android:text=" 0.07 )"
-                android:textColor="@color/color_434343"/>
+            <!--<TextView-->
+                <!--android:id="@+id/tv_paytype_balance"-->
+                <!--style="@style/text_black_16"-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="@dimen/btn_height"-->
+                <!--android:gravity="center_vertical"-->
+                <!--android:text=" 0.07 )"-->
+                <!--android:textColor="@color/color_434343"/>-->
 
         </LinearLayout>
 

@@ -26,7 +26,7 @@
             android:layout_height="wrap_content"
             android:paddingBottom="10dp"
             android:paddingTop="10dp"
-            android:text="加载中..."
+            android:text="@string/loading"
             android:textColor="@color/color_aaaaaa"
             android:textSize="12sp" />
     </LinearLayout>
@@ -37,7 +37,7 @@
         android:layout_height="35dp"
         android:paddingBottom="10dp"
         android:paddingTop="10dp"
-        android:text="到底了噢"
+        android:text="@string/to_buttom"
         android:textColor="@color/color_aaaaaa"
         android:textSize="12sp" />
 </ViewAnimator>

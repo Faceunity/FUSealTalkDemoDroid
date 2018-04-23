@@ -4,6 +4,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -86,7 +88,7 @@ public class MineFragment extends Fragment implements View.OnClickListener {
                         sb.append(s[i]);
                     }
 
-                    String[] s2 = SealConst.SEALTALKVERSION.split("\\.");
+                    String[] s2 = getVersionInfo()[1].split("\\.");
                     StringBuilder sb2 = new StringBuilder();
                     for (int i = 0; i < s2.length; i++) {
                         sb2.append(s2[i]);
@@ -186,5 +188,22 @@ public class MineFragment extends Fragment implements View.OnClickListener {
                                  (new UserInfo(userId, username, Uri.parse(userPortrait)));
             ImageLoader.getInstance().displayImage(portraitUri, imageView, App.getOptions());
         }
+    }
+
+    private String[] getVersionInfo() {
+        String[] version = new String[2];
+
+        PackageManager packageManager = getActivity().getPackageManager();
+
+        try {
+            PackageInfo packageInfo = packageManager.getPackageInfo(getActivity().getPackageName(), 0);
+            version[0] = String.valueOf(packageInfo.versionCode);
+            version[1] = packageInfo.versionName;
+            return version;
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        return version;
     }
 }

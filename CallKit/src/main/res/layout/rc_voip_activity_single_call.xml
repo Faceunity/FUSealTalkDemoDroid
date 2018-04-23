@@ -58,7 +58,7 @@
                 android:layout_centerHorizontal="true"
                 android:layout_marginRight="20dp"
                 android:layout_marginTop="10dp"
-                android:text="语音聊天"
+                android:text="@string/rc_voip_switch_to_audio"
                 style="@style/rc_voip_text_style_style" />
         </RelativeLayout>
 
@@ -74,9 +74,10 @@
                 android:layout_height="wrap_content">
             </FrameLayout>
 
-            <com.faceunity.EffectView
+            <com.faceunity.beautycontrolview.BeautyControlView
+                android:id="@+id/faceunity_control"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content" />
         </LinearLayout>
 
     </RelativeLayout>

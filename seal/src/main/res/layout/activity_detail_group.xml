@@ -59,6 +59,25 @@
                     android:textSize="16sp" />
 
             </RelativeLayout>
+            <RelativeLayout
+                android:id="@+id/group_member_online_status"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:background="@drawable/btn_list_item_bg"
+                android:clickable="true"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/tv_group_member_onlinestatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="14dp"
+                    android:text="@string/group_member_online_status"
+                    android:textColor="@color/text_color"
+                    android:textSize="16sp" />
+
+            </RelativeLayout>
 
             <View
                 android:layout_width="match_parent"

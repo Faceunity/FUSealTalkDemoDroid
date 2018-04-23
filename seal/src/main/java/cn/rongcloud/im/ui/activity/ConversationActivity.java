@@ -15,6 +15,9 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,7 +33,9 @@ import cn.rongcloud.im.server.utils.NLog;
 import cn.rongcloud.im.server.utils.NToast;
 import cn.rongcloud.im.ui.fragment.ConversationFragmentEx;
 import cn.rongcloud.im.ui.widget.LoadingDialog;
+import io.rong.common.RLog;
 import io.rong.imkit.RongIM;
+import io.rong.imkit.RongKitIntent;
 import io.rong.imkit.fragment.UriFragment;
 import io.rong.imkit.userInfoCache.RongUserInfoManager;
 import io.rong.imlib.MessageTag;
@@ -87,6 +92,9 @@ public class ConversationActivity extends BaseActivity implements View.OnClickLi
     public static final int SET_TARGET_ID_TITLE = 0;
 
     private Button mRightButton;
+    private RelativeLayout layout_announce;
+    private TextView tv_announce;
+    private ImageView iv_arrow;
 
     @Override
     @TargetApi(23)
@@ -95,6 +103,10 @@ public class ConversationActivity extends BaseActivity implements View.OnClickLi
         setContentView(R.layout.conversation);
         sp = getSharedPreferences("config", MODE_PRIVATE);
         mDialog = new LoadingDialog(this);
+        layout_announce = (RelativeLayout) findViewById(R.id.ll_annouce);
+        iv_arrow = (ImageView) findViewById(R.id.iv_announce_arrow);
+        layout_announce.setVisibility(View.GONE);
+        tv_announce = (TextView) findViewById(R.id.tv_announce_msg);
 
         mRightButton = getHeadRightButton();
 
@@ -120,7 +132,10 @@ public class ConversationActivity extends BaseActivity implements View.OnClickLi
 
         if (mConversationType.equals(Conversation.ConversationType.GROUP)) {
             mRightButton.setBackground(getResources().getDrawable(R.drawable.icon2_menu));
-        } else if (mConversationType.equals(Conversation.ConversationType.PRIVATE) | mConversationType.equals(Conversation.ConversationType.PUBLIC_SERVICE) | mConversationType.equals(Conversation.ConversationType.DISCUSSION)) {
+        } else if (mConversationType.equals(Conversation.ConversationType.PRIVATE)
+                || mConversationType.equals(Conversation.ConversationType.PUBLIC_SERVICE)
+                || mConversationType.equals(Conversation.ConversationType.APP_PUBLIC_SERVICE)
+                || mConversationType.equals(Conversation.ConversationType.DISCUSSION)) {
             mRightButton.setBackground(getResources().getDrawable(R.drawable.icon1_menu));
         } else {
             mRightButton.setVisibility(View.GONE);
@@ -129,6 +144,9 @@ public class ConversationActivity extends BaseActivity implements View.OnClickLi
         mRightButton.setOnClickListener(this);
 
         isPushMessage(intent);
+        if (mConversationType.equals(Conversation.ConversationType.CUSTOMER_SERVICE)) {
+            setAnnounceListener();
+        }
 
         mHandler = new Handler(new Handler.Callback() {
             @Override
@@ -188,7 +206,46 @@ public class ConversationActivity extends BaseActivity implements View.OnClickLi
                 return null;
             }
         });
+
+
         //CallKit end 2
+    }
+
+    /**
+     * 设置通告栏的监听
+     */
+    private void setAnnounceListener() {
+        if (fragment != null) {
+            fragment.setOnShowAnnounceBarListener(new ConversationFragmentEx.OnShowAnnounceListener() {
+                @Override
+                public void onShowAnnounceView(String announceMsg, final String announceUrl) {
+                    layout_announce.setVisibility(View.VISIBLE);
+                    tv_announce.setText(announceMsg);
+                    layout_announce.setClickable(false);
+                    if (!TextUtils.isEmpty(announceUrl)) {
+                        iv_arrow.setVisibility(View.VISIBLE);
+                        layout_announce.setClickable(true);
+                        layout_announce.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                String str = announceUrl.toLowerCase();
+                                if (!TextUtils.isEmpty(str)) {
+                                    if (!str.startsWith("http") && !str.startsWith("https")) {
+                                        str = "http://" + str;
+                                    }
+                                    Intent intent = new Intent(RongKitIntent.RONG_INTENT_ACTION_WEBVIEW);
+                                    intent.setPackage(v.getContext().getPackageName());
+                                    intent.putExtra("url", str);
+                                    v.getContext().startActivity(intent);
+                                }
+                            }
+                        });
+                    } else {
+                        iv_arrow.setVisibility(View.GONE);
+                    }
+                }
+            });
+        }
     }
 
     /**
@@ -238,7 +295,7 @@ public class ConversationActivity extends BaseActivity implements View.OnClickLi
                 if (mDialog != null && !mDialog.isShowing()) {
                     mDialog.show();
                 }
-                new Handler().postDelayed(new Runnable() {
+                new android.os.Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
                         enterActivity();
@@ -330,7 +387,6 @@ public class ConversationActivity extends BaseActivity implements View.OnClickLi
         transaction.add(R.id.rong_content, fragment);
         transaction.commitAllowingStateLoss();
     }
-
 
     /**
      * 设置会话页面 Title

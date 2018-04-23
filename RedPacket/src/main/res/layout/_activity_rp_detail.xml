@@ -24,7 +24,7 @@
         android:layout_centerHorizontal="true"
         android:textColor="@color/color_46a2fa"
         android:textSize="14sp"
-        android:text="查看我的红包记录"
+        android:text="@string/jrmf_rp_look_history"
         />
 
     <ListView

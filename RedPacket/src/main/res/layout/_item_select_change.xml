@@ -27,7 +27,7 @@
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:textColor="@color/color_a0a0a0"
-            android:text="账户余额"
+            android:text="@string/jrmf_account_balance"
             android:textSize="14sp" />
         
         <TextView
@@ -37,7 +37,7 @@
             android:layout_centerVertical="true"
             android:layout_marginTop="2dp"
             android:textColor="@color/color_a0a0a0"
-            android:text="该付款方式不支持当前交易"
+            android:text="@string/jrmf_pay_type_not_support"
             android:textSize="12sp" />
     </LinearLayout>
 

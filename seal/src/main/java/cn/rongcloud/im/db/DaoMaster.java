@@ -69,7 +69,7 @@ public class DaoMaster extends AbstractDaoMaster {
             RLog.i("greenDAO", "Upgrading schema from version " + oldVersion + " to " + newVersion + " by dropping all tables");
             dropAllTables(db, true);
             SharedPreferences sp = mContext.getSharedPreferences("config", Context.MODE_PRIVATE);
-            sp.edit().putInt("getAllUserInfoState", 0).apply();
+            sp.edit().putInt("getAllUserInfoState", 0).commit();
             onCreate(db);
         }
     }

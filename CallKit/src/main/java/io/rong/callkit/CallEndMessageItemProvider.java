@@ -10,11 +10,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import java.util.Locale;
+
 import io.rong.calllib.RongCallClient;
 import io.rong.calllib.RongCallCommon;
 import io.rong.calllib.RongCallSession;
 import io.rong.calllib.message.CallSTerminateMessage;
-import io.rong.imkit.RongContext;
 import io.rong.imkit.widget.AutoLinkTextView;
 import io.rong.imkit.RongIM;
 import io.rong.imkit.model.ProviderTag;
@@ -22,6 +23,8 @@ import io.rong.imkit.model.UIMessage;
 import io.rong.imkit.utilities.OptionsPopupDialog;
 import io.rong.imkit.widget.provider.IContainerItemProvider;
 import io.rong.imlib.model.Message;
+
+import static io.rong.calllib.RongCallCommon.CallDisconnectedReason.OTHER_DEVICE_HAD_ACCEPTED;
 
 @ProviderTag(messageContent = CallSTerminateMessage.class, showSummaryWithName = false, showProgress = false, showWarning = false, showReadState = false)
 public class CallEndMessageItemProvider extends IContainerItemProvider.MessageProvider<CallSTerminateMessage> {
@@ -88,6 +91,8 @@ public class CallEndMessageItemProvider extends IContainerItemProvider.MessagePr
                 break;
             case NETWORK_ERROR:
             case REMOTE_NETWORK_ERROR:
+            case INIT_MIC_ERROR:
+            case INIT_VIDEO_ERROR:
                 msgContent = v.getResources().getString(R.string.rc_voip_call_interrupt);
                 break;
             case OTHER_DEVICE_HAD_ACCEPTED:
@@ -104,7 +109,7 @@ public class CallEndMessageItemProvider extends IContainerItemProvider.MessagePr
                 drawable.setBounds(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
                 holder.message.setCompoundDrawables(null, null, drawable, null);
             } else {
-                drawable = RongContext.getInstance().getResources().getDrawable(R.drawable.rc_voip_video_left);
+                drawable = v.getResources().getDrawable(R.drawable.rc_voip_video_left);
                 drawable.setBounds(0, 0,  drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
                 holder.message.setCompoundDrawables(drawable, null, null, null);
             }
@@ -112,18 +117,18 @@ public class CallEndMessageItemProvider extends IContainerItemProvider.MessagePr
             if (direction != null && direction.equals("MO")) {
                 if (content.getReason().equals(RongCallCommon.CallDisconnectedReason.HANGUP) ||
                         content.getReason().equals(RongCallCommon.CallDisconnectedReason.REMOTE_HANGUP)) {
-                    drawable = RongContext.getInstance().getResources().getDrawable(R.drawable.rc_voip_audio_right_connected);
+                    drawable = v.getResources().getDrawable(R.drawable.rc_voip_audio_right_connected);
                 } else {
-                    drawable = RongContext.getInstance().getResources().getDrawable(R.drawable.rc_voip_audio_right_cancel);
+                    drawable = v.getResources().getDrawable(R.drawable.rc_voip_audio_right_cancel);
                 }
                 drawable.setBounds(0, 0,  drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
                 holder.message.setCompoundDrawables(null, null, drawable, null);
             } else {
                 if (content.getReason().equals(RongCallCommon.CallDisconnectedReason.HANGUP) ||
                         content.getReason().equals(RongCallCommon.CallDisconnectedReason.REMOTE_HANGUP)) {
-                    drawable = RongContext.getInstance().getResources().getDrawable(R.drawable.rc_voip_audio_left_connected);
+                    drawable = v.getResources().getDrawable(R.drawable.rc_voip_audio_left_connected);
                 } else {
-                    drawable = RongContext.getInstance().getResources().getDrawable(R.drawable.rc_voip_audio_left_cancel);
+                    drawable = v.getResources().getDrawable(R.drawable.rc_voip_audio_left_cancel);
                 }
                 drawable.setBounds(0, 0,  drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
                 holder.message.setCompoundDrawables(drawable, null, null, null);
@@ -133,20 +138,33 @@ public class CallEndMessageItemProvider extends IContainerItemProvider.MessagePr
 
     @Override
     public Spannable getContentSummary(CallSTerminateMessage data) {
+        return null;
+    }
+
+    @Override
+    public Spannable getContentSummary(Context context, CallSTerminateMessage data) {
 
         RongCallCommon.CallMediaType mediaType = data.getMediaType();
         if (mediaType.equals(RongCallCommon.CallMediaType.AUDIO)) {
-            return new SpannableString(RongContext.getInstance().getString(R.string.rc_voip_message_audio));
+            return new SpannableString(context.getString(R.string.rc_voip_message_audio));
         } else {
-            return new SpannableString(RongContext.getInstance().getString(R.string.rc_voip_message_video));
+            return new SpannableString(context.getString(R.string.rc_voip_message_video));
         }
     }
 
     @Override
     public void onItemClick(View view, int position, CallSTerminateMessage content, UIMessage message) {
+        if (content.getReason() == OTHER_DEVICE_HAD_ACCEPTED){
+            return;
+        }
         RongCallSession profile = RongCallClient.getInstance().getCallSession();
         if (profile != null && profile.getActiveTime() > 0) {
-            Toast.makeText(view.getContext(), view.getContext().getString(R.string.rc_voip_call_start_fail), Toast.LENGTH_SHORT).show();
+            Toast.makeText(view.getContext(),
+                    profile.getMediaType() == RongCallCommon.CallMediaType.AUDIO ?
+                            view.getContext().getString(R.string.rc_voip_call_audio_start_fail) :
+                            view.getContext().getString(R.string.rc_voip_call_video_start_fail),
+                    Toast.LENGTH_SHORT)
+                    .show();
             return;
         }
         RongCallCommon.CallMediaType mediaType = content.getMediaType();
@@ -158,7 +176,7 @@ public class CallEndMessageItemProvider extends IContainerItemProvider.MessagePr
         }
         Intent intent = new Intent(action);
         intent.setPackage(view.getContext().getPackageName());
-        intent.putExtra("conversationType", message.getConversationType().getName().toLowerCase());
+        intent.putExtra("conversationType", message.getConversationType().getName().toLowerCase(Locale.US));
         intent.putExtra("targetId", message.getTargetId());
         intent.putExtra("callAction", RongCallAction.ACTION_OUTGOING_CALL.getName());
         view.getContext().startActivity(intent);

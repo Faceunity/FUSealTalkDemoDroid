@@ -12,7 +12,7 @@
         android:layout_height="35dp"
         android:gravity="center_vertical"
         android:paddingLeft="@dimen/base_padding2"
-        android:text="支付密码设置"
+        android:text="@string/jrmf_set_pwd_tip"
         android:textColor="@color/color_535353"
         android:textSize="14sp" />
     
@@ -39,7 +39,7 @@
             android:layout_toLeftOf="@id/iv_arrow"
             android:gravity="center_vertical"
             android:singleLine="true"
-            android:text="修改支付密码"
+            android:text="@string/update_pwd"
             android:textColor="@color/color_959595"
             android:textSize="14sp" />
         <View 
@@ -74,7 +74,7 @@
             android:layout_toLeftOf="@id/iv_get_arrow"
             android:gravity="center_vertical"
             android:maxLines="1"
-            android:text="找回支付密码"
+            android:text="@string/get_pwd_title"
             android:textColor="@color/color_959595"
             android:textSize="14sp" />
         <View 
@@ -110,7 +110,7 @@
             android:layout_toLeftOf="@id/iv_set_arrow"
             android:gravity="center_vertical"
             android:maxLines="1"
-            android:text="设置支付密码"
+            android:text="@string/jrmf_set_pwd_title"
             android:textColor="@color/color_959595"
             android:textSize="14sp" />
         <View 

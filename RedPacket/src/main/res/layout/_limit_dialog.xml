@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/white"
-    android:paddingBottom="@dimen/base_padding">
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/white"
+                android:paddingBottom="@dimen/base_padding">
 
 
     <TextView
@@ -13,9 +14,9 @@
         android:layout_below="@+id/line"
         android:layout_margin="@dimen/base_padding"
         android:gravity="center"
-        android:textSize="14sp"
-        android:text="您尚未绑定银行卡，发红包的累计限额为100元，请绑定银行卡后再发红包"
         android:textColor="@color/black"
+        android:textSize="14sp"
+        tools:text="您尚未绑定银行卡，发红包的累计限额为100元，请绑定银行卡后再发红包"
 
         />
 
@@ -36,9 +37,9 @@
             android:background="@drawable/_btn_white"
             android:paddingBottom="7dip"
             android:paddingTop="7dip"
-            android:textSize="18sp"
-            android:text="取消"
-            android:textColor="@color/red" />
+            android:text="@string/jrmf_quit"
+            android:textColor="@color/red"
+            android:textSize="18sp"/>
 
         <Button
             android:id="@+id/confirm"
@@ -50,9 +51,9 @@
             android:background="@drawable/_btn_red"
             android:paddingBottom="7dip"
             android:paddingTop="7dip"
-            android:textSize="18sp"
-            android:text="去绑卡"
-            android:textColor="@color/white" />
+            android:text="@string/jrmf_go_bind_card"
+            android:textColor="@color/white"
+            android:textSize="18sp"/>
 
     </LinearLayout>
 

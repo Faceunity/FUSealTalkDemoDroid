@@ -21,6 +21,9 @@ import cn.rongcloud.im.server.UpdateService;
 import cn.rongcloud.im.server.broadcast.BroadcastManager;
 import cn.rongcloud.im.server.utils.NToast;
 import cn.rongcloud.im.server.widget.DialogWithYesOrNoUtils;
+import io.rong.imkit.utilities.OptionsPopupDialog;
+import io.rong.imlib.RongIMClient;
+import io.rong.imlib.common.BuildVar;
 
 public class AboutRongCloudActivity extends BaseActivity {
 
@@ -44,7 +47,8 @@ public class AboutRongCloudActivity extends BaseActivity {
         TextView version = (TextView) findViewById(R.id.sealtalk_version);
         RelativeLayout mCloseDebug = (RelativeLayout) findViewById(R.id.close_debug);
         RelativeLayout mStartDebug = (RelativeLayout) findViewById(R.id.start_debug);
-        version.setText(SealConst.SEALTALKVERSION);
+        RelativeLayout mSetOnlineStatus = (RelativeLayout) findViewById(R.id.set_online_status);
+        version.setText(getVersionInfo()[1]);
         mUpdateLog.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -94,10 +98,10 @@ public class AboutRongCloudActivity extends BaseActivity {
                         public void onClick(View v) {
                             NToast.shortToast(mContext, getString(R.string.downloading_apk));
                             UpdateService.Builder.create(url)
-                            .setStoreDir("update/flag")
-                            .setDownloadSuccessNotificationFlag(Notification.DEFAULT_ALL)
-                            .setDownloadErrorNotificationFlag(Notification.DEFAULT_ALL)
-                            .build(mContext);
+                                    .setStoreDir("update/flag")
+                                    .setDownloadSuccessNotificationFlag(Notification.DEFAULT_ALL)
+                                    .setDownloadErrorNotificationFlag(Notification.DEFAULT_ALL)
+                                    .build(mContext);
                             dlg.cancel();
                         }
                     });
@@ -121,7 +125,7 @@ public class AboutRongCloudActivity extends BaseActivity {
                             public void executeEvent() {
                                 SharedPreferences.Editor editor = getSharedPreferences("config", MODE_PRIVATE).edit();
                                 editor.putBoolean("isDebug", true);
-                                editor.apply();
+                                editor.commit();
                                 BroadcastManager.getInstance(mContext).sendBroadcast(SealConst.EXIT);
 
                             }
@@ -151,7 +155,7 @@ public class AboutRongCloudActivity extends BaseActivity {
                         public void executeEvent() {
                             SharedPreferences.Editor editor = getSharedPreferences("config", MODE_PRIVATE).edit();
                             editor.putBoolean("isDebug", false);
-                            editor.apply();
+                            editor.commit();
                             BroadcastManager.getInstance(mContext).sendBroadcast(SealConst.EXIT);
 
                         }
@@ -168,11 +172,37 @@ public class AboutRongCloudActivity extends BaseActivity {
                     });
                 }
             });
+
+            mSetOnlineStatus.setVisibility(View.VISIBLE);
+            mSetOnlineStatus.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    showOnlineStatusDialog();
+                }
+            });
+
         }
 
+        mSDKVersion.setText(BuildVar.SDK_VERSION);
+    }
 
-        String[] versionInfo = getVersionInfo();
-        mSDKVersion.setText(versionInfo[1]);
+
+    private void showOnlineStatusDialog() {
+        String[] items = new String[2];
+
+        items[0] = getString(R.string.ipad_online);
+        items[1] = getString(R.string.imac_online);
+        OptionsPopupDialog.newInstance(this, items).setOptionsPopupDialogListener(new OptionsPopupDialog.OnOptionsItemClickedListener() {
+            @Override
+            public void onOptionsItemClicked(int which) {
+                if (which == 0) {
+                    RongIMClient.getInstance().setUserOnlineStatus(5, null);
+                } else if (which == 1) {
+                    RongIMClient.getInstance().setUserOnlineStatus(6, null);
+                }
+            }
+        }).show();
+
     }
 
     private String[] getVersionInfo() {

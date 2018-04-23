@@ -27,19 +27,25 @@ public class ContactMessage extends MessageContent {
     private String id;
     private String name;
     private String imgUrl;
+    private String sendUserId;
+    private String sendUserName;
+    private String extra;
 
     public ContactMessage() {
 
     }
 
-    public ContactMessage (String id, String name, String imgUrl) {
+    public ContactMessage(String id, String name, String imgUrl, String sendUserId, String sendUserName, String extra) {
         this.id = id;
         this.name = name;
         this.imgUrl = imgUrl;
+        this.sendUserId = sendUserId;
+        this.sendUserName = sendUserName;
+        this.extra = extra;
     }
 
-    public static ContactMessage obtain(String id, String title, String imgUrl) { // 应考虑增加昵称的设置
-        return new ContactMessage(id, title, imgUrl);
+    public static ContactMessage obtain(String id, String title, String imgUrl, String senduserId, String sendUserName, String extra) {
+        return new ContactMessage(id, title, imgUrl, senduserId, sendUserName, extra);
     }
 
     public static final Creator<ContactMessage> CREATOR = new Creator<ContactMessage>() {
@@ -59,9 +65,12 @@ public class ContactMessage extends MessageContent {
         JSONObject jsonObject = new JSONObject();
 
         try {
-            jsonObject.put("userId", getId()); // 这里的id（联系人）不同于下边userinfo中的id(发送信息者)
+            jsonObject.put("userId", getId()); // 这里的id（联系人）不同于下边发送名片信息者的 sendUserId
             jsonObject.put("name", getEmotion(getName()));
             jsonObject.put("portraitUri", getImgUrl());
+            jsonObject.put("sendUserId", getSendUserId());
+            jsonObject.put("sendUserName", getEmotion(getSendUserName()));
+            jsonObject.put("extra", getExtra());
             if (getJSONUserInfo() != null)
                 jsonObject.putOpt("user", getJSONUserInfo());
         } catch (Exception e) {
@@ -93,6 +102,12 @@ public class ContactMessage extends MessageContent {
                 setName(jsonObj.optString("name"));
             if (jsonObj.has("portraitUri"))
                 setImgUrl(jsonObj.optString("portraitUri"));
+            if (jsonObj.has("sendUserId"))
+                setSendUserId(jsonObj.optString("sendUserId"));
+            if (jsonObj.has("sendUserName"))
+                setSendUserName(jsonObj.optString("sendUserName"));
+            if (jsonObj.has("extra"))
+                setExtra(jsonObj.optString("extra"));
             if (jsonObj.has("user"))
                 setUserInfo(parseJsonToUserInfo(jsonObj.getJSONObject("user")));
         } catch (JSONException e) {
@@ -104,6 +119,9 @@ public class ContactMessage extends MessageContent {
         id = in.readString();
         name = in.readString();
         imgUrl = in.readString();
+        sendUserId = in.readString();
+        sendUserName = in.readString();
+        extra = in.readString();
         setUserInfo(ParcelUtils.readFromParcel(in, UserInfo.class));
     }
 
@@ -117,6 +135,9 @@ public class ContactMessage extends MessageContent {
         dest.writeString(id);
         dest.writeString(name);
         dest.writeString(imgUrl);
+        dest.writeString(sendUserId);
+        dest.writeString(sendUserName);
+        dest.writeString(extra);
         ParcelUtils.writeToParcel(dest, getUserInfo());
     }
 
@@ -159,5 +180,29 @@ public class ContactMessage extends MessageContent {
 
     public void setImgUrl(String imgUrl) {
         this.imgUrl = imgUrl;
+    }
+
+    public String getSendUserId() {
+        return sendUserId;
+    }
+
+    public void setSendUserId(String sendUserId) {
+        this.sendUserId = sendUserId;
+    }
+
+    public String getSendUserName() {
+        return sendUserName;
+    }
+
+    public void setSendUserName(String sendUserName) {
+        this.sendUserName = sendUserName;
+    }
+
+    public String getExtra() {
+        return extra;
+    }
+
+    public void setExtra(String extra) {
+        this.extra = extra;
     }
 }

@@ -850,8 +850,8 @@ public class SwitchButton extends CompoundButton {
             TextUtils.writeToParcel(offText, out, flags);
         }
 
-        public static final Creator<SavedState> CREATOR
-        = new Creator<SavedState>() {
+        public static final Parcelable.Creator<SavedState> CREATOR
+        = new Parcelable.Creator<SavedState>() {
             public SavedState createFromParcel(Parcel in) {
                 return new SavedState(in);
             }

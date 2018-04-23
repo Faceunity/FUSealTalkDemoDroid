@@ -33,7 +33,7 @@
                     android:layout_width="120dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
-                    android:text="姓名"
+                    android:text="@string/jrmf_username"
                     android:textColor="@color/color_959595"
                     android:textSize="14sp" />
 
@@ -44,7 +44,7 @@
                     android:layout_weight="1"
                     android:background="@null"
                     android:gravity="center_vertical"
-                    android:hint="请输入姓名"
+                    android:hint="@string/jrmf_name_hint"
                     android:paddingRight="@dimen/base_padding"
                     android:textColorHint="@color/color_c9c9c9"
                     android:textColor="@color/color_535353"
@@ -63,7 +63,7 @@
                     android:layout_width="120dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
-                    android:text="持卡人身份证号"
+                    android:text="@string/jrmf_bank_card_ID_num"
                     android:textColor="@color/color_959595"
                     android:textSize="14sp" />
 
@@ -74,8 +74,7 @@
                     android:layout_weight="1"
                     android:background="@null"
                     android:gravity="center_vertical"
-                    android:hint="请输入身份证号"
-                    android:inputType="number"
+                    android:hint="@string/jrmf_input_IDCard_num_hint"
                     android:digits="0123456789xyzXYZ"
                     android:paddingRight="@dimen/base_padding"
                     android:textColorHint="@color/color_c9c9c9"
@@ -95,7 +94,7 @@
                     android:layout_width="120dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
-                    android:text="手机号码"
+                    android:text="@string/jrmf_phone_num"
                     android:textColor="@color/color_959595"
                     android:textSize="14sp" />
 
@@ -106,7 +105,7 @@
                     android:layout_weight="1"
                     android:background="@null"
                     android:gravity="center_vertical"
-                    android:hint="请输入银行预留手机号"
+                    android:hint="@string/jrmf_input_phone_hint2"
                     android:maxLines="11"
                     android:inputType="number"
                     android:paddingRight="@dimen/base_padding"
@@ -127,7 +126,7 @@
                     android:layout_width="120dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
-                    android:text="验证码"
+                    android:text="@string/jrmf_verify_code"
                     android:textColor="@color/color_959595"
                     android:textSize="14sp" />
 
@@ -138,7 +137,7 @@
                     android:layout_weight="1"
                     android:background="@null"
                     android:gravity="center_vertical"
-                    android:hint="请输入验证码"
+                    android:hint="@string/jrmf_verify_code_hint"
                     android:inputType="number"
                     android:maxLength="6"
                     android:paddingRight="@dimen/base_padding"
@@ -154,7 +153,7 @@
                     android:layout_marginRight="@dimen/base_margin2"
                     android:background="@drawable/shape_code_bg"
                     android:gravity="center"
-                    android:text="发送验证码"
+                    android:text="@string/send_code"
                     android:textSize="14sp"
                     android:textColor="@color/color_535353" />
             </LinearLayout>
@@ -178,7 +177,7 @@
                     android:layout_width="90dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
-                    android:text="姓名"
+                    android:text="@string/jrmf_username"
                     android:textColor="@color/color_959595"
                     android:textSize="14sp" />
 
@@ -189,7 +188,7 @@
                     android:layout_weight="1"
                     android:background="@null"
                     android:gravity="center_vertical"
-                    android:hint="请输入姓名"
+                    android:hint="@string/name_tip"
                     android:paddingRight="@dimen/base_padding"
                     android:textColorHint="@color/color_b7b7b7"
                     android:textSize="16sp" />
@@ -207,7 +206,7 @@
                     android:layout_width="90dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
-                    android:text="身份证号"
+                    android:text="@string/jrmf_IDCard_num"
                     android:textColor="@color/color_959595"
                     android:textSize="14sp" />
 
@@ -218,8 +217,7 @@
                     android:layout_weight="1"
                     android:background="@null"
                     android:gravity="center_vertical"
-                    android:hint="请输入身份证号"
-                    android:inputType="number"
+                    android:hint="@string/jrmf_input_IDCard_num"
                     android:digits="0123456789xyzXYZ"
                     android:paddingRight="@dimen/base_padding"
                     android:textColor="@color/black"
@@ -237,7 +235,7 @@
         android:layout_marginRight="20dp"
         android:layout_marginTop="50dp"
         android:background="@drawable/selector_round_btn"
-        android:text="确认提交"
+        android:text="@string/jrmf_confirm_submit"
         android:textColor="@color/white"
         android:textSize="16sp" />
 

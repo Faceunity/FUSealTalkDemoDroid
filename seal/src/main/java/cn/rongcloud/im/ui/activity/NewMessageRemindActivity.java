@@ -42,7 +42,7 @@ public class NewMessageRemindActivity extends BaseActivity {
                         @Override
                         public void onSuccess() {
                             editor.putBoolean("isOpenDisturb", true);
-                            editor.apply();
+                            editor.commit();
                         }
 
                         @Override
@@ -59,7 +59,7 @@ public class NewMessageRemindActivity extends BaseActivity {
                         @Override
                         public void onSuccess() {
                             editor.putBoolean("isOpenDisturb", false);
-                            editor.apply();
+                            editor.commit();
                         }
 
                         @Override

@@ -17,7 +17,7 @@
             android:gravity="center_vertical"
             android:paddingLeft="@dimen/base_padding"
             android:paddingRight="@dimen/base_padding"
-            android:text="取消"
+            android:text="@string/jrmf_quit"
             android:textSize="14sp"
             android:textColor="@color/red_dark" />
 
@@ -28,7 +28,7 @@
             android:layout_alignParentRight="true"
             android:gravity="center_vertical"
             android:paddingRight="@dimen/base_padding"
-            android:text="完成"
+            android:text="@string/jrmf_done"
             android:textSize="14sp"
             android:textColor="@color/title_bar_color" />
     </RelativeLayout>

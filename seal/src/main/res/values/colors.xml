@@ -40,4 +40,14 @@
     <color name="ksw_md_solid_checked_disable">#aaaaaa</color>
 
     <color name="ac_filter_string_color">#0099ff</color>
+    <color name="cs_evaluate_dialog_divider">#eceef3</color>
+    <color name="cs_evaluate_bottom_text_backgroud">#0e8cea</color>
+    <color name="cs_evaluate_text_color">#3c4d65</color>
+    <color name="cs_evaluate_text_border">#B4BDCB</color>
+    <color name="cs_evaluate_text_border_hover">#91BCFF</color>
+    <color name="cs_evaluate_text_selected">#4D8DF0</color>
+    <color name="cs_evaluate_text_unselected">#939DAB</color>
+    <color name="cs_evaluate_background_selected">#E3EEFF</color>
+    <color name="cs_evaluate_edittext_background">#f1f3f5</color>
+    <color name="cs_evaluate_edittext_textcolor">#939dab</color>
 </resources>

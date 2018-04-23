@@ -7,6 +7,8 @@ import android.support.v4.app.FragmentTransaction;
 import android.text.TextUtils;
 import android.view.View;
 
+import java.util.Locale;
+
 import cn.rongcloud.im.R;
 import cn.rongcloud.im.server.utils.NToast;
 import io.rong.imkit.RongIM;
@@ -37,7 +39,7 @@ public class DoubleChatRoomActivity extends FragmentActivity {
         ConversationFragment fragment = new ConversationFragment();
 
         Uri uri = Uri.parse("rong://" + getApplicationInfo().packageName).buildUpon()
-                  .appendPath("conversation").appendPath(mConversationType.getName().toLowerCase())
+                  .appendPath("conversation").appendPath(mConversationType.getName().toLowerCase(Locale.US))
                   .appendQueryParameter("targetId", mTargetId).build();
 
         fragment.setUri(uri);
@@ -51,7 +53,7 @@ public class DoubleChatRoomActivity extends FragmentActivity {
         ConversationFragment fragment = new ConversationFragment();
 
         Uri uri = Uri.parse("rong://" + getApplicationInfo().packageName).buildUpon()
-                  .appendPath("conversation").appendPath(mConversationType.getName().toLowerCase())
+                  .appendPath("conversation").appendPath(mConversationType.getName().toLowerCase(Locale.US))
                   .appendQueryParameter("targetId", mTargetId).build();
 
         fragment.setUri(uri);

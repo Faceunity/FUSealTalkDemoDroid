@@ -14,6 +14,7 @@ import com.facebook.stetho.dumpapp.DumperPlugin;
 import com.facebook.stetho.inspector.database.DefaultDatabaseConnectionProvider;
 import com.facebook.stetho.inspector.protocol.ChromeDevtoolsDomain;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import cn.rongcloud.contactcard.ContactCardExtensionModule;
@@ -71,10 +72,10 @@ public class App extends MultiDexApplication {
         if (getApplicationInfo().packageName.equals(getCurProcessName(getApplicationContext()))) {
 
 //            LeakCanary.install(this);//内存泄露检测
-            RongPushClient.registerHWPush(this);
+            RongPushClient.registerHWPush(this); // 配置 HMS 推送
             RongPushClient.registerMiPush(this, "2882303761517473625", "5451747338625");
             try {
-                RongPushClient.registerGCM(this);
+                RongPushClient.registerFCM(this);
             } catch (RongException e) {
                 e.printStackTrace();
             }
@@ -88,7 +89,7 @@ public class App extends MultiDexApplication {
              *
              * 只有两个进程需要初始化，主进程和 push 进程
              */
-            //RongIM.setServerInfo("nav.cn.ronghub.com", "img.cn.ronghub.com");
+            RongIM.setServerInfo("nav.cn.ronghub.com", "up.qbox.me");
             RongIM.init(this);
             NLog.setDebug(true);//Seal Module Log 开关
             SealAppContext.init(this);
@@ -109,18 +110,18 @@ public class App extends MultiDexApplication {
             openSealDBIfHasCachedToken();
 
             options = new DisplayImageOptions.Builder()
-                    .showImageForEmptyUri(R.drawable.de_default_portrait)
-                    .showImageOnFail(R.drawable.de_default_portrait)
-                    .showImageOnLoading(R.drawable.de_default_portrait)
+                    .showImageForEmptyUri(cn.rongcloud.im.R.drawable.de_default_portrait)
+                    .showImageOnFail(cn.rongcloud.im.R.drawable.de_default_portrait)
+                    .showImageOnLoading(cn.rongcloud.im.R.drawable.de_default_portrait)
                     .displayer(new FadeInBitmapDisplayer(300))
                     .cacheInMemory(true)
                     .cacheOnDisk(true)
                     .build();
 
-            //RongExtensionManager.getInstance().registerExtensionModule(new PTTExtensionModule(this, true, 1000 * 60));
+//            RongExtensionManager.getInstance().registerExtensionModule(new PTTExtensionModule(this, true, 1000 * 60));
             RongExtensionManager.getInstance().registerExtensionModule(new ContactCardExtensionModule(new IContactCardInfoProvider() {
                 @Override
-                public void getContactCardInfoProvider(final IContactCardInfoCallback contactInfoCallback) {
+                public void getContactAllInfoProvider(final IContactCardInfoCallback contactInfoCallback) {
                     SealUserInfoManager.getInstance().getFriends(new SealUserInfoManager.ResultCallback<List<Friend>>() {
                         @Override
                         public void onSuccess(List<Friend> friendList) {
@@ -133,6 +134,24 @@ public class App extends MultiDexApplication {
                         }
                     });
                 }
+
+                @Override
+                public void getContactAppointedInfoProvider(String userId, String name, String portrait, final IContactCardInfoCallback contactInfoCallback) {
+                    SealUserInfoManager.getInstance().getFriendByID(userId, new SealUserInfoManager.ResultCallback<Friend>() {
+                        @Override
+                        public void onSuccess(Friend friend) {
+                            List<UserInfo> list = new ArrayList<>();
+                            list.add(friend);
+                            contactInfoCallback.getContactCardInfoCallback(list);
+                        }
+
+                        @Override
+                        public void onError(String errString) {
+                            contactInfoCallback.getContactCardInfoCallback(null);
+                        }
+                    });
+                }
+
             }, new IContactCardClickListener() {
                 @Override
                 public void onContactCardClick(View view, ContactMessage content) {

@@ -27,7 +27,7 @@
                 android:layout_gravity="center_vertical"
                 android:textSize="14sp"
                 android:textColor="@color/color_959595"
-                android:text="姓名" />
+                android:text="@string/jrmf_username" />
 
             <com.jrmf360.rylib.common.view.NoEmojiEditText
                 android:id="@+id/cet_name"
@@ -36,7 +36,7 @@
                 android:layout_weight="1"
                 android:background="@null"
                 android:gravity="center_vertical"
-                android:hint="请输入姓名"
+                android:hint="@string/name_tip"
                 android:paddingRight="@dimen/base_padding"
                 android:inputType=""
                 android:textColorHint="@color/color_c9c9c9"
@@ -62,7 +62,7 @@
                 android:layout_gravity="center_vertical"
                 android:textSize="14sp"
                 android:textColor="@color/color_959595"
-                android:text="身份证号" />
+                android:text="@string/jrmf_IDCard_num" />
 
             <com.jrmf360.rylib.common.view.NoEmojiEditText
                 android:id="@+id/cet_idCardNum"
@@ -71,9 +71,8 @@
                 android:layout_weight="1"
                 android:background="@null"
                 android:gravity="center_vertical"
-                android:hint="请输入身份证号"
+                android:hint="@string/jrmf_input_IDCard_num"
                 android:digits="0123456789xyzXYZ"
-                android:inputType="number"
                 android:paddingRight="@dimen/base_padding"
                 android:textColorHint="@color/color_c9c9c9"
                 android:textColor="@color/color_535353"
@@ -99,7 +98,7 @@
                 android:layout_marginRight="20dp"
                 android:layout_marginTop="@dimen/base_margin"
                 android:background="@drawable/selector_round_btn"
-                android:text="下一步"
+                android:text="@string/jrmf_next"
                 android:textColor="@color/white"
                 android:textSize="16sp" />
         </LinearLayout>

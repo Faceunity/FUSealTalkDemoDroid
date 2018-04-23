@@ -171,7 +171,7 @@ public class DisturbActivity extends BaseActivity implements View.OnClickListene
                         mStartTimeNotification.setText(mStartTime);
                         SharedPreferences.Editor editor = SharedPreferencesContext.getInstance().getSharedPreferences().edit();
                         editor.putString("START_TIME", mStartTime);
-                        editor.apply();
+                        editor.commit();
 
                         if (SharedPreferencesContext.getInstance().getSharedPreferences() != null) {
                             String endTime = SharedPreferencesContext.getInstance().getSharedPreferences().getString("END_TIME", null);
@@ -205,7 +205,7 @@ public class DisturbActivity extends BaseActivity implements View.OnClickListene
                         mEndTimeNotification.setText(mEndTime);
                         SharedPreferences.Editor editor = SharedPreferencesContext.getInstance().getSharedPreferences().edit();
                         editor.putString("END_TIME", mEndTime);
-                        editor.apply();
+                        editor.commit();
 
                         if (SharedPreferencesContext.getInstance().getSharedPreferences() != null) {
                             String startTime = SharedPreferencesContext.getInstance().getSharedPreferences().getString("START_TIME", null);
@@ -303,7 +303,7 @@ public class DisturbActivity extends BaseActivity implements View.OnClickListene
                                 Log.e(TAG, "----yb----设置会话通知周期-onSuccess");
                                 SharedPreferences.Editor editor = SharedPreferencesContext.getInstance().getSharedPreferences().edit();
                                 editor.putBoolean("IS_SETTING", true);
-                                editor.apply();
+                                editor.commit();
                                 mHandler.post(new Runnable() {
                                     @Override
                                     public void run() {
@@ -356,14 +356,14 @@ public class DisturbActivity extends BaseActivity implements View.OnClickListene
                             editor = SharedPreferencesContext.getInstance().getSharedPreferences().edit();
                             editor.putString("START_TIME", activity.mStartTime);
                             editor.putString("END_TIME", DateUtils.dateToString(DateUtils.addMinutes(DateUtils.stringToDate(activity.mStartTime, activity.mTimeFormat), spanMins), activity.mTimeFormat));
-                            editor.apply();
+                            editor.commit();
                         }
                         break;
                     case 2:
                         activity.mCloseNotification.setVisibility(View.GONE);
                         editor = SharedPreferencesContext.getInstance().getSharedPreferences().edit();
                         editor.remove("IS_SETTING");
-                        editor.apply();
+                        editor.commit();
                         break;
 
                     case 3:
@@ -387,7 +387,7 @@ public class DisturbActivity extends BaseActivity implements View.OnClickListene
                                 editor = SharedPreferencesContext.getInstance().getSharedPreferences().edit();
                                 editor.putString("START_TIME", "23:59:59");
                                 editor.putString("END_TIME", "07:00:00");
-                                editor.apply();
+                                editor.commit();
                             }
                         }
                         break;

@@ -99,7 +99,7 @@ public class SealSearchConversationResult extends SearchConversationResult imple
         ParcelUtils.writeToParcel(dest, mMatchCount);
     }
 
-    public static final Creator<SealSearchConversationResult> CREATOR = new Creator<SealSearchConversationResult>() {
+    public static final Parcelable.Creator<SealSearchConversationResult> CREATOR = new Parcelable.Creator<SealSearchConversationResult>() {
 
         @Override
         public SealSearchConversationResult createFromParcel(Parcel source) {

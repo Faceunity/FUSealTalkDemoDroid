@@ -13,7 +13,7 @@
         android:id="@+id/actionbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:content="实名认证" />
+        app:content="@string/jrmf_auth_title" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -29,7 +29,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:allowEmpty="false"
-            app:hint="真实姓名"
+            app:hint="@string/jrmf_real_username"
             app:validatorType="alpha" />
 
         <com.jrmf360.rylib.rp.widget.FloatingLabelTextView
@@ -38,7 +38,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="5dip"
             app:allowEmpty="false"
-            app:hint="身份证号"
+            app:hint="@string/jrmf_IDCard_num"
             app:validatorType="alphaNumeric" />
 
 
@@ -49,6 +49,6 @@
             android:layout_height="@dimen/btn_height"
             android:layout_marginTop="30dip"
             android:background="@drawable/selector_common_btn"
-            android:text="下一步" />
+            android:text="@string/jrmf_next" />
     </LinearLayout>
 </LinearLayout>

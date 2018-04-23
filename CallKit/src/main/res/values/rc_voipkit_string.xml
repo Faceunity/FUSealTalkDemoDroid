@@ -10,9 +10,12 @@
     <string name="rc_voip_call_network_error">当前网络不可用,请检查你的网络设置</string>
     <string name="rc_voip_call_interrupt">已挂断</string>
     <string name="rc_voip_call_terminalted">通话结束</string>
+    <string name="rc_voip_call_mic_error">启动麦克风失败</string>
+    <string name="rc_voip_call_camera_error">启动摄像头失败</string>
     <string name="rc_voip_call_started">开始通话</string>
     <string name="rc_voip_select_member">选择成员</string>
-    <string name="rc_voip_call_start_fail">正在通话中</string>
+    <string name="rc_voip_call_audio_start_fail">正在进行语音通话，请稍后再试</string>
+    <string name="rc_voip_call_video_start_fail">正在进行视频通话，请稍后再试</string>
     <string name="rc_voip_call_other">其它设备已处理</string>
 
     <string name="rc_voip_audio_call_inviting">邀请你进行语音聊天...</string>
@@ -36,13 +39,15 @@
     <string name="rc_voip_mt_reject">对方已拒绝</string>
     <string name="rc_voip_mt_no_response">对方未接听</string>
     <string name="rc_voip_call_time_length">通话时长&#160;</string>
-    <string name="rc_voip_mt_busy">对方忙,请稍后再播</string>
+    <string name="rc_voip_mt_busy">对方忙,请稍后再拨</string>
     <string name="rc_voip_message_audio">[语音聊天]</string>
     <string name="rc_voip_message_video">[视频聊天]</string>
-    <string name="rc_voip_remote_switch_to_audio">对方已切换到语音聊天</string>
-    <string name="rc_voip_switch_to_audio">已切换到语音聊天</string>
+    <string name="rc_voip_switch_to_audio">语音聊天</string>
+    <string name="rc_voip_remote_switched_to_audio">对方已切换到语音聊天</string>
+    <string name="rc_voip_switched_to_audio">已切换到语音聊天</string>
     <string name="rc_voip_float_window_not_allowed">请打开悬浮窗权限</string>
     <string name="rc_call_on_going">通话中...</string>
     <string name="rc_audio_call_on_going">语音聊天中，轻击以继续</string>
     <string name="rc_video_call_on_going">视频聊天中，轻击以继续</string>
+    <string name="rc_voip_over_limit">您最多只能选择%d人</string>
 </resources>

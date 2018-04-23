@@ -98,7 +98,7 @@ public class PrivateChatDetailActivity extends BaseActivity implements View.OnCl
     private void initView() {
         LinearLayout cleanMessage = (LinearLayout) findViewById(R.id.clean_friend);
         mImageView = (SelectableRoundedImageView) findViewById(R.id.friend_header);
-        mImageView.setOnClickListener(new View.OnClickListener(){
+        mImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(PrivateChatDetailActivity.this, UserDetailActivity.class);
@@ -112,7 +112,7 @@ public class PrivateChatDetailActivity extends BaseActivity implements View.OnCl
         messageTop = (SwitchButton) findViewById(R.id.sw_freind_top);
         messageNotification = (SwitchButton) findViewById(R.id.sw_friend_notfaction);
         friendName = (TextView) findViewById(R.id.friend_name);
-        mSearchChattingRecordsLinearLayout = (LinearLayout)findViewById(R.id.ac_ll_search_messages);
+        mSearchChattingRecordsLinearLayout = (LinearLayout) findViewById(R.id.ac_ll_search_messages);
         cleanMessage.setOnClickListener(this);
         messageNotification.setOnCheckedChangeListener(this);
         messageTop.setOnCheckedChangeListener(this);
@@ -190,27 +190,31 @@ public class PrivateChatDetailActivity extends BaseActivity implements View.OnCl
                 break;
             case R.id.clean_friend:
                 PromptPopupDialog.newInstance(mContext,
-                                              getString(R.string.clean_private_chat_history)).setLayoutRes(io.rong.imkit.R.layout.rc_dialog_popup_prompt_warning)
-                .setPromptButtonClickedListener(new PromptPopupDialog.OnPromptButtonClickedListener() {
-                    @Override
-                    public void onPositiveButtonClicked() {
-                        if (RongIM.getInstance() != null) {
-                            if (mUserInfo != null) {
-                                RongIM.getInstance().clearMessages(Conversation.ConversationType.PRIVATE, mUserInfo.getUserId(), new RongIMClient.ResultCallback<Boolean>() {
-                                    @Override
-                                    public void onSuccess(Boolean aBoolean) {
-                                        NToast.shortToast(mContext, getString(R.string.clear_success));
-                                    }
+                        getString(R.string.clean_private_chat_history)).setLayoutRes(io.rong.imkit.R.layout.rc_dialog_popup_prompt_warning)
+                        .setPromptButtonClickedListener(new PromptPopupDialog.OnPromptButtonClickedListener() {
+                            @Override
+                            public void onPositiveButtonClicked() {
+                                if (RongIM.getInstance() != null && mUserInfo != null) {
+                                    RongIM.getInstance().clearMessages(Conversation.ConversationType.PRIVATE,
+                                            mUserInfo.getUserId(), new RongIMClient.ResultCallback<Boolean>() {
+                                                @Override
+                                                public void onSuccess(Boolean aBoolean) {
+                                                    NToast.shortToast
+                                                            (mContext, getString(R.string.clear_success));
+                                                }
 
-                                    @Override
-                                    public void onError(RongIMClient.ErrorCode errorCode) {
-                                        NToast.shortToast(mContext, getString(R.string.clear_failure));
-                                    }
-                                });
+                                                @Override
+                                                public void onError(RongIMClient.ErrorCode errorCode) {
+                                                    NToast.shortToast(mContext, getString(R.string.clear_failure));
+                                                }
+                                            });
+                                    RongIMClient.getInstance().cleanRemoteHistoryMessages(
+                                            Conversation.ConversationType.PRIVATE,
+                                            mUserInfo.getUserId(), System.currentTimeMillis(),
+                                            null);
+                                }
                             }
-                        }
-                    }
-                }).show();
+                        }).show();
                 break;
         }
     }

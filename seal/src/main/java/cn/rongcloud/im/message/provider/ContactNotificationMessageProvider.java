@@ -60,27 +60,23 @@ public class ContactNotificationMessageProvider extends IContainerItemProvider.M
                         viewHolder.contentTextView.setText(content.getMessage());
                     }
                 }
-
-
             }
         }
-
-
     }
 
 
     @Override
     public Spannable getContentSummary(ContactNotificationMessage content) {
+        return null;
+    }
+
+    @Override
+    public Spannable getContentSummary(Context context, ContactNotificationMessage content) {
         if (content != null && !TextUtils.isEmpty(content.getExtra())) {
             ContactNotificationMessageData bean = null;
             try {
-                JSONObject jsonObject = new JSONObject(content.getExtra());
-                try {
-                    bean = JsonMananger.jsonToBean(content.getExtra(), ContactNotificationMessageData.class);
-                } catch (HttpException e) {
-                    e.printStackTrace();
-                }
-            } catch (JSONException e) {
+                bean = JsonMananger.jsonToBean(content.getExtra(), ContactNotificationMessageData.class);
+            } catch (HttpException e) {
                 e.printStackTrace();
             } finally {
                 if (bean != null && !TextUtils.isEmpty(bean.getSourceUserNickname())) {
@@ -102,20 +98,20 @@ public class ContactNotificationMessageProvider extends IContainerItemProvider.M
 
     @Override
     public void onItemClick(View view, int position, ContactNotificationMessage
-                            content, UIMessage message) {
+            content, UIMessage message) {
     }
 
     @Override
     public void onItemLongClick(View view, int position, ContactNotificationMessage content, final UIMessage message) {
         String[] items;
 
-        items = new String[] {view.getContext().getResources().getString(R.string.de_dialog_item_message_delete)};
+        items = new String[]{view.getContext().getResources().getString(R.string.de_dialog_item_message_delete)};
 
         OptionsPopupDialog.newInstance(view.getContext(), items).setOptionsPopupDialogListener(new OptionsPopupDialog.OnOptionsItemClickedListener() {
             @Override
             public void onOptionsItemClicked(int which) {
                 if (which == 0)
-                    RongIM.getInstance().deleteMessages(new int[] {message.getMessageId()}, null);
+                    RongIM.getInstance().deleteMessages(new int[]{message.getMessageId()}, null);
             }
         }).show();
     }

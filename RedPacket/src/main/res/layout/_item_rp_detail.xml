@@ -54,9 +54,6 @@
         tools:text="11:31"/>
 
 
-
-
-
     <TextView
         android:id="@+id/tv_best"
         android:layout_width="wrap_content"
@@ -68,7 +65,7 @@
         android:drawableLeft="@drawable/crown"
         android:drawablePadding="2dp"
         android:textSize="12sp"
-        android:text="手气最佳"
+        android:text="@string/jrmf_rp_most_luck"
         android:textColor="@color/color_fed55a"/>
 
     <View

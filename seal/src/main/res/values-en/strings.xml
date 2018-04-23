@@ -88,7 +88,7 @@
     <string name="rongcloud_web">RongCloud Web</string>
     <string name="new_version_update">Current Version</string>
     <string name="select_group_member">Select Group Members</string>
-    <string name="remove_group_member">Remove Group Members</string>
+    <string name="remove_group_member">Delete Members</string>
     <string name="add_group_member">Add Group Member</string>
     <string name="edit_group_name">Edit Group Name</string>
     <string name="create_group"> Create a Group</string>
@@ -194,6 +194,7 @@
     <string name="sdk_version_update">SDK Version</string>
     <string name="sealtalk_version_update">SealTalk 当前版本</string>
     <string name="all_group_member">Total Group Member</string>
+    <string name="group_member_online_status">Group Member Online Status</string>
     <string name="group_announcement">Group Notice</string>
     <string name="group_code">Group Code</string>
     <string name="total_member">Total Group Member</string>
@@ -224,10 +225,14 @@
     <string name="other_devices_text">Your account log in on other device, you are forced to log out!</string>
     <string name="i_know">I know</string>
     <string name="update_name">Update Name</string>
+    <string name="online">online</string>
     <string name="offline">offline</string>
     <string name="web_online">Web online</string>
     <string name="pc_online">PC online</string>
     <string name="phone_online">Phone online</string>
+    <string name="ipad_online">iPad online</string>
+    <string name="imac_online">iMac online</string>
+    <string name="set_user_online_status">Set User Online Status</string>
     <string name="read_receipt_detail">read receipt detail</string>
     <string name="read_receipt_unread_persons">%1$d unread</string>
     <string name="read_receipt_read_persons">%1$d read</string>
@@ -329,4 +334,14 @@
     <string name="seal_set_push_language">Set Push Language CN</string>
     <string name="seal_set_push_detail">Show Push Detail</string>
     <string name="seal_set_push_receive">Receive Push</string>
+    <string name="cs_evaluation">Evaluation</string>
+    <string name="cs_submit_evaluation">Submit</string>
+    <string name="cs_evaluate_resolved_title">Have your problem been resolved</string>
+    <string name="cs_evaluate_resolved">Resolved</string>
+    <string name="cs_evaluate_unresolved">Unresolved</string>
+    <string name="cs_evaluate_star_title">Please evaluate for the service</string>
+    <string name="cs_evaluate_problem_title">Problems to be improved</string>
+    <string name="cs_evaluate_tag_must">Tags are necessary</string>
+    <string name="cs_evaluate_input_must">Suggestions are necessary </string>
+    <string name="cs_evaluate_select_must">Necessary</string>
 </resources>

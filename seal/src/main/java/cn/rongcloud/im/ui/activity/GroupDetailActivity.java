@@ -380,7 +380,7 @@ public class GroupDetailActivity extends BaseActivity implements View.OnClickLis
                         }
                         GetGroupInfoResponse.ResultEntity bean = response3.getResult();
                         SealUserInfoManager.getInstance().addGroup(
-                            new Groups(bean.getId(), bean.getName(), bean.getPortraitUri(), newGroupName, String.valueOf(i), null)
+                                new Groups(bean.getId(), bean.getName(), bean.getPortraitUri(), newGroupName, String.valueOf(i), null)
                         );
                         mGroupName.setText(newGroupName);
                         RongIM.getInstance().refreshGroupInfoCache(new Group(fromConversationId, newGroupName, Uri.parse(bean.getPortraitUri())));
@@ -408,7 +408,7 @@ public class GroupDetailActivity extends BaseActivity implements View.OnClickLis
                     SetGroupNameResponse response7 = (SetGroupNameResponse) result;
                     if (response7.getCode() == 200) {
                         SealUserInfoManager.getInstance().addGroup(
-                            new Groups(mGroup.getGroupsId(), newGroupName, mGroup.getPortraitUri(), mGroup.getRole())
+                                new Groups(mGroup.getGroupsId(), newGroupName, mGroup.getPortraitUri(), mGroup.getRole())
                         );
                         mGroupName.setText(newGroupName);
                         RongIM.getInstance().refreshGroupInfoCache(new Group(fromConversationId, newGroupName, TextUtils.isEmpty(mGroup.getPortraitUri()) ? Uri.parse(RongGenerate.generateDefaultAvatar(newGroupName, mGroup.getGroupsId())) : Uri.parse(mGroup.getPortraitUri())));
@@ -518,31 +518,37 @@ public class GroupDetailActivity extends BaseActivity implements View.OnClickLis
                 break;
             case R.id.group_clean:
                 PromptPopupDialog.newInstance(mContext,
-                                              getString(R.string.clean_group_chat_history)).setLayoutRes(io.rong.imkit.R.layout.rc_dialog_popup_prompt_warning)
-                .setPromptButtonClickedListener(new PromptPopupDialog.OnPromptButtonClickedListener() {
-                    @Override
-                    public void onPositiveButtonClicked() {
-                        if (RongIM.getInstance() != null) {
-                            if (mGroup != null) {
-                                RongIM.getInstance().clearMessages(Conversation.ConversationType.GROUP, mGroup.getGroupsId(), new RongIMClient.ResultCallback<Boolean>() {
-                                    @Override
-                                    public void onSuccess(Boolean aBoolean) {
-                                        NToast.shortToast(mContext, getString(R.string.clear_success));
-                                    }
+                        getString(R.string.clean_group_chat_history)).setLayoutRes(io.rong.imkit.R.layout.rc_dialog_popup_prompt_warning)
+                        .setPromptButtonClickedListener(new PromptPopupDialog.OnPromptButtonClickedListener() {
+                            @Override
+                            public void onPositiveButtonClicked() {
+                                if (RongIM.getInstance() != null) {
+                                    if (mGroup != null) {
+                                        RongIM.getInstance().clearMessages(Conversation.ConversationType.GROUP, mGroup.getGroupsId(), new RongIMClient.ResultCallback<Boolean>() {
+                                            @Override
+                                            public void onSuccess(Boolean aBoolean) {
+                                                NToast.shortToast(mContext, getString(R.string.clear_success));
+                                            }
 
-                                    @Override
-                                    public void onError(RongIMClient.ErrorCode errorCode) {
-                                        NToast.shortToast(mContext, getString(R.string.clear_failure));
+                                            @Override
+                                            public void onError(RongIMClient.ErrorCode errorCode) {
+                                                NToast.shortToast(mContext, getString(R.string.clear_failure));
+                                            }
+                                        });
+                                        RongIMClient.getInstance().cleanRemoteHistoryMessages(Conversation.ConversationType.GROUP, mGroup.getGroupsId(), System.currentTimeMillis(), null);
                                     }
-                                });
+                                }
                             }
-                        }
-                    }
-                }).show();
+                        }).show();
 
                 break;
             case R.id.group_member_size_item:
                 Intent intent = new Intent(mContext, TotalGroupMemberActivity.class);
+                intent.putExtra("targetId", fromConversationId);
+                startActivity(intent);
+                break;
+            case R.id.group_member_online_status:
+                intent = new Intent(mContext, MembersOnlineStatusActivity.class);
                 intent.putExtra("targetId", fromConversationId);
                 startActivity(intent);
                 break;
@@ -755,10 +761,10 @@ public class GroupDetailActivity extends BaseActivity implements View.OnClickLis
             if (newMemberData != null && newMemberData.size() > 0) {
                 for (Friend friend : newMemberData) {
                     GroupMember member = new GroupMember(fromConversationId,
-                                                         friend.getUserId(),
-                                                         friend.getName(),
-                                                         friend.getPortraitUri(),
-                                                         null);
+                            friend.getUserId(),
+                            friend.getName(),
+                            friend.getPortraitUri(),
+                            null);
                     mGroupMember.add(1, member);
                 }
                 initGroupMemberData();
@@ -807,7 +813,7 @@ public class GroupDetailActivity extends BaseActivity implements View.OnClickLis
                             mGroupName.setText(groupName);
                             newGroupName = groupName;
                             NToast.shortToast(mContext, operationName + context.getString(R.string.rc_item_change_group_name)
-                                              + "\"" + groupName + "\"");
+                                    + "\"" + groupName + "\"");
                             RongIM.getInstance().refreshGroupInfoCache(new Group(fromConversationId, newGroupName, TextUtils.isEmpty(mGroup.getPortraitUri()) ? Uri.parse(RongGenerate.generateDefaultAvatar(newGroupName, mGroup.getGroupsId())) : Uri.parse(mGroup.getPortraitUri())));
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -941,6 +947,7 @@ public class GroupDetailActivity extends BaseActivity implements View.OnClickLis
         mQuitBtn = (Button) findViewById(R.id.group_quit);
         mDismissBtn = (Button) findViewById(R.id.group_dismiss);
         RelativeLayout totalGroupMember = (RelativeLayout) findViewById(R.id.group_member_size_item);
+        RelativeLayout memberOnlineStatus = (RelativeLayout) findViewById(R.id.group_member_online_status);
         LinearLayout mGroupPortL = (LinearLayout) findViewById(R.id.ll_group_port);
         LinearLayout mGroupNameL = (LinearLayout) findViewById(R.id.ll_group_name);
         mGroupAnnouncementDividerLinearLayout = (LinearLayout) findViewById(R.id.ac_ll_group_announcement_divider);
@@ -950,6 +957,10 @@ public class GroupDetailActivity extends BaseActivity implements View.OnClickLis
         mGroupNameL.setOnClickListener(this);
         totalGroupMember.setOnClickListener(this);
         mGroupDisplayName.setOnClickListener(this);
+        memberOnlineStatus.setOnClickListener(this);
+        if (getSharedPreferences("config", Context.MODE_PRIVATE).getBoolean("isDebug", false)) {
+            memberOnlineStatus.setVisibility(View.VISIBLE);
+        }
         mQuitBtn.setOnClickListener(this);
         mDismissBtn.setOnClickListener(this);
         groupClean.setOnClickListener(this);

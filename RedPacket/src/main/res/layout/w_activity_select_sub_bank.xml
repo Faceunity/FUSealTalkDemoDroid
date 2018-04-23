@@ -25,7 +25,7 @@
             android:textColor="@color/gray"
             android:gravity="center_vertical"
             android:textSize="14sp"
-            android:text="选择省"/>
+            android:text="@string/jrmf_select_province"/>
 
         <TextView
             android:id="@+id/tv_province"
@@ -64,7 +64,7 @@
             android:textColor="@color/gray"
             android:gravity="center_vertical"
             android:textSize="14sp"
-            android:text="选择市"/>
+            android:text="@string/jrmf_select_city"/>
 
         <TextView
             android:id="@+id/tv_city"
@@ -109,7 +109,7 @@
                 android:textColor="@color/gray"
                 android:textSize="14sp"
                 android:gravity="center_vertical"
-                android:text="选择支行"/>
+                android:text="@string/jrmf_select_sub_branch"/>
 
             <TextView
                 android:id="@+id/tv_sub_bank"
@@ -146,7 +146,7 @@
                 android:gravity="center_vertical"
                 android:textColor="@color/black"
                 android:textSize="14sp"
-                android:text="输入支行"/>
+                android:text="@string/jrmf_input_sub_branch"/>
 
             <EditText
                 android:id="@+id/et_input_sub_bank"
@@ -156,7 +156,7 @@
                 android:layout_weight="1"
                 android:background="@color/transparent"
                 android:gravity="center_vertical"
-                android:hint="请输入支行"
+                android:hint="@string/jrmf_input_sub_branch_hint"
                 android:singleLine="true"
                 android:text=""
                 android:textSize="14sp"
@@ -174,7 +174,7 @@
         android:layout_marginRight="20dp"
         android:layout_marginTop="75dp"
         android:background="@drawable/selector_round_btn"
-        android:text="确认提交"
+        android:text="@string/jrmf_confirm_submit"
         android:textColor="@color/white"
         android:textSize="16sp"/>
 

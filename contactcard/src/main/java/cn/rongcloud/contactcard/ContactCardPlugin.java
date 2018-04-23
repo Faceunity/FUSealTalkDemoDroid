@@ -1,11 +1,14 @@
 package cn.rongcloud.contactcard;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.widget.Toast;
 
+import cn.rongcloud.contactcard.activities.ContactDetailActivity;
 import cn.rongcloud.contactcard.activities.ContactListActivity;
 import io.rong.imkit.RongExtension;
 import io.rong.imkit.plugin.IPluginModule;
@@ -18,6 +21,10 @@ import io.rong.imlib.model.Conversation;
 public class ContactCardPlugin implements IPluginModule {
 
     private static final int REQUEST_CONTACT = 55;
+    private Context context;
+    private Conversation.ConversationType conversationType;
+    private String targetId;
+    public static final String IS_FROM_CARD = "isFromCard";
 
     public ContactCardPlugin() {
     }
@@ -34,17 +41,35 @@ public class ContactCardPlugin implements IPluginModule {
 
     @Override
     public void onClick(Fragment currentFragment, RongExtension extension) {
-        Conversation.ConversationType conversationType = extension.getConversationType();
-        String targetId = extension.getTargetId();
-        Intent intent = new Intent(currentFragment.getActivity(), ContactListActivity.class);
-        intent.putExtra("conversationType", conversationType);
-        intent.putExtra("targetId", targetId);
-        extension.startActivityForPluginResult(intent, REQUEST_CONTACT, this);
-        extension.collapseExtension();
+        context = currentFragment.getActivity();
+        conversationType = extension.getConversationType();
+        targetId = extension.getTargetId();
+
+        IContactCardSelectListProvider iContactCardSelectListProvider
+                = ContactCardContext.getInstance().getContactCardSelectListProvider();
+        IContactCardInfoProvider iContactInfoProvider
+                = ContactCardContext.getInstance().getContactCardInfoProvider();
+        if (iContactCardSelectListProvider != null) {
+            iContactCardSelectListProvider.onContactPluginClick(REQUEST_CONTACT, currentFragment, extension, this);
+            extension.collapseExtension();
+        } else if (iContactInfoProvider != null) {
+            Intent intent = new Intent(context, ContactListActivity.class);
+            extension.startActivityForPluginResult(intent, REQUEST_CONTACT, this);
+            intent.putExtra(IS_FROM_CARD,true);
+            extension.collapseExtension();
+        } else {
+            Toast.makeText(context, "尚未实现\"名片模块\"相关接口", Toast.LENGTH_LONG).show();
+        }
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-
+        if (requestCode == REQUEST_CONTACT && resultCode == Activity.RESULT_OK) {
+            Intent intent = new Intent(context, ContactDetailActivity.class);
+            intent.putExtra("contact", data.getParcelableExtra("contact"));
+            intent.putExtra("conversationType", conversationType);
+            intent.putExtra("targetId", targetId);
+            context.startActivity(intent);
+        }
     }
 }

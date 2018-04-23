@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
               android:layout_width="match_parent"
               android:layout_height="wrap_content"
               android:background="@drawable/shape_round_white"
@@ -13,7 +14,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/base_margin"
         android:gravity="center"
-        android:text="支付密码错误"
+        tools:text="支付密码错误"
         android:textColor="@color/color_535353"
         android:textSize="18sp"
         />
@@ -31,7 +32,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
-            android:text="重新输入"
+            tools:text="重新输入"
             android:textSize="14sp"
             android:textColor="@color/title_bar_color"
             />
@@ -42,7 +43,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
-            android:text="忘记密码"
+            tools:text="忘记密码"
             android:textSize="14sp"
             android:textColor="@color/title_bar_color"
             />

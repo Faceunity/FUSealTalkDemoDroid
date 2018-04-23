@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:orientation="vertical">
+             xmlns:tools="http://schemas.android.com/tools"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:orientation="vertical">
 
     <RelativeLayout
         android:id="@+id/layout"
@@ -19,36 +20,35 @@
                 android:id="@+id/tv_bri_mess"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="65dip"
-                android:layout_marginRight="5dp"
-                android:layout_marginTop="18dip"
+                android:paddingLeft="65dp"
+                android:layout_marginTop="18dp"
                 android:gravity="center|left"
                 android:singleLine="true"
-                android:text="恭喜发财，大吉大利恭喜发财，大吉大利恭喜发财，大吉大利"
                 android:textColor="@android:color/white"
-                android:textSize="13sp" />
+                android:textSize="13sp"
+                tools:text="恭喜发财fjajfklafkljfkjklafkfkjlakljafkd"/>
 
             <TextView
                 android:id="@+id/tv_bri_target"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="65dip"
-                android:layout_marginTop="40dip"
+                android:paddingLeft="65dp"
+                android:layout_marginTop="40dp"
                 android:gravity="center|left"
-                android:text="领取红包"
+                tools:text="领取红包"
                 android:textColor="@android:color/white"
-                android:textSize="13sp" />
+                android:textSize="13sp"/>
 
             <TextView
                 android:id="@+id/tv_bri_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentBottom="true"
-                android:layout_marginBottom="4dip"
+                android:layout_marginBottom="4dp"
                 android:gravity="center|left"
-                android:text="云红吧"
+                tools:text="云红包"
                 android:textColor="@android:color/darker_gray"
-                android:textSize="14sp" />
+                android:textSize="14sp"/>
         </RelativeLayout>
     </RelativeLayout>
 </FrameLayout>

@@ -12,7 +12,7 @@
         android:id="@+id/actionbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:content="添加银行卡" />
+        app:content="@string/jrmf_add_bank_card_title" />
 
     <LinearLayout
         android:id="@+id/layout_step1"
@@ -28,7 +28,7 @@
             style="@style/text_black_16"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="请用XXX名下银行储蓄卡" />
+            tools:text="请用XXX名下银行储蓄卡" />
 
         <com.jrmf360.rylib.rp.widget.FloatingLabelTextView
 
@@ -37,7 +37,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="3dip"
             app:allowEmpty="false"
-            app:hint="银行卡号"
+            app:hint="@string/jrmf_input_card_num"
             app:validatorType="numeric" />
 
         <TextView
@@ -48,7 +48,7 @@
             android:layout_gravity="right"
             android:paddingBottom="3dip"
             android:paddingTop="3dip"
-            android:text="查看支持的银行卡" />
+            android:text="@string/jrmf_look_support_bank_cards" />
 
         <Button
             android:id="@+id/btn_next_step1"
@@ -57,6 +57,6 @@
             android:layout_height="@dimen/btn_height"
             android:layout_marginTop="@dimen/base_padding"
             android:background="@drawable/selector_common_btn"
-            android:text="下一步" />
+            android:text="@string/jrmf_next" />
     </LinearLayout>
 </LinearLayout>

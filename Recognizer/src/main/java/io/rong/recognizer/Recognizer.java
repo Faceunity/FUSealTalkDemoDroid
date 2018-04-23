@@ -49,6 +49,7 @@ public class Recognizer extends RelativeLayout implements RecognizerListener {
      * 开发者可以通过此接口设置自己从科大讯飞官网申请的 appId。
      * 此方法可以在 SDK init 之后调用。
      *
+     * 注意： appid 必须和下载的SDK保持一致，否则会出现10407错误
      * @param appId 自定义的 appId
      */
     public static void setAppId(String appId) {
@@ -61,7 +62,7 @@ public class Recognizer extends RelativeLayout implements RecognizerListener {
          * 语音输入模块集成的是讯分SDK,开发者要集成需要去讯飞开放平台获取自身的APPID替换下面的id.
          */
         if (SpeechUtility.getUtility() == null) {
-            SpeechUtility.createUtility(context.getApplicationContext(), SpeechConstant.APPID + "=" + (mAppId == null ? "581f2927" : mAppId));
+            SpeechUtility.createUtility(context.getApplicationContext(), SpeechConstant.APPID + "=" + (mAppId == null ? "5a430817" : mAppId));
         }
         initViews();
     }

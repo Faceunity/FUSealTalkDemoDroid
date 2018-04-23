@@ -17,7 +17,7 @@
             android:background="@color/color_bg"
             android:gravity="center_vertical"
             android:paddingLeft="@dimen/base_margin"
-            android:text="2016年7月"
+            tools:text="2016年7月"
             android:textColor="@color/color_959595"
             android:textSize="14sp"
             android:visibility="gone"/>

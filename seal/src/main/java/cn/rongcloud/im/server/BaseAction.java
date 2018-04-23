@@ -14,7 +14,7 @@ import cn.rongcloud.im.server.utils.json.JsonMananger;
  */
 public class BaseAction {
 
-    private static final String DOMAIN = "http://api.sealtalk.im/";
+    private static final String DOMAIN = "http://api.sealtalk.im";
     protected Context mContext;
     protected SyncHttpClient httpManager;
 
@@ -78,7 +78,7 @@ public class BaseAction {
      * @param params params
      */
     protected String getURL(String url, String... params) {
-        StringBuilder urlBuilder = new StringBuilder(DOMAIN).append(url);
+        StringBuilder urlBuilder = new StringBuilder(DOMAIN).append("/").append(url);
         if (params != null) {
             for (String param : params) {
                 if (!urlBuilder.toString().endsWith("/")) {

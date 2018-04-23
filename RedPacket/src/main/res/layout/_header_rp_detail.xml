@@ -18,7 +18,7 @@
         android:layout_height="70dp"
         android:layout_below="@id/iv_top"
         android:layout_centerHorizontal="true"
-        android:src="@drawable/rc_default_portrait"
+        android:src="@drawable/jrmf_default_portrait"
         android:layout_marginTop="-40dp"
         />
 

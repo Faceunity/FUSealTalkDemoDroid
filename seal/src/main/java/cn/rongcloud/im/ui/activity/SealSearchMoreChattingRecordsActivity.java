@@ -207,7 +207,7 @@ public class SealSearchMoreChattingRecordsActivity extends Activity {
                     int count = result.getMatchCount();
                     Conversation conversation = result.getConversation();
                     if (count == 1) {
-                        RongIM.getInstance().startConversation(SealSearchMoreChattingRecordsActivity.this, conversation.getConversationType(), conversation.getTargetId(), result.getTitle());
+                        RongIM.getInstance().startConversation(SealSearchMoreChattingRecordsActivity.this, conversation.getConversationType(), conversation.getTargetId(), result.getTitle(),result.getConversation().getSentTime());
                     } else {
                         Intent intent = new Intent(SealSearchMoreChattingRecordsActivity.this, SealSearchChattingDetailActivity.class);
                         intent.putExtra("filterString", mFilterString);

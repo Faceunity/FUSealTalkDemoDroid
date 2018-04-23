@@ -82,11 +82,13 @@
 -keepclassmembers class fqcn.of.javascript.interface.for.webview {
     public *;
 }
+
+# 抛出异常时保留代码行号
+-keepattributes SourceFile,LineNumberTable
+
 -keepattributes Exceptions,InnerClasses
 
 -keepattributes Signature
-
--keepattributes *Annotation*
 
 # Gson
 -keep class com.google.gson.** { *; }
@@ -103,23 +105,47 @@
 # 保留继承的
 -keep public class * extends android.support.v4.**
 
+
+#---------------------------------------金融魔方-----------------------------------------------
 #common
-
-#-keep class com.jrmf360.rylib.common.**{*;}
-
--keep class com.jrmf360.rylib.common.fragment.**{*;}
+-keepclassmembers class com.jrmf360.rylib.common.fragment.**{
+    <methods>;
+}
 
 -keep class com.jrmf360.rylib.common.http.**{*;}
 
 -keep class com.jrmf360.rylib.common.model.**{*;}
 
--keep class com.jrmf360.rylib.common.util.**{*;}
+#-keep class com.jrmf360.rylib.common.util.**{*;}
+-keepclassmembers class com.jrmf360.rylib.common.util.CountUtil{
+    <methods>;
+}
+-keepclassmembers class com.jrmf360.rylib.common.util.NetworkCacheUtil{*;}
+-keep class com.jrmf360.rylib.common.util.NetworkCacheUtil$*{*;}
+
+-keepclassmembers class com.jrmf360.rylib.common.util.MemoryCacheUtil{*;}
+-keep class com.jrmf360.rylib.common.util.MemoryCacheUtil$*{*;}
+
+-keep class com.jrmf360.rylib.common.util.LogUtil{*;}
+
+#-keepclassmembers class com.jrmf360.rylib.common.util.KeyboardUtil{*;}
+-keep class com.jrmf360.rylib.common.util.KeyboardUtil$* {*;}
+
+-keep class com.jrmf360.rylib.common.util.ToastUtil{*;}
+-keep class com.jrmf360.rylib.common.util.ToastUtil$* {*;}
+-keepclassmembers class com.jrmf360.rylib.common.util.RotateAnimationUtil{
+    <methods>;
+}
 
 -keep class com.jrmf360.rylib.common.view.**{*;}
 
--keep class com.jrmf360.rylib.diaplay.**{*;}
+-keepclassmembers class com.jrmf360.rylib.diaplay.**{
+      <methods>;
+}
 
--keep class com.jrmf360.rylib.adapter.TradeDetailAdapter{*;}
+-keepclassmembers class com.jrmf360.rylib.adapter.TradeDetailAdapter{
+      <methods>;
+}
 
 -keep class com.jrmf360.rylib.modules.**{*;}
 
@@ -128,20 +154,41 @@
 
 -keep class com.jrmf360.rylib.rp.gridpwdview.**{*;}
 
--keep class com.jrmf360.rylib.rp.http.**{*;}
+#新添加model混淆
+#-keep class com.jrmf360.rylib.rp.http.model.*{*;}
+-keepclassmembers class * extends com.jrmf360.rylib.common.model.BaseModel{*;}
+-keep class com.jrmf360.rylib.common.model.BaseModel{*;}
+
+-keep class com.jrmf360.rylib.rp.http.model.SendRpItemModel{*;}
+-keep class com.jrmf360.rylib.rp.http.model.RpInfoModel$* {*;}
+
+-keep class com.jrmf360.rylib.rp.http.RpHttpManager$*{*;}
 
 -keep class com.jrmf360.rylib.rp.ui.**{*;}
 
 -keep class com.jrmf360.rylib.rp.widget.**{*;}
 
 -keep class com.jrmf360.rylib.JrmfClient{*;}
+-keep class com.jrmf360.rylib.JrmfClient$* {
+    *;
+}
 
 #钱包
--keep class com.jrmf360.rylib.wallet.fragment.**{*;}
+-keepclassmembers class com.jrmf360.rylib.wallet.fragment.*{
+      <methods>;
+}
+
+#-keep class com.jrmf360.rylib.wallet.http.model{*;}
+-keepclassmembers class com.jrmf360.rylib.wallet.http.model.AccountModel{*;}
+-keepclassmembers class com.jrmf360.rylib.wallet.http.model.ProviceModel{*;}
+-keepclassmembers class com.jrmf360.rylib.wallet.http.model.City{*;}
+-keep class com.jrmf360.rylib.wallet.http.model.TradeItemDetail{*;}
+-keep class com.jrmf360.rylib.wallet.http.model.SendRpItemModel{*;}
+-keep class com.jrmf360.rylib.wallet.http.model.BankBranch$* {*;}
+
+-keep class com.jrmf360.rylib.wallet.http.WalletHttpManager$*{*;}
 
 -keep class com.jrmf360.rylib.wallet.ui.**{*;}
-
--keep class com.jrmf360.rylib.wallet.http.**{*;}
 
 -keep class com.jrmf360.rylib.wallet.webview.**{*;}
 
@@ -151,6 +198,4 @@
 -keep class com.jrmf360.rylib.wallet.JrmfWalletClient$* {
     *;
 }
-
-
 -ignorewarnings

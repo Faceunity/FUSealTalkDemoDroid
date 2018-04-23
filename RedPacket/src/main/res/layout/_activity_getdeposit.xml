@@ -33,7 +33,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:gravity="center"
-                    android:text="提现"
+                    android:text="@string/jrmf_get_deposit"
                     android:textSize="15dp" />
             </LinearLayout>
 
@@ -52,7 +52,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:gravity="center"
-                    android:text="无手续费提现"
+                    android:text="@string/jrmf_get_deposit_free"
                     android:textSize="15dp" />
             </LinearLayout>
         </LinearLayout>

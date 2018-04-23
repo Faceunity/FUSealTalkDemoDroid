@@ -169,7 +169,7 @@ public class UpdatePasswordActivity extends BaseActivity implements View.OnClick
         ChangePasswordResponse cpRes = (ChangePasswordResponse) result;
         if (cpRes.getCode() == 200) {
             editor.putString(SealConst.SEALTALK_LOGING_PASSWORD, newPasswordEdit.getText().toString().trim());
-            editor.apply();
+            editor.commit();
             NToast.shortToast(mContext, getString(R.string.update_success));
             LoadDialog.dismiss(mContext);
             finish();

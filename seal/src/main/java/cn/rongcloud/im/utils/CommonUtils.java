@@ -162,4 +162,9 @@ public class CommonUtils {
         return list;
     }
 
+    public static int dip2pix(Context context, int dips) {
+        int densityDpi = context.getResources().getDisplayMetrics().densityDpi;
+        return (dips * densityDpi) / 160;
+    }
+
 }

@@ -44,7 +44,7 @@ public class TestMessageProvider extends IContainerItemProvider.MessageProvider<
     public View newView(Context context, ViewGroup group) {
         View view = LayoutInflater.from(context).inflate(io.rong.imkit.R.layout.rc_item_text_message, null);
 
-        ViewHolder holder = new ViewHolder();
+        TestMessageProvider.ViewHolder holder = new TestMessageProvider.ViewHolder();
         holder.message = (AutoLinkTextView) view.findViewById(android.R.id.text1);
         view.setTag(holder);
         return view;
@@ -52,6 +52,11 @@ public class TestMessageProvider extends IContainerItemProvider.MessageProvider<
 
     @Override
     public Spannable getContentSummary(TestMessage data) {
+        return null;
+    }
+
+    @Override
+    public Spannable getContentSummary(Context context, TestMessage data) {
         if (data == null)
             return null;
 
@@ -73,7 +78,7 @@ public class TestMessageProvider extends IContainerItemProvider.MessageProvider<
     @Override
     public void onItemLongClick(final View view, int position, final TestMessage content, final UIMessage message) {
 
-        ViewHolder holder = (ViewHolder) view.getTag();
+        TestMessageProvider.ViewHolder holder = (TestMessageProvider.ViewHolder) view.getTag();
         holder.longClick = true;
         if (view instanceof TextView) {
             CharSequence text = ((TextView) view).getText();
@@ -127,7 +132,7 @@ public class TestMessageProvider extends IContainerItemProvider.MessageProvider<
 
     @Override
     public void bindView(final View v, int position, final TestMessage content, final UIMessage data) {
-        ViewHolder holder = (ViewHolder) v.getTag();
+        TestMessageProvider.ViewHolder holder = (TestMessageProvider.ViewHolder) v.getTag();
 
         if (data.getMessageDirection() == Message.MessageDirection.SEND) {
             holder.message.setBackgroundResource(io.rong.imkit.R.drawable.rc_ic_bubble_right);
