@@ -1,4 +1,4 @@
-#FUSealTalkDemoDroid
+# FUSealTalkDemoDroid
 FUQiniuShortVideoDemo 是集成了 Faceunity 面部跟踪和虚拟道具功能和 [sealtalk-android](https://github.com/sealtalk/sealtalk-android) 的 Demo 。
 本文是 FaceUnity SDK 快速对接 sealtalk 的导读说明，关于 FaceUnity SDK 的更多详细说明，请参看 [FULiveDemo](https://github.com/Faceunity/FULiveDemoDroid/tree/dev).
 
