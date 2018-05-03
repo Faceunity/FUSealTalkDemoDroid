@@ -26,5 +26,5 @@ dependencies {
     compile 'com.android.support:support-v4:26.0.0'
     compile project(':IMKit')
     compile project(':CallLib')
-    compile project(':beautycontrolview')
+    compile project(':faceunity')
 }

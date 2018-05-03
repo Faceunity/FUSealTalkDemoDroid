@@ -8,8 +8,8 @@
       <module fileurl="file://$PROJECT_DIR$/IMKit/IMKit.iml" filepath="$PROJECT_DIR$/IMKit/IMKit.iml" />
       <module fileurl="file://$PROJECT_DIR$/IMLib/IMLib.iml" filepath="$PROJECT_DIR$/IMLib/IMLib.iml" />
       <module fileurl="file://$PROJECT_DIR$/RedPacket/RedPacket.iml" filepath="$PROJECT_DIR$/RedPacket/RedPacket.iml" />
-      <module fileurl="file://$PROJECT_DIR$/beautycontrolview/beautycontrolview.iml" filepath="$PROJECT_DIR$/beautycontrolview/beautycontrolview.iml" />
       <module fileurl="file://$PROJECT_DIR$/contactcard/contactcard.iml" filepath="$PROJECT_DIR$/contactcard/contactcard.iml" />
+      <module fileurl="file://$PROJECT_DIR$/faceunity/faceunity.iml" filepath="$PROJECT_DIR$/faceunity/faceunity.iml" />
       <module fileurl="file://$PROJECT_DIR$/Recognizer/recognizer.iml" filepath="$PROJECT_DIR$/Recognizer/recognizer.iml" />
       <module fileurl="file://$PROJECT_DIR$/seal/seal.iml" filepath="$PROJECT_DIR$/seal/seal.iml" />
       <module fileurl="file://$PROJECT_DIR$/Sticker/sticker.iml" filepath="$PROJECT_DIR$/Sticker/sticker.iml" />
