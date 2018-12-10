@@ -378,7 +378,11 @@ public class ContactsFragment extends Fragment implements View.OnClickListener {
             if (first >= 'a' && first <= 'z') {
                 newFirst -= 32;
             }
-            return spelling.replaceFirst(String.valueOf(first), String.valueOf(newFirst));
+            StringBuilder builder = new StringBuilder(String.valueOf(newFirst));
+            if (spelling.length() > 1) {
+                builder.append(spelling.substring(1, spelling.length()));
+            }
+            return builder.toString();
         } else {
             return "#";
         }

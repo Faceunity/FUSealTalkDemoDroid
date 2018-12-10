@@ -37,5 +37,6 @@
     <color name="rc_ad_file_list_select_file_text_state">#ffffff</color>
 
     <color name="rc_read_receipt_status">#96c4ec</color>
+    <color name="rc_new_message_divider_text_color">#B2B2B2</color>
 
 </resources>

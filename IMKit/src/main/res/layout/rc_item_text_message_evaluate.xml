@@ -9,7 +9,7 @@
         style="@style/RCTheme.Message.TextView"
         android:layout_width="185dp"
         android:layout_height="wrap_content"
-        android:autoLink="all" />
+        android:autoLink="web|email|phone" />
 
     <RelativeLayout
         android:id="@+id/layout_praise"

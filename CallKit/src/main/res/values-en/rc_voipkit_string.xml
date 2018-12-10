@@ -10,8 +10,6 @@
     <string name="rc_voip_call_network_error">Network connection is not reachable, please check it</string>
     <string name="rc_voip_call_interrupt">Cancelled</string>
     <string name="rc_voip_call_terminalted">Call ended</string>
-    <string name="rc_voip_call_mic_error">Mic Error</string>
-    <string name="rc_voip_call_camera_error">Camera Error</string>
     <string name="rc_voip_call_started">Call started</string>
     <string name="rc_voip_select_member">Select members</string>
     <string name="rc_voip_call_audio_start_fail">Voice call is on. Try again later.</string>

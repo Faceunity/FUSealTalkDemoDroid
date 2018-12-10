@@ -2,14 +2,14 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 23
-    buildToolsVersion "23.0.3"
+    buildToolsVersion "27.0.3"
 
     defaultConfig {
         applicationId "cn.rongcloud.im"
         minSdkVersion 16
         targetSdkVersion 23
-        versionCode 2018040917
-        versionName "1.2.10"
+        versionCode 18102915
+        versionName "1.3.7"
 
         multiDexEnabled true
         ndk {
@@ -68,6 +68,7 @@ dependencies {
     compile project(':IMKit')
     compile project(':CallKit')
     compile project(':RedPacket')
-    compile 'com.huawei.android.hms:push:2.5.3.305'
+    compile 'com.huawei.android.hms:push:2.6.1.301'
+    implementation project(':faceunity')
 }
 apply plugin: 'com.google.gms.google-services'

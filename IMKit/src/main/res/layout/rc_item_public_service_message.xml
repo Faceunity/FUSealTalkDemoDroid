@@ -1,39 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:background="@drawable/rc_bg_item"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
+    android:layout_width="match_parent"
+    android:layout_height="76dp"
     android:layout_gravity="center_vertical"
-    android:gravity="center_vertical"
-    android:paddingLeft="12dp"
-    android:paddingRight="6dp"
-    android:descendantFocusability="blocksDescendants">
+    android:descendantFocusability="blocksDescendants"
+    android:paddingLeft="19dp"
+    android:paddingRight="20dp"
+    android:orientation="horizontal">
 
-    <RelativeLayout
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:paddingTop="4dp"
-        android:paddingBottom="3dp">
+    <FrameLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:paddingTop="15dp">
 
         <TextView
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:textSize="16dp"
-            android:textColor="#353535"
             android:id="@id/rc_txt"
-            android:layout_marginRight="80dp"
-            android:gravity="center_vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
             android:lines="2"
-            android:ellipsize="end"/>
+            android:textColor="#262626"
+            android:textSize="18dp" />
 
-        <io.rong.imkit.widget.AsyncImageView
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_alignParentRight="true"
-            android:id="@id/rc_img"
-            android:scaleType="centerCrop"
-            android:layout_gravity="center_vertical" />
-    </RelativeLayout>
+        <View
+            android:id="@id/rc_divider"
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:layout_gravity="bottom"
+            android:background="#e5e5e5" />
+
+    </FrameLayout>
+
+    <io.rong.imkit.widget.AsyncImageView
+        android:id="@id/rc_img"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_alignParentRight="true"
+        android:layout_gravity="center_vertical"
+        android:layout_marginLeft="18dp"
+        android:scaleType="centerCrop" />
 
 </LinearLayout>

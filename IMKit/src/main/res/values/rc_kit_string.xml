@@ -42,9 +42,11 @@
     <string name="rc_dialog_item_message_delete">删除消息</string>
     <string name="rc_dialog_item_message_copy">复制消息</string>
     <string name="rc_dialog_item_message_recall">撤回消息</string>
+    <string name="rc_dialog_item_message_more">更多&#8230;</string>
     <string name="rc_recall_failed">撤回失败</string>
     <string name="rc_you_recalled_a_message">你撤回了一条消息</string>
     <string name="rc_recalled_a_message">&#160;撤回了一条消息</string>
+    <string name="rc_exceeded_max_limit">超出最大限制</string>
 
     <string name="rc_message_unread_count">"···"</string>
     <string name="rc_input_voice">按住 说话</string>
@@ -169,7 +171,7 @@
     <string name="rc_ad_folder_no_files">空文件夹</string>
     <string name="rc_ad_file_size">大小:%1$s</string>
     <string name="rc_ac_file_download_btn">开始下载</string>
-    <string name="rc_ac_file_download_progress_tv">正在下载...(%1$s/%2$s)</string>
+    <string name="rc_ac_file_download_progress_tv">下载中...(%1$s/%2$s)</string>
     <string name="rc_ac_file_download_open_file_btn">打开文件</string>
     <string name="rc_ac_file_send_preview">发文件</string>
     <string name="rc_ad_send_file_no_select_file">发送</string>
@@ -187,11 +189,15 @@
     <string name="rc_ac_file_preview_downloaded">已下载</string>
     <string name="rc_ac_file_preview_download_error">下载失败</string>
     <string name="rc_ac_file_preview_download_cancel">已取消下载</string>
+    <string name="rc_ac_file_download_progress_pause">已取消(%1$s/%2$s)</string>
+    <string name="rc_ac_file_preview_download_resume">继续下载</string>
     <string name="rc_ac_file_preview_deleted">文件已过期或已被清理</string>
     <string name="rc_fr_file_list_most_selected_files">您最多只能选择20个文件</string>
+    <string name="rc_fr_file_size_limit">您选择的文件不能超过 %1$d%2$s</string>
     <string name="rc_ac_file_download_request_permission">您需要在设置里打开读写权限</string>
     <string name="rc_ac_file_download_request_permission_sure">确定</string>
     <string name="rc_ac_file_download_request_permission_cancel">取消</string>
+    <string name="rc_ac_file_url_error">文件地址异常，无法下载!</string>
     <string name="rc_read_receipt_status">%d人已读</string>
 
     <string name="rc_item_quit_groups">退出了群组</string>
@@ -227,6 +233,7 @@
     <string name="rc_dialog_button_clear">清空</string>
 
     <string name="rc_user_recalled_message">%s撤回了一条消息</string>
+    <string name="rc_recall_failed_for_network_unavailable">撤回不成功，请检查网络连接</string>
 
     <string name="rc_cs_evaluate">评价</string>
     <string name="rc_cs_evaluate_title">请对我们本次的服务进行评价</string>
@@ -242,4 +249,11 @@
     <string name="rc_cs_leave_message">留言</string>
     <string name="rc_cs_submit_message">提交留言</string>
     <string name="rc_cs_message_submited">您的留言已提交</string>
+
+    <string name="rc_new_message_divider_content">以上是历史消息</string>
+
+    <string name="rc_time_count_down">%d\'\'</string>
+    <string name="rc_toast_message_destruct">该消息已自动销毁，无法继续查看</string>
+    <string name="rc_receive_new_message">你收到一条新消息</string>
+    <string name="rc_notification_error_ssl_cert_invalid">您访问的网页证书无效。是否继续访问?</string>
 </resources>

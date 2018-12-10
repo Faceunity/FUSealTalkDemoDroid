@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/rc_ac_layout_preview_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -9,13 +10,13 @@
         android:layout_width="160dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="39dp"
+        android:layout_marginTop="68dp"
         android:orientation="vertical">
 
         <ImageView
             android:id="@+id/rc_ac_iv_file_type_image"
-            android:layout_width="160dp"
-            android:layout_height="160dp"
+            android:layout_width="75dp"
+            android:layout_height="75dp"
             android:layout_gravity="center_horizontal" />
 
         <TextView
@@ -23,32 +24,22 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:layout_marginTop="17dp"
+            android:layout_marginTop="24dp"
             android:ellipsize="middle"
             android:singleLine="true"
             android:textColor="#343434"
             android:textSize="16sp" />
-
-        <TextView
-            android:id="@+id/rc_ac_tv_file_size"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginBottom="17dp"
-            android:layout_marginTop="17dp"
-            android:textColor="#a8a8a8"
-            android:textSize="12sp" />
     </LinearLayout>
 
-    <Button
-        android:id="@+id/rc_ac_btn_download_button"
-        android:layout_width="328dp"
-        android:layout_height="50dp"
+    <TextView
+        android:id="@+id/rc_ac_tv_file_size"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:background="@drawable/rc_ac_btn_file_download_open_button"
-        android:text="@string/rc_ac_file_download_btn"
-        android:textColor="#ffffff"
-        android:textSize="16sp" />
+        android:layout_marginBottom="17dp"
+        android:layout_marginTop="12dp"
+        android:textColor="#a8a8a8"
+        android:textSize="14sp" />
 
     <LinearLayout
         android:id="@+id/rc_ac_ll_progress_view"
@@ -62,6 +53,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_gravity="center_vertical"
+            android:layout_marginLeft="40dp"
+            android:layout_marginRight="40dp"
             android:orientation="horizontal">
 
             <ProgressBar
@@ -70,7 +63,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="8dp"
                 android:layout_gravity="center_vertical"
-                android:layout_marginLeft="16dp"
+                android:layout_marginLeft="3dp"
                 android:layout_marginRight="3dp"
                 android:layout_weight="1" />
 
@@ -78,7 +71,7 @@
                 android:id="@+id/rc_btn_cancel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginRight="16dp"
+                android:layout_marginRight="36dp"
                 android:src="@drawable/rc_btn_download_cancel" />
         </LinearLayout>
 
@@ -91,4 +84,17 @@
             android:textColor="#343434"
             android:textSize="16sp" />
     </LinearLayout>
+
+    <Button
+        android:id="@+id/rc_ac_btn_download_button"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginLeft="40dp"
+        android:layout_marginRight="40dp"
+        android:layout_marginTop="54dp"
+        android:background="@drawable/rc_ac_btn_file_download_open_button"
+        android:text="@string/rc_ac_file_download_btn"
+        android:textColor="#ffffff"
+        android:textSize="16sp" />
 </LinearLayout>

@@ -7,12 +7,14 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.support.multidex.MultiDexApplication;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 
 import com.facebook.stetho.Stetho;
 import com.facebook.stetho.dumpapp.DumperPlugin;
 import com.facebook.stetho.inspector.database.DefaultDatabaseConnectionProvider;
 import com.facebook.stetho.inspector.protocol.ChromeDevtoolsDomain;
+import com.faceunity.FURenderer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +40,7 @@ import io.rong.imageloader.core.display.FadeInBitmapDisplayer;
 import io.rong.imkit.RongExtensionManager;
 import io.rong.imkit.RongIM;
 import io.rong.imkit.widget.provider.RealTimeLocationMessageProvider;
+import io.rong.imlib.RongIMClient;
 import io.rong.imlib.ipc.RongExceptionHandler;
 import io.rong.imlib.model.UserInfo;
 import io.rong.push.RongPushClient;
@@ -53,6 +56,7 @@ public class App extends MultiDexApplication {
     public void onCreate() {
 
         super.onCreate();
+        FURenderer.initFURenderer(this);
         Stetho.initialize(new Stetho.Initializer(this) {
             @Override
             protected Iterable<DumperPlugin> getDumperPlugins() {
@@ -72,8 +76,9 @@ public class App extends MultiDexApplication {
         if (getApplicationInfo().packageName.equals(getCurProcessName(getApplicationContext()))) {
 
 //            LeakCanary.install(this);//内存泄露检测
-            RongPushClient.registerHWPush(this); // 配置 HMS 推送
+            RongPushClient.registerHWPush(this);
             RongPushClient.registerMiPush(this, "2882303761517473625", "5451747338625");
+            RongPushClient.registerMZPush(this, "112988", "2fa951a802ac4bd5843d694517307896");
             try {
                 RongPushClient.registerFCM(this);
             } catch (RongException e) {
@@ -106,8 +111,21 @@ public class App extends MultiDexApplication {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
             openSealDBIfHasCachedToken();
+            RongIM.setConnectionStatusListener(new RongIMClient.ConnectionStatusListener() {
+                @Override
+                public void onChanged(ConnectionStatus status) {
+                    if (status == ConnectionStatus.TOKEN_INCORRECT) {
+                        SharedPreferences sp = getSharedPreferences("config", MODE_PRIVATE);
+                        final String cacheToken = sp.getString("loginToken", "");
+                        if (!TextUtils.isEmpty(cacheToken)) {
+                            RongIM.connect(cacheToken, SealAppContext.getInstance().getConnectCallback());
+                        } else {
+                            Log.e("seal", "token is empty, can not reconnect");
+                        }
+                    }
+                }
+            });
 
             options = new DisplayImageOptions.Builder()
                     .showImageForEmptyUri(cn.rongcloud.im.R.drawable.de_default_portrait)
@@ -118,7 +136,7 @@ public class App extends MultiDexApplication {
                     .cacheOnDisk(true)
                     .build();
 
-//            RongExtensionManager.getInstance().registerExtensionModule(new PTTExtensionModule(this, true, 1000 * 60));
+            //RongExtensionManager.getInstance().registerExtensionModule(new PTTExtensionModule(this, true, 1000 * 60));
             RongExtensionManager.getInstance().registerExtensionModule(new ContactCardExtensionModule(new IContactCardInfoProvider() {
                 @Override
                 public void getContactAllInfoProvider(final IContactCardInfoCallback contactInfoCallback) {

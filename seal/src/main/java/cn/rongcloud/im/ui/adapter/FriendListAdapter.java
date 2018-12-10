@@ -86,8 +86,12 @@ public class FriendListAdapter extends BaseAdapter implements SectionIndexer {
         if (position == getPositionForSection(section)) {
             viewHolder.tvLetter.setVisibility(View.VISIBLE);
             String letterFirst = mContent.getLetters();
-            if(!TextUtils.isEmpty(letterFirst)){
-                letterFirst = String.valueOf(letterFirst.toUpperCase().charAt(0));
+            if (!TextUtils.isEmpty(letterFirst)) {
+                if (!isLetterDigitOrChinese(letterFirst)) {
+                    letterFirst = "#";
+                }else {
+                    letterFirst = String.valueOf(letterFirst.toUpperCase().charAt(0));
+                }
             }
             viewHolder.tvLetter.setText(letterFirst);
         } else {
@@ -148,5 +152,10 @@ public class FriendListAdapter extends BaseAdapter implements SectionIndexer {
          * userid
          */
         TextView tvUserId;
+    }
+
+    private boolean isLetterDigitOrChinese(String str) {
+        String regex = "^[a-z0-9A-Z\u4e00-\u9fa5]+$";//其他需要，直接修改正则表达式就好
+        return str.matches(regex);
     }
 }

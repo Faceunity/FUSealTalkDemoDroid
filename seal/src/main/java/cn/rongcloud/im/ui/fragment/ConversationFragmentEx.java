@@ -172,4 +172,9 @@ public class ConversationFragmentEx extends ConversationFragment {
             }, 100);
         }
     }
+
+    @Override
+    public boolean showMoreClickItem() {
+        return true;
+    }
 }

@@ -3,10 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="cn.rongcloud.im">
 
-    <uses-sdk
-        android:minSdkVersion="15"
-        android:targetSdkVersion="21" />
-
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
@@ -48,30 +44,40 @@
         android:protectionLevel="signature" />
     <uses-permission android:name="cn.rongcloud.im.permission.C2D_MESSAGE" />
     <!-- GCM 配置结束 < -->
-
     <!-- 华为 配置开始 < -->
     <!--HMS-SDK引导升级HMS功能，访问OTA服务器需要网络权限-->
     <uses-permission android:name="android.permission.INTERNET" />
     <!--HMS-SDK引导升级HMS功能，保存下载的升级包需要SD卡写权限-->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <!--检测网络状态-->
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <!--检测wifi状态-->
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <!--为了获取用户手机的IMEI，用来唯一的标识用户。-->
-    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
     <!--如果是安卓8.0，应用编译配置的targetSdkVersion>=26，请务必添加以下权限 -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <!-- 华为 配置结束 < -->
 
+    <!-- MeiZu 配置开始 < -->
+    <!-- 兼容 flyme5.0 以下版本，魅族内部集成 pushSDK 必填，不然无法收到 消息-->
+    <uses-permission android:name="com.meizu.flyme.push.permission.RECEIVE" />
+    <permission
+        android:name="cn.rongcloud.im.push.permission.MESSAGE"
+        android:protectionLevel="signature" />
+    <uses-permission android:name="cn.rongcloud.im.push.permission.MESSAGE" />
+    <!-- 兼容 flyme3.0 配置权限-->
+    <uses-permission android:name="com.meizu.c2dm.permission.RECEIVE" />
+    <!-- MeiZu 配置结束 < -->
+
     <application
         android:name=".App"
         android:allowBackup="true"
         android:icon="@drawable/seal_app_logo"
-        tools:replace="android:icon, android:theme"
         android:label="@string/app_name"
-        android:theme="@style/MyTheme">
+        android:theme="@style/MyTheme"
+        tools:replace="android:icon, android:theme">
 
         <!--登录页面-->
         <activity
@@ -82,9 +88,9 @@
         <!--主页面-->
         <activity
             android:name=".ui.activity.MainActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
             android:launchMode="singleTask"
             android:screenOrientation="portrait"
-        android:configChanges="orientation|keyboardHidden|screenSize"
             android:windowSoftInputMode="stateHidden|adjustPan">
 
             <intent-filter>
@@ -277,26 +283,31 @@
                     android:scheme="rong" />
             </intent-filter>
         </activity>
-        <activity android:name=".ui.activity.SealSearchActivity"
+        <activity
+            android:name=".ui.activity.SealSearchActivity"
             android:configChanges="orientation|keyboardHidden|locale"
             android:screenOrientation="portrait"
-            android:windowSoftInputMode="stateVisible|adjustPan"/>
-        <activity android:name=".ui.activity.SealSearchMoreFriendsActivity"
+            android:windowSoftInputMode="stateVisible|adjustPan" />
+        <activity
+            android:name=".ui.activity.SealSearchMoreFriendsActivity"
             android:configChanges="orientation|keyboardHidden|locale"
             android:screenOrientation="portrait"
-            android:windowSoftInputMode="stateHidden|adjustPan"/>
-        <activity android:name=".ui.activity.SealSearchMoreGroupActivity"
+            android:windowSoftInputMode="stateHidden|adjustPan" />
+        <activity
+            android:name=".ui.activity.SealSearchMoreGroupActivity"
             android:configChanges="orientation|keyboardHidden|locale"
             android:screenOrientation="portrait"
-            android:windowSoftInputMode="stateHidden|adjustPan"/>
-        <activity android:name=".ui.activity.SealSearchMoreChattingRecordsActivity"
+            android:windowSoftInputMode="stateHidden|adjustPan" />
+        <activity
+            android:name=".ui.activity.SealSearchMoreChattingRecordsActivity"
             android:configChanges="orientation|keyboardHidden|locale"
             android:screenOrientation="portrait"
-            android:windowSoftInputMode="stateHidden|adjustPan"/>
-        <activity android:name=".ui.activity.SealSearchChattingDetailActivity"
+            android:windowSoftInputMode="stateHidden|adjustPan" />
+        <activity
+            android:name=".ui.activity.SealSearchChattingDetailActivity"
             android:configChanges="orientation|keyboardHidden|locale"
             android:screenOrientation="portrait"
-            android:windowSoftInputMode="stateHidden|adjustPan"/>
+            android:windowSoftInputMode="stateHidden|adjustPan" />
         <activity
             android:name=".ui.activity.UpdateNameActivity"
             android:screenOrientation="portrait" />
@@ -324,8 +335,10 @@
             android:screenOrientation="portrait" />
 
         <service android:name=".server.UpdateService" />
-        <activity android:name=".ui.activity.UserDetailActivity"
-            android:screenOrientation="portrait"/>
+
+        <activity
+            android:name=".ui.activity.UserDetailActivity"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".ui.activity.SharedReceiverActivity"
             android:screenOrientation="portrait">
@@ -355,8 +368,10 @@
             <intent-filter>
                 <action android:name="io.rong.push.intent.MESSAGE_ARRIVED" />
                 <action android:name="io.rong.push.intent.MI_MESSAGE_ARRIVED" />
+                <action android:name="io.rong.push.intent.MZ_MESSAGE_ARRIVED" />
                 <action android:name="io.rong.push.intent.MESSAGE_CLICKED" />
                 <action android:name="io.rong.push.intent.MI_MESSAGE_CLICKED" />
+                <action android:name="io.rong.push.intent.MZ_MESSAGE_CLICKED" />
                 <action android:name="io.rong.push.intent.THIRD_PARTY_PUSH_STATE" />
             </intent-filter>
         </receiver>
@@ -453,7 +468,7 @@
             android:excludeFromRecents="true"
             android:exported="false"
             android:hardwareAccelerated="true"
-            android:theme="@android:style/Theme.Translucent" >
+            android:theme="@android:style/Theme.Translucent">
             <meta-data
                 android:name="hwc-theme"
                 android:value="androidhwext:style/Theme.Emui.Translucent" />
@@ -466,7 +481,7 @@
             android:excludeFromRecents="true"
             android:exported="false"
             android:hardwareAccelerated="true"
-            android:theme="@android:style/Theme.Translucent" >
+            android:theme="@android:style/Theme.Translucent">
             <meta-data
                 android:name="hwc-theme"
                 android:value="androidhwext:style/Theme.Emui.Translucent" />
@@ -478,7 +493,7 @@
             android:exported="false"
             android:grantUriPermissions="true"></provider>
         <!-- 第三方相关 :接收Push消息（注册、Push消息、Push连接状态）广播 -->
-        <receiver android:name="io.rong.push.platform.HMSReceiver" >
+        <receiver android:name="io.rong.push.platform.HMSReceiver">
             <intent-filter>
                 <!-- 必须,用于接收token -->
                 <action android:name="com.huawei.android.push.intent.REGISTRATION" />
@@ -490,7 +505,7 @@
                 <action android:name="com.huawei.intent.action.PUSH_STATE" />
             </intent-filter>
         </receiver>
-        <receiver android:name="com.huawei.hms.support.api.push.PushEventReceiver" >
+        <receiver android:name="com.huawei.hms.support.api.push.PushEventReceiver">
             <intent-filter>
 
                 <!-- 接收通道发来的通知栏消息，兼容老版本Push -->
@@ -532,7 +547,7 @@
             android:name="io.rong.push.platform.RongFirebaseMessagingService"
             android:stopWithTask="false">
             <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
         <!-- [END firebase_service] -->
@@ -541,12 +556,29 @@
             android:name="io.rong.push.platform.RongFirebaseInstanceIDService"
             android:stopWithTask="false">
             <intent-filter>
-                <action android:name="com.google.firebase.INSTANCE_ID_EVENT"/>
+                <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
             </intent-filter>
         </service>
         <!-- [END firebase_iid_service] -->
 
+        <!-- MeiZu 配置开始 < -->
+        <receiver android:name="io.rong.push.platform.MeiZuReceiver">
+            <intent-filter>
+                <!-- 接收 push 消息 -->
+                <action android:name="com.meizu.flyme.push.intent.MESSAGE" />
+                <!-- 接收 register 消息 -->
+                <action android:name="com.meizu.flyme.push.intent.REGISTER.FEEDBACK" />
+                <!-- 接收 unregister 消息-->
+                <action android:name="com.meizu.flyme.push.intent.UNREGISTER.FEEDBACK" />
+                />
+                <!-- 兼容低版本 Flyme3 推送服务配置 -->
+                <action android:name="com.meizu.c2dm.intent.REGISTRATION" />
+                <action android:name="com.meizu.c2dm.intent.RECEIVE" />
 
+                <category android:name="cn.rongcloud.im" />
+            </intent-filter>
+        </receiver>
+        <!-- MeiZu 配置结束 < -->
 
         <!--第三方推送的权限 广播 服务 配置结束-->
 

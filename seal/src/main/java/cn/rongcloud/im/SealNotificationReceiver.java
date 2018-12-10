@@ -7,6 +7,7 @@ import io.rong.push.notification.PushMessageReceiver;
 
 
 public class SealNotificationReceiver extends PushMessageReceiver {
+
     @Override
     public boolean onNotificationMessageArrived(Context context, PushNotificationMessage message) {
         return false;

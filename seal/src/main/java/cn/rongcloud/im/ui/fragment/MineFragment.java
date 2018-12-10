@@ -93,11 +93,24 @@ public class MineFragment extends Fragment implements View.OnClickListener {
                     for (int i = 0; i < s2.length; i++) {
                         sb2.append(s2[i]);
                     }
-                    if (Integer.parseInt(sb.toString()) > Integer.parseInt(sb2.toString())) {
-                        mNewVersionView.setVisibility(View.VISIBLE);
-                        url = response.getAndroid().getUrl();
-                        isHasNewVersion = true;
-                        BroadcastManager.getInstance(getActivity()).sendBroadcast(SHOW_RED);
+
+                    int locVersion = Integer.parseInt(getVersionInfo()[0]);
+                    String remoteVersionString = response.getIos().getBuild().substring(0, 10);
+                    if (!TextUtils.isEmpty(remoteVersionString)) {
+                        int remoteVersion = Integer.parseInt(remoteVersionString);
+                        if (remoteVersion > locVersion) {
+                            mNewVersionView.setVisibility(View.VISIBLE);
+                            url = response.getAndroid().getUrl();
+                            isHasNewVersion = true;
+                            BroadcastManager.getInstance(getActivity()).sendBroadcast(SHOW_RED);
+                        }
+                    } else {
+                        if (Integer.parseInt(sb.toString()) > Integer.parseInt(sb2.toString())) {
+                            mNewVersionView.setVisibility(View.VISIBLE);
+                            url = response.getAndroid().getUrl();
+                            isHasNewVersion = true;
+                            BroadcastManager.getInstance(getActivity()).sendBroadcast(SHOW_RED);
+                        }
                     }
                 }
             }
@@ -123,9 +136,9 @@ public class MineFragment extends Fragment implements View.OnClickListener {
         LinearLayout mMineService = (LinearLayout) mView.findViewById(R.id.mine_service);
         LinearLayout mMineXN = (LinearLayout) mView.findViewById(R.id.mine_xiaoneng);
         LinearLayout mMineAbout = (LinearLayout) mView.findViewById(R.id.mine_about);
-        if(isDebug){
+        if (isDebug) {
             mMineXN.setVisibility(View.VISIBLE);
-        }else{
+        } else {
             mMineXN.setVisibility(View.GONE);
         }
         mUserProfile.setOnClickListener(this);
@@ -185,7 +198,7 @@ public class MineFragment extends Fragment implements View.OnClickListener {
         mName.setText(username);
         if (!TextUtils.isEmpty(userId)) {
             String portraitUri = SealUserInfoManager.getInstance().getPortraitUri
-                                 (new UserInfo(userId, username, Uri.parse(userPortrait)));
+                    (new UserInfo(userId, username, Uri.parse(userPortrait)));
             ImageLoader.getInstance().displayImage(portraitUri, imageView, App.getOptions());
         }
     }

@@ -7,6 +7,10 @@
     <integer name="rc_image_quality">85</integer>
     <!--原图压缩宽、高-->
     <integer name="rc_image_size">960</integer>
+
+    <!--配置发送图片时，如果图片大小不超过 200k 则发送原图-->
+    <integer name="rc_max_original_image_size">200</integer>
+
     <!-- 设置发送输入状态 -->
     <bool name="rc_typing_status">false</bool>
     <!-- 下载文件默认存储路径 -->
@@ -39,4 +43,8 @@
         <item>512</item>
     </integer-array>
 
+    <!-- 断点续传每片的长度（单位：Byte）默认 1M : 1024 * 1024 = 1048576 -->
+    <integer name="rc_resume_file_transfer_size_each_slice">1048576</integer>
+    <!--push 心跳,默认 4 min-->
+    <string name="push_heartbeat_timer">240000</string>
 </resources>

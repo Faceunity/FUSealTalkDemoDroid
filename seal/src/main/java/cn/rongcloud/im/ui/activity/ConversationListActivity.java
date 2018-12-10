@@ -35,35 +35,11 @@ public class ConversationListActivity extends BaseActivity {
         Intent intent = getIntent();
         NLog.d(TAG, "intent:", getIntent());
         //push
-        if (intent.getData().getScheme().equals("rong") && intent.getData().getQueryParameter("isFromPush") != null
+        if (intent.getData() != null && intent.getData().getScheme() != null
+                && intent.getData().getScheme().equals("rong") && intent.getData().getQueryParameter("isFromPush") != null
                 && intent.getData().getQueryParameter("isFromPush").equals("true")) {
-            //通过intent.getData().getQueryParameter("push") 为true，判断是否是push消息
-            String options = getIntent().getStringExtra("options");
-            if (options != null) {
-                NLog.d(TAG, "options:", options);
-                try {
-                    JSONObject jsonObject = new JSONObject(options);
-                    if (jsonObject.has("appData")) {
-                        NLog.d(TAG, "pushData:", jsonObject.getString("appData"));
-                    }
-                    if (jsonObject.has("rc")) {
-                        JSONObject rc = jsonObject.getJSONObject("rc");
-                        NLog.d(TAG, "rc:", rc);
-                        String targetId = rc.getString("tId");
-                        String pushId = rc.getString("id");
-                        if (!TextUtils.isEmpty(pushId)) {
-                            RongPushClient.recordNotificationEvent(pushId);
-                            NLog.d(TAG, "pushId:", pushId);
-                        }
-                        if (rc.has("ext") && rc.getJSONObject("ext") != null) {
-                            String ext = rc.getJSONObject("ext").toString();
-                            NLog.d(TAG, "ext:", ext);
-                        }
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
+            // 统计华为push点击事件
+            RongPushClient.recordHWNotificationEvent(intent);
             enterActivity();
         } else {//通知过来
             //程序切到后台，收到消息后点击进入,会执行这里

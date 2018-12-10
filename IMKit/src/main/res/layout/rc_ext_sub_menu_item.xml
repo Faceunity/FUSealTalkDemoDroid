@@ -20,6 +20,8 @@
         android:id="@+id/rc_sub_menu_divider_line"
         android:layout_width="match_parent"
         android:layout_height="0.5px"
+        android:layout_marginLeft="@dimen/rc_dimen_size_5"
+        android:layout_marginRight="@dimen/rc_dimen_size_5"
         android:visibility="gone"
         android:background="@android:color/darker_gray" />
 </LinearLayout>

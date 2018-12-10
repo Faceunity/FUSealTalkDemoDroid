@@ -6,10 +6,10 @@
     android:layout_height="match_parent"
     android:background="@android:color/transparent"
     android:orientation="vertical"
-    android:paddingTop="6dp"
     android:paddingBottom="6dp"
     android:paddingLeft="8dp"
-    android:paddingRight="8dp">
+    android:paddingRight="8dp"
+    android:paddingTop="6dp">
 
     <TextView
         android:id="@id/rc_time"
@@ -18,9 +18,9 @@
         android:layout_height="20dp"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:gravity="center_vertical"
+        android:layout_marginBottom="12dp"
         android:layout_marginTop="12dp"
-        android:layout_marginBottom="12dp" />
+        android:gravity="center_vertical" />
 
     <LinearLayout
         android:id="@+id/ll_message_check"
@@ -28,7 +28,8 @@
         android:layout_height="40dp"
         android:layout_alignParentLeft="true"
         android:layout_below="@id/rc_time"
-        android:gravity="center_vertical">
+        android:gravity="center_vertical"
+        android:visibility="gone">
 
         <CheckBox
             android:id="@+id/message_check"
@@ -36,8 +37,7 @@
             android:layout_height="20dp"
             android:layout_marginRight="5dp"
             android:background="@drawable/rc_message_checkbox"
-            android:button="@null"
-            android:visibility="gone" />
+            android:button="@null" />
     </LinearLayout>
 
     <io.rong.imkit.widget.AsyncImageView
@@ -68,22 +68,21 @@
         style="@style/RCTheme.Message.Username.TextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:includeFontPadding="false"
         android:layout_below="@id/rc_time"
         android:layout_toLeftOf="@id/rc_right"
         android:layout_toRightOf="@id/rc_left"
         android:ellipsize="end"
         android:gravity="center_vertical"
+        android:layout_marginBottom="@dimen/rc_dimen_size_3"
         android:maxEms="14"
         android:singleLine="true"
-        android:visibility="gone"/>
+        android:visibility="gone" />
 
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/rc_title"
         android:layout_toLeftOf="@id/rc_right"
-        android:layout_marginTop="@dimen/rc_dimen_size_3"
         android:layout_toRightOf="@id/rc_left">
 
         <LinearLayout
@@ -138,8 +137,8 @@
                 android:id="@id/rc_read_receipt_request"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginRight="4dp"
                 android:layout_gravity="top"
+                android:layout_marginRight="4dp"
                 android:layout_marginTop="13dp"
                 android:drawableLeft="@drawable/rc_read_receipt_request_button"
                 android:drawableStart="@drawable/rc_read_receipt_request_button"
@@ -152,8 +151,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
-                android:layout_marginRight="4dp"
                 android:layout_marginBottom="5dp"
+                android:layout_marginRight="4dp"
                 android:text="@string/rc_read_receipt_status"
                 android:textColor="@color/rc_read_receipt_status"
                 android:textSize="12sp"

@@ -17,7 +17,7 @@
             android:layout_width="53dp"
             android:layout_height="wrap_content"
             android:scaleType="center"
-            android:src="@drawable/rc_menu_keyboard_selector"/>
+            android:src="@drawable/rc_menu_keyboard"/>
 
         <View
             android:id="@+id/rc_switch_divider"
