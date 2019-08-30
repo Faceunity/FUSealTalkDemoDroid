@@ -1,14 +1,13 @@
 package io.rong.callkit;
 
-import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.support.annotation.NonNull;
-import android.support.v4.app.Fragment;
+
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+
 import android.util.Log;
 import android.widget.Toast;
 
@@ -68,7 +67,7 @@ public class AudioPlugin implements IPluginModule, IPluginRequestPermissionResul
 
     private void startAudioActivity(Fragment currentFragment, final RongExtension extension) {
         RongCallSession profile = RongCallClient.getInstance().getCallSession();
-        if (profile != null && profile.getActiveTime() > 0) {
+        if (profile != null && profile.getStartTime() > 0) {
             Toast.makeText(context,
                     profile.getMediaType() == RongCallCommon.CallMediaType.AUDIO ?
                             currentFragment.getString(R.string.rc_voip_call_audio_start_fail) :
@@ -77,9 +76,7 @@ public class AudioPlugin implements IPluginModule, IPluginRequestPermissionResul
                     .show();
             return;
         }
-        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = cm.getActiveNetworkInfo();
-        if (networkInfo == null || !networkInfo.isConnected() || !networkInfo.isAvailable()) {
+        if (!CallKitUtils.isNetworkAvailable(context)) {
             Toast.makeText(context, currentFragment.getString(R.string.rc_voip_call_network_error), Toast.LENGTH_SHORT).show();
             return;
         }
@@ -94,7 +91,7 @@ public class AudioPlugin implements IPluginModule, IPluginRequestPermissionResul
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             Log.i(TAG,"getPackageName==="+context.getPackageName());
             intent.setPackage(context.getPackageName());
-            context.getApplicationContext().startActivity(intent);
+            context.startActivity(intent);
         } else if (conversationType.equals(Conversation.ConversationType.DISCUSSION)) {
             RongIM.getInstance().getDiscussion(targetId, new RongIMClient.ResultCallback<Discussion>() {
                 @Override
@@ -146,7 +143,7 @@ public class AudioPlugin implements IPluginModule, IPluginRequestPermissionResul
         intent.putStringArrayListExtra("observers",observers);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.setPackage(context.getPackageName());
-        context.getApplicationContext().startActivity(intent);
+        context.startActivity(intent);
     }
 
     @Override

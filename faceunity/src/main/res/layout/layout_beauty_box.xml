@@ -1,26 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="@dimen/x132"
-    android:layout_height="wrap_content"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
     android:orientation="vertical">
 
     <ImageView
         android:id="@+id/beauty_box_img"
-        android:layout_width="@dimen/x88"
-        android:layout_height="@dimen/x88"
-        android:layout_above="@+id/beauty_box_text"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="@dimen/x18"
-        android:scaleType="centerInside"/>
+        android:layout_width="@dimen/x120"
+        android:layout_height="@dimen/x120"
+        android:padding="@dimen/x8"
+        android:scaleType="centerCrop" />
 
     <TextView
         android:id="@+id/beauty_box_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="@dimen/x30"
-        android:textSize="@dimen/text_size_20"/>
+        android:layout_marginTop="@dimen/x8"
+        android:textSize="@dimen/min_text_size" />
 
-</RelativeLayout>
+</LinearLayout>

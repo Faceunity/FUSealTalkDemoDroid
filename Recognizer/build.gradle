@@ -2,7 +2,6 @@ apply plugin: 'com.android.library'
 
 android {
     compileSdkVersion 26
-    buildToolsVersion '27.0.3'
 
     defaultConfig {
         minSdkVersion 16
@@ -33,7 +32,9 @@ android {
 }
 
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile project(':IMKit')
-    compile 'com.android.support:support-v4:26.0.0'
+    api fileTree(include: ['*.jar'], dir: 'libs')
+    api 'cn.rongcloud.sdk:im_kit:2.9.19'
+    //im_kit必须依赖im_lib，所以需要加入对应依赖
+    api 'cn.rongcloud.sdk:im_lib:2.9.19'
+    api 'androidx.legacy:legacy-support-v4:1.0.0'
 }

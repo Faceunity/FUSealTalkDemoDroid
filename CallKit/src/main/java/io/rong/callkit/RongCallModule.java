@@ -2,20 +2,24 @@ package io.rong.callkit;
 
 import android.content.Context;
 import android.content.Intent;
-
-import com.bailingcloud.bailingvideo.engine.binstack.util.FinLog;
+import android.text.TextUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import cn.rongcloud.rtc.utils.FinLog;
 import io.rong.calllib.IRongReceivedCallListener;
 import io.rong.calllib.RongCallClient;
 import io.rong.calllib.RongCallCommon;
+import io.rong.calllib.RongCallMissedListener;
 import io.rong.calllib.RongCallSession;
+import io.rong.calllib.message.CallSTerminateMessage;
+import io.rong.calllib.message.MultiCallEndMessage;
 import io.rong.common.RLog;
 import io.rong.imkit.RongIM;
 import io.rong.imkit.manager.IExternalModule;
 import io.rong.imkit.plugin.IPluginModule;
+import io.rong.imlib.RongIMClient;
 import io.rong.imlib.model.Conversation;
 
 /**
@@ -27,6 +31,7 @@ public class RongCallModule implements IExternalModule {
     private RongCallSession mCallSession;
     private boolean mViewLoaded;
     private Context mContext;
+    private static RongCallMissedListener missedListener;
 
     public RongCallModule() {
         RLog.i(TAG, "Constructor");
@@ -36,6 +41,58 @@ public class RongCallModule implements IExternalModule {
     public void onInitialized(String appKey) {
         RongIM.registerMessageTemplate(new CallEndMessageItemProvider());
         RongIM.registerMessageTemplate(new MultiCallEndMessageProvider());
+        initMissedCallListener();
+    }
+
+    private void initMissedCallListener() {
+        RongCallClient.setMissedCallListener(new RongCallMissedListener() {
+            @Override
+            public void onRongCallMissed(RongCallSession callSession, RongCallCommon.CallDisconnectedReason reason) {
+                if (!TextUtils.isEmpty(callSession.getInviterUserId())) {
+                    if (callSession.getConversationType() == Conversation.ConversationType.PRIVATE) {
+                        CallSTerminateMessage message = new CallSTerminateMessage();
+                        message.setReason(reason);
+                        message.setMediaType(callSession.getMediaType());
+
+                        String extra;
+                        long time = (callSession.getEndTime() - callSession.getStartTime()) / 1000;
+                        if (time >= 3600) {
+                            extra = String.format("%d:%02d:%02d", time / 3600, (time % 3600) / 60, (time % 60));
+                        } else {
+                            extra = String.format("%02d:%02d", (time % 3600) / 60, (time % 60));
+                        }
+                        message.setExtra(extra);
+
+                        String senderId = callSession.getInviterUserId();
+                        if (senderId.equals(callSession.getSelfUserId())) {
+                            message.setDirection("MO");
+                            RongIM.getInstance().insertOutgoingMessage(Conversation.ConversationType.PRIVATE, callSession.getTargetId(), io.rong.imlib.model.Message.SentStatus.SENT, message, callSession.getStartTime(), null);
+                        } else {
+                            message.setDirection("MT");
+                            io.rong.imlib.model.Message.ReceivedStatus receivedStatus = new io.rong.imlib.model.Message.ReceivedStatus(0);
+                            receivedStatus.setRead();
+                            RongIM.getInstance().insertIncomingMessage(Conversation.ConversationType.PRIVATE, callSession.getTargetId(), senderId, receivedStatus, message, callSession.getStartTime(), null);
+                        }
+                    } else if (callSession.getConversationType() == Conversation.ConversationType.GROUP) {
+                        MultiCallEndMessage multiCallEndMessage = new MultiCallEndMessage();
+                        multiCallEndMessage.setReason(reason);
+                        if (callSession.getMediaType() == RongCallCommon.CallMediaType.AUDIO) {
+                            multiCallEndMessage.setMediaType(RongIMClient.MediaType.AUDIO);
+                        } else if (callSession.getMediaType() == RongCallCommon.CallMediaType.VIDEO) {
+                            multiCallEndMessage.setMediaType(RongIMClient.MediaType.VIDEO);
+                        }
+                        RongIM.getInstance().insertMessage(callSession.getConversationType(), callSession.getTargetId(), callSession.getCallerUserId(), multiCallEndMessage, callSession.getStartTime(), null);
+                    }
+                }
+                if (missedListener != null) {
+                    missedListener.onRongCallMissed(callSession, reason);
+                }
+            }
+        });
+    }
+
+    public static void setMissedCallListener(RongCallMissedListener listener) {
+        missedListener = listener;
     }
 
     @Override
@@ -43,7 +100,7 @@ public class RongCallModule implements IExternalModule {
         RongCallClient.getInstance().setVoIPCallListener(RongCallProxy.getInstance());
         // 开启音视频日志，如果不需要开启，则去掉下面这句。
         RongCallClient.getInstance().setEnablePrintLog(true);
-        RongCallClient.getInstance().setVideoProfile(RongCallCommon.CallVideoProfile.VIDEO_PROFILE_480P);
+        RongCallClient.getInstance().setVideoProfile(RongCallCommon.CallVideoProfile.VD_480x640_15f);
     }
 
     @Override
@@ -65,6 +122,7 @@ public class RongCallModule implements IExternalModule {
             @Override
             public void onCheckPermission(RongCallSession callSession) {
                 FinLog.d("VoIPReceiver", "onCheckPermissions");
+                mCallSession = callSession;
                 if (mViewLoaded) {
                     startVoIPActivity(mContext, callSession, true);
                 }
@@ -99,7 +157,7 @@ public class RongCallModule implements IExternalModule {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            RLog.i(TAG,"getPlugins()->Error :"+e.getMessage());
+            RLog.i(TAG, "getPlugins()->Error :" + e.getMessage());
         }
         return pluginModules;
     }

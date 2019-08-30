@@ -12,6 +12,7 @@ import android.widget.Toast;
 
 import java.util.Locale;
 
+import io.rong.callkit.util.CallKitUtils;
 import io.rong.calllib.RongCallClient;
 import io.rong.calllib.RongCallCommon;
 import io.rong.calllib.RongCallSession;
@@ -86,6 +87,7 @@ public class CallEndMessageItemProvider extends IContainerItemProvider.MessagePr
                 break;
             case HANGUP:
             case REMOTE_HANGUP:
+//            case CONN_USER_BLOCKED:
                 msgContent = v.getResources().getString(R.string.rc_voip_call_time_length);
                 msgContent += content.getExtra();
                 break;
@@ -168,6 +170,11 @@ public class CallEndMessageItemProvider extends IContainerItemProvider.MessagePr
                             view.getContext().getString(R.string.rc_voip_call_video_start_fail),
                     Toast.LENGTH_SHORT)
                     .show();
+            return;
+        }
+        Context context = view.getContext();
+        if (!CallKitUtils.isNetworkAvailable(context)) {
+            Toast.makeText(context, context.getString(R.string.rc_voip_call_network_error), Toast.LENGTH_SHORT).show();
             return;
         }
         RongCallCommon.CallMediaType mediaType = content.getMediaType();

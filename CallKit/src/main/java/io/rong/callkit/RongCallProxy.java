@@ -117,51 +117,23 @@ public class RongCallProxy implements IRongCallListener {
     }
 
     @Override
-    public void onWhiteBoardURL(String url) {
+    public void onNetworkSendLost(int lossRate, int delay) {
         if (mCallListener != null) {
-            mCallListener.onWhiteBoardURL(url);
+            mCallListener.onNetworkSendLost(lossRate, delay);
         }
     }
 
     @Override
-    public void onNetWorkLossRate(int lossRate) {
+    public void onFirstRemoteVideoFrame(String userId, int height, int width) {
         if (mCallListener != null) {
-            mCallListener.onNetWorkLossRate(lossRate);
+            mCallListener.onFirstRemoteVideoFrame(userId, height,width);
         }
     }
 
     @Override
-    public void onNotifySharingScreen(String userId, boolean isSharing) {
+    public void onNetworkReceiveLost(String userId, int lossRate) {
         if (mCallListener != null) {
-            mCallListener.onNotifySharingScreen(userId, isSharing);
-        }
-    }
-
-    @Override
-    public void onNotifyDegradeNormalUserToObserver(String userId) {
-        if (mCallListener != null) {
-            mCallListener.onNotifyDegradeNormalUserToObserver(userId);
-        }
-    }
-
-    @Override
-    public void onNotifyAnswerObserverRequestBecomeNormalUser(String userId, long status) {
-        if (mCallListener != null) {
-            mCallListener.onNotifyAnswerObserverRequestBecomeNormalUser(userId, status);
-        }
-    }
-
-    @Override
-    public void onNotifyUpgradeObserverToNormalUser() {
-        if (mCallListener != null) {
-            mCallListener.onNotifyUpgradeObserverToNormalUser();
-        }
-    }
-
-    @Override
-    public void onNotifyHostControlUserDevice(String userId, int dType, int isOpen) {
-        if (mCallListener != null) {
-            mCallListener.onNotifyHostControlUserDevice(userId, dType, isOpen);
+            mCallListener.onNetworkReceiveLost(userId, lossRate);
         }
     }
 

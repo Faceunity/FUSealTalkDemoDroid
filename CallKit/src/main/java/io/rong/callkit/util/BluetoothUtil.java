@@ -5,24 +5,15 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothClass;
-import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.content.ComponentName;
 import android.content.Context;
 import android.media.AudioManager;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.text.TextUtils;
-import android.util.Log;
 
-import com.bailingcloud.bailingvideo.engine.binstack.util.FinLog;
-
-import org.w3c.dom.Text;
-
-import java.lang.reflect.Method;
 import java.util.List;
-import java.util.Set;
+
+import io.rong.common.RLog;
 
 import static android.content.Context.AUDIO_SERVICE;
 
@@ -272,5 +263,45 @@ public class BluetoothUtil {
             }
         }
         return false;
+    }
+
+    /**
+     * 是否支持蓝牙
+     * @return
+     */
+    public static boolean isSupportBluetooth(){
+        boolean bool=false;
+        BluetoothAdapter bluetoothAdapter=BluetoothAdapter.getDefaultAdapter();
+        if(null!=bluetoothAdapter){
+            bool=true;
+        }
+        RLog.i(TAG,"isSupportBluetooth = "+bool);
+        return bool;
+    }
+
+    public static void startBlueToothSco(Context context) {
+        AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+        if (am != null) {
+            if (am.getMode() != AudioManager.MODE_IN_COMMUNICATION) {
+                am.setMode(AudioManager.MODE_IN_COMMUNICATION);
+            }
+            if (!am.isBluetoothScoOn()) {
+                am.startBluetoothSco();
+                am.setBluetoothScoOn(false);
+            }
+        }
+    }
+
+    public static void stopBlueToothSco(Context context) {
+        AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+        if (am != null) {
+            if (am.getMode() != AudioManager.MODE_IN_COMMUNICATION) {
+                am.setMode(AudioManager.MODE_IN_COMMUNICATION);
+            }
+            if (am.isBluetoothScoOn()) {
+                am.stopBluetoothSco();
+                am.setBluetoothScoOn(false);
+            }
+        }
     }
 }

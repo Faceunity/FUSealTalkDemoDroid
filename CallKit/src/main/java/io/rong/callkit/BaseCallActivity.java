@@ -12,7 +12,6 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.PackageManager;
 import android.content.res.AssetFileDescriptor;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
@@ -25,7 +24,7 @@ import android.os.Handler;
 import android.os.PowerManager;
 import android.os.Vibrator;
 import android.provider.Settings;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.util.Log;
 import android.view.SurfaceView;
 import android.view.View;
@@ -34,15 +33,12 @@ import android.view.WindowManager;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.bailingcloud.bailingvideo.engine.binstack.util.FinLog;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import io.rong.callkit.util.BluetoothUtil;
 import io.rong.callkit.util.CallKitUtils;
-import io.rong.callkit.util.HeadsetInfo;
 import io.rong.callkit.util.HeadsetPlugReceiver;
 import io.rong.calllib.IRongCallListener;
 import io.rong.calllib.RongCallClient;
@@ -54,9 +50,10 @@ import io.rong.imkit.manager.AudioPlayManager;
 import io.rong.imkit.manager.AudioRecordManager;
 import io.rong.imkit.utilities.PermissionCheckUtil;
 import io.rong.imkit.utils.NotificationUtil;
-import io.rong.imlib.model.UserInfo;
 
 import static io.rong.callkit.CallFloatBoxView.showFB;
+import static io.rong.callkit.util.CallKitUtils.isDebug;
+import static io.rong.callkit.util.CallKitUtils.isDial;
 
 /**
  * Created by weiqinxiao on 16/3/9.
@@ -88,6 +85,7 @@ public class BaseCallActivity extends BaseNoActionBarActivity implements IRongCa
     protected PickupDetector pickupDetector;
     protected PowerManager powerManager;
     protected PowerManager.WakeLock wakeLock;
+    protected PowerManager.WakeLock screenLock;
 
     static final String[] VIDEO_CALL_PERMISSIONS = {Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA};
     static final String[] AUDIO_CALL_PERMISSIONS = {Manifest.permission.RECORD_AUDIO};
@@ -148,6 +146,7 @@ public class BaseCallActivity extends BaseNoActionBarActivity implements IRongCa
     };
 
     private HeadsetPlugReceiver headsetPlugReceiver=null;
+    private AudioManager.OnAudioFocusChangeListener onAudioFocusChangeListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -159,13 +158,12 @@ public class BaseCallActivity extends BaseNoActionBarActivity implements IRongCa
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
         shouldRestoreFloat = true;
+        CallKitUtils.shouldShowFloat = false;
 
-        PowerManager pm = (PowerManager) this.getSystemService(Context.POWER_SERVICE);
-        boolean isScreenOn = pm.isScreenOn();
+        createPowerManager();
+        boolean isScreenOn = powerManager.isScreenOn();
         if (!isScreenOn) {
-            PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.SCREEN_DIM_WAKE_LOCK, "bright");
-            wl.acquire();
-            wl.release();
+            wakeLock.acquire();
         }
         handler = new Handler();
         RongCallProxy.getInstance().setCallListener(this);
@@ -180,6 +178,17 @@ public class BaseCallActivity extends BaseNoActionBarActivity implements IRongCa
         IntentFilter filter = new IntentFilter();
         filter.addAction(AudioManager.RINGER_MODE_CHANGED_ACTION);
         registerReceiver(mRingModeReceiver, filter);
+
+        AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        if (am != null) {
+            onAudioFocusChangeListener = new AudioManager.OnAudioFocusChangeListener() {
+                @Override
+                public void onAudioFocusChange(int focusChange) {
+
+                }
+            };
+            am.requestAudioFocus(onAudioFocusChangeListener, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
+        }
     }
 
     private void initMp() {
@@ -273,6 +282,12 @@ public class BaseCallActivity extends BaseNoActionBarActivity implements IRongCa
         }
     }
 
+    public void cancelTime(){
+        if(handler!=null && updateTimeRunnable !=null){
+            handler.removeCallbacks(updateTimeRunnable);
+        }
+    }
+
     public long getTime() {
         return time;
     }
@@ -298,6 +313,12 @@ public class BaseCallActivity extends BaseNoActionBarActivity implements IRongCa
     protected void startRing() {
         Uri uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
         try {
+            initMp();
+            AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+            if (am != null) {
+                am.setMode(AudioManager.MODE_NORMAL);
+                am.setSpeakerphoneOn(true);
+            }
             mMediaPlayer.setDataSource(this, uri);
             mMediaPlayer.prepareAsync();
         } catch (IOException e) {
@@ -378,13 +399,18 @@ public class BaseCallActivity extends BaseNoActionBarActivity implements IRongCa
             case OTHER_DEVICE_HAD_ACCEPTED:
                 text = getString(R.string.rc_voip_call_other);
                 break;
+//                case CONN_USER_BLOCKED:
+//                text = getString(R.string.rc_voip_call_conn_user_blocked);
+//                break;
         }
         if (text != null) {
             showShortToast(text);
         }
+        AudioPlayManager.getInstance().setInVoipMode(false);
         stopRing();
         NotificationUtil.clearNotification(this, BaseCallActivity.CALL_NOTIFICATION_ID);
         RongCallProxy.getInstance().setCallListener(null);
+        BluetoothUtil.stopBlueToothSco(this);
     }
 
     @Override
@@ -401,7 +427,7 @@ public class BaseCallActivity extends BaseNoActionBarActivity implements IRongCa
 
     @Override
     public void onRemoteUserLeft(String userId, RongCallCommon.CallDisconnectedReason reason) {
-
+        RLog.i(TAG,"onRemoteUserLeft userId :"+userId+", CallDisconnectedReason :"+reason.name());
     }
 
     @Override
@@ -411,6 +437,11 @@ public class BaseCallActivity extends BaseNoActionBarActivity implements IRongCa
 
     @Override
     public void onError(RongCallCommon.CallErrorCode errorCode) {
+        AudioPlayManager.getInstance().setInVoipMode(false);
+        if(RongCallCommon.CallErrorCode.ENGINE_NOT_FOUND.getValue()==errorCode.getValue() && isDebug(BaseCallActivity.this)){
+            Toast.makeText(this, getResources().getString(R.string.rc_voip_engine_notfound), Toast.LENGTH_LONG).show();
+            finish();
+        }
     }
 
     @Override
@@ -421,12 +452,18 @@ public class BaseCallActivity extends BaseNoActionBarActivity implements IRongCa
         CallKitUtils.callConnected=true;
         CallKitUtils.shouldShowFloat = true;
         CallKitUtils.isDial=false;
+        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        if (audioManager != null) {
+            audioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
+        }
+        AudioPlayManager.getInstance().setInVoipMode(true);
         AudioRecordManager.getInstance().destroyRecord();
     }
 
-
     @Override
-    protected void onPause() {
+    protected void onStop() {
+        super.onStop();
+        RLog.d(TAG, "BaseCallActivity onStop");
         if (CallKitUtils.shouldShowFloat && !checkingOverlaysPermission) {
             Bundle bundle = new Bundle();
             String action = onSaveFloatBoxState(bundle);
@@ -446,7 +483,6 @@ public class BaseCallActivity extends BaseNoActionBarActivity implements IRongCa
                 Toast.makeText(this, getString(R.string.rc_voip_float_window_not_allowed), Toast.LENGTH_SHORT).show();
             }
         }
-        super.onPause();
     }
 
     @Override
@@ -491,6 +527,7 @@ public class BaseCallActivity extends BaseNoActionBarActivity implements IRongCa
     @Override
     protected void onDestroy() {
         try {
+            RLog.d(TAG, "BaseCallActivity onDestroy");
             RongContext.getInstance().getEventBus().unregister(this);
             handler.removeCallbacks(updateTimeRunnable);
             unregisterReceiver(mRingModeReceiver);
@@ -502,6 +539,9 @@ public class BaseCallActivity extends BaseNoActionBarActivity implements IRongCa
             AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
             if (am != null) {
                 am.setMode(AudioManager.MODE_NORMAL);
+                if (onAudioFocusChangeListener != null) {
+                    am.abandonAudioFocus(onAudioFocusChangeListener);
+                }
             }
             if(mMediaPlayer!=null){
                 mMediaPlayer=null;
@@ -512,6 +552,9 @@ public class BaseCallActivity extends BaseNoActionBarActivity implements IRongCa
         }
         super.onDestroy();
         unRegisterHeadsetplugReceiver();
+        if (wakeLock != null && wakeLock.isHeld()) {
+            wakeLock.release();
+        }
     }
 
     @Override
@@ -520,37 +563,17 @@ public class BaseCallActivity extends BaseNoActionBarActivity implements IRongCa
     }
 
     @Override
-    public void onWhiteBoardURL(String url) {
+    public void onNetworkReceiveLost(String userId, int lossRate) {
 
     }
 
     @Override
-    public void onNetWorkLossRate(int lossRate) {
+    public void onNetworkSendLost(int lossRate, int delay) {
 
     }
 
     @Override
-    public void onNotifySharingScreen(String userId, boolean isSharing) {
-
-    }
-
-    @Override
-    public void onNotifyDegradeNormalUserToObserver(String userId) {
-
-    }
-
-    @Override
-    public void onNotifyAnswerObserverRequestBecomeNormalUser(String userId, long status) {
-
-    }
-
-    @Override
-    public void onNotifyUpgradeObserverToNormalUser() {
-
-    }
-
-    @Override
-    public void onNotifyHostControlUserDevice(String userId, int dType, int isOpen) {
+    public void onFirstRemoteVideoFrame(String userId, int height, int width) {
 
     }
 
@@ -579,15 +602,11 @@ public class BaseCallActivity extends BaseNoActionBarActivity implements IRongCa
         Intent intent = new Intent(getIntent().getAction());
         Bundle bundle = new Bundle();
         onSaveFloatBoxState(bundle);
+        bundle.putBoolean("isDial",isDial);
         intent.putExtra("floatbox", bundle);
         intent.putExtra("callAction", RongCallAction.ACTION_RESUME_CALL.getName());
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 1000, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         NotificationUtil.showNotification(this, title, content, pendingIntent, CALL_NOTIFICATION_ID, Notification.DEFAULT_LIGHTS);
-    }
-
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
     }
 
     @TargetApi(23)
@@ -654,10 +673,13 @@ public class BaseCallActivity extends BaseNoActionBarActivity implements IRongCa
         }
     }
 
-    protected void createPowerManager() {
+    private void createPowerManager() {
         if (powerManager == null) {
             powerManager = (PowerManager) getSystemService(POWER_SERVICE);
-            wakeLock = powerManager.newWakeLock(PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK, TAG);
+            wakeLock = powerManager.newWakeLock(PowerManager.ACQUIRE_CAUSES_WAKEUP|PowerManager.SCREEN_DIM_WAKE_LOCK, TAG);
+            wakeLock.setReferenceCounted(false);
+            screenLock = powerManager.newWakeLock(PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK, TAG);
+            screenLock.setReferenceCounted(false);
         }
     }
 
@@ -669,17 +691,17 @@ public class BaseCallActivity extends BaseNoActionBarActivity implements IRongCa
 
     @Override
     public void onPickupDetected(boolean isPickingUp) {
-        if (wakeLock == null) {
+        if (screenLock == null) {
             RLog.d(TAG, "No PROXIMITY_SCREEN_OFF_WAKE_LOCK");
             return;
         }
-        if (isPickingUp && !wakeLock.isHeld()) {
-            wakeLock.acquire();
+        if (isPickingUp && !screenLock.isHeld()) {
+            screenLock.acquire();
         }
-        if (!isPickingUp && wakeLock.isHeld()) {
+        if (!isPickingUp && screenLock.isHeld()) {
             try {
-                wakeLock.setReferenceCounted(false);
-                wakeLock.release();
+                screenLock.setReferenceCounted(false);
+                screenLock.release();
             } catch (Exception e) {
 
             }
@@ -720,12 +742,14 @@ public class BaseCallActivity extends BaseNoActionBarActivity implements IRongCa
      * outgoing （initView）incoming处注册
      */
     public void regisHeadsetPlugReceiver(){
-        IntentFilter intentFilter=new IntentFilter();
-        intentFilter.addAction("android.intent.action.HEADSET_PLUG");
-        intentFilter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
-        intentFilter.addAction(BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED);
-        headsetPlugReceiver=new HeadsetPlugReceiver();
-        registerReceiver(headsetPlugReceiver,intentFilter);
+        if(BluetoothUtil.isSupportBluetooth()){
+            IntentFilter intentFilter=new IntentFilter();
+            intentFilter.addAction("android.intent.action.HEADSET_PLUG");
+            intentFilter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
+            intentFilter.addAction(BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED);
+            headsetPlugReceiver=new HeadsetPlugReceiver();
+            registerReceiver(headsetPlugReceiver,intentFilter);
+        }
     }
 
     /**

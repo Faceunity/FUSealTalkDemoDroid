@@ -8,18 +8,16 @@
         android:id="@+id/rc_voip_call_large_preview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="gone">
-    </FrameLayout>
+        android:visibility="gone"></FrameLayout>
 
     <FrameLayout
         android:id="@+id/rc_voip_call_small_preview"
         android:layout_width="100dp"
         android:layout_height="180dp"
         android:layout_gravity="right|top"
-        android:layout_marginRight="5dp"
         android:layout_marginTop="12dp"
-        android:visibility="gone">
-    </FrameLayout>
+        android:layout_marginRight="5dp"
+        android:visibility="gone"></FrameLayout>
 
     <RelativeLayout
         android:id="@+id/rc_voip_call_information"
@@ -36,12 +34,24 @@
 
         </LinearLayout>
 
+        <TextView
+            android:id="@+id/rc_tv_connection_state"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/rc_voip_audio_chat"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="100dp"
+            android:textColor="@color/rc_voip_white"
+            android:textSize="16sp"
+            android:visibility="gone" />
+
         <RelativeLayout
             android:id="@+id/rc_voip_audio_chat"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_above="@+id/rc_voip_btn_layout"
             android:layout_alignParentRight="true"
+            android:layout_marginRight="45dp"
             android:layout_marginBottom="20dp"
             android:visibility="gone">
 
@@ -50,8 +60,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerHorizontal="true"
-                android:layout_marginRight="20dp"
-                android:src="@drawable/rc_voip_phone"/>
+                android:src="@drawable/rc_voip_phone" />
 
             <TextView
                 style="@style/rc_voip_text_style_style"
@@ -59,10 +68,10 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/rc_voip_audio_chat_btn"
                 android:layout_centerHorizontal="true"
-                android:layout_marginRight="20dp"
                 android:layout_marginTop="10dp"
-                android:text="@string/rc_voip_switch_to_audio"/>
+                android:text="@string/rc_voip_switch_to_audio" />
         </RelativeLayout>
+
 
         <LinearLayout
             android:id="@+id/rc_voip_btn_layout"
@@ -71,18 +80,15 @@
             android:layout_alignParentBottom="true"
             android:orientation="vertical">
 
-            <com.faceunity.ui.BeautyControlView
+            <com.faceunity.beautycontrolview.BeautyControlView
                 android:id="@+id/faceunity_control"
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/x98"/>
+                android:layout_height="@dimen/x98" />
 
             <FrameLayout
                 android:id="@+id/rc_voip_btn"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-            </FrameLayout>
-
+                android:layout_height="wrap_content"></FrameLayout>
         </LinearLayout>
-
     </RelativeLayout>
 </FrameLayout>
