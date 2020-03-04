@@ -3,10 +3,12 @@ package io.rong.callkit;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
+import android.hardware.Camera;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.text.TextUtils;
 import android.util.Log;
@@ -21,8 +23,8 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.faceunity.beautycontrolview.BeautyControlView;
-import com.faceunity.beautycontrolview.FURenderer;
+import com.faceunity.nama.FURenderer;
+import com.faceunity.nama.ui.BeautyControlView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,9 +75,13 @@ public class SingleCallActivity extends BaseCallActivity implements Handler.Call
     private RongCallCommon.CallMediaType mediaType;
 
     private FURenderer mFURenderer;
-    private BeautyControlView mFaceunityControlView;
-    private boolean isInit = false;
-    private String isOpen;
+    private Handler mGlHandler;
+    // 渲染是否暂停，当 APP 退到后台时
+    private boolean mIsRenderPaused;
+    // 切换相机时，跳过几十帧
+    private int mSkippedFrames = -1;
+    // 相机方向，默认前置
+    private int mCameraFacing = Camera.CameraInfo.CAMERA_FACING_FRONT;
 
     @Override
     final public boolean handleMessage(Message msg) {
@@ -137,27 +143,26 @@ public class SingleCallActivity extends BaseCallActivity implements Handler.Call
             finish();
         }
 
-        mFaceunityControlView = findViewById(R.id.faceunity_control);
-        isOpen = PreferenceUtil.getString(this, PreferenceUtil.KEY_FACEUNITY_ISON);
+        BeautyControlView beautyControlView = findViewById(R.id.faceunity_control);
+        String isOpenFU = PreferenceUtil.getString(this, PreferenceUtil.KEY_FACEUNITY_ISON);
 
-        if (isOpen.equals("true")) {
+        if ("true".equals(isOpenFU)) {
+            FURenderer.initFURenderer(this);
             mFURenderer = new FURenderer
                     .Builder(SingleCallActivity.this)
+                    .setInputTextureType(FURenderer.INPUT_2D_TEXTURE)
+                    .setInputImageOrientation(FURenderer.getCameraOrientation(mCameraFacing))
                     .build();
-            mFaceunityControlView.setOnFaceUnityControlListener(mFURenderer);
+            beautyControlView.setOnFaceUnityControlListener(mFURenderer);
         } else {
-            mFaceunityControlView.setVisibility(View.GONE);
+            beautyControlView.setVisibility(View.GONE);
         }
     }
-
 
     @Override
     protected void onNewIntent(Intent intent) {
         startForCheckPermissions = intent.getBooleanExtra("checkPermissions", false);
         RongCallAction callAction = RongCallAction.valueOf(intent.getStringExtra("callAction"));
-        if (callAction == null) {
-            return;
-        }
         if (callAction.equals(RongCallAction.ACTION_OUTGOING_CALL)) {
             if (intent.getAction().equals(RongVoIPIntent.RONG_INTENT_ACTION_VOIP_SINGLEAUDIO)) {
                 mediaType = RongCallCommon.CallMediaType.AUDIO;
@@ -306,18 +311,32 @@ public class SingleCallActivity extends BaseCallActivity implements Handler.Call
         if (pickupDetector != null && mediaType.equals(RongCallCommon.CallMediaType.AUDIO)) {
             pickupDetector.register(this);
         }
+        mIsRenderPaused = false;
         RongCallClient.getInstance().registerVideoFrameListener(new IVideoFrameListener() {
+            private boolean mIsFirstFrame = false;
+
             @Override
             public int processVideoFrame(int width, int height, int tex) {
-                if (mFURenderer == null) {
+                if (mIsRenderPaused || mSkippedFrames > 0) {
+                    if (--mSkippedFrames == 0) {
+                        if (mFURenderer != null) {
+                            mCameraFacing = mCameraFacing == Camera.CameraInfo.CAMERA_FACING_FRONT ?
+                                    Camera.CameraInfo.CAMERA_FACING_BACK : Camera.CameraInfo.CAMERA_FACING_FRONT;
+                            mFURenderer.onCameraChange(mCameraFacing, FURenderer.getCameraOrientation(mCameraFacing));
+                            // 切换相机后有一帧画面倒置
+                            mFURenderer.onDrawFrameSingleInput(tex, width, height);
+                        }
+                    }
                     return tex;
                 }
-                if (!isInit) {
-                    mFURenderer.loadItems();
-                    isInit = true;
+                if (!mIsFirstFrame) {
+                    mGlHandler = new Handler(Looper.myLooper());
+                    mFURenderer.onSurfaceCreated();
+                    mIsFirstFrame = true;
+                    Log.d(TAG, "processVideoFrame width:" + width + ", height:" + height + ", tex:" + tex
+                            + ", thread:" + Thread.currentThread().getName() + ", looper:" + Looper.myLooper());
                 }
-                int fuTex = mFURenderer.onDrawFrameSingleInputTex(tex, width, height);
-                return fuTex;
+                return mFURenderer.onDrawFrameSingleInput(tex, width, height);
             }
         });
     }
@@ -325,10 +344,23 @@ public class SingleCallActivity extends BaseCallActivity implements Handler.Call
     @Override
     protected void onPause() {
         super.onPause();
+        callSurfaceDestroyed();
         if (pickupDetector != null) {
             pickupDetector.unRegister();
         }
         RongCallClient.getInstance().unregisterVideoFrameObserver();
+    }
+
+    private void callSurfaceDestroyed() {
+        if (mGlHandler != null && !mIsRenderPaused) {
+            mGlHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    mIsRenderPaused = true;
+                    mFURenderer.onSurfaceDestroyed();
+                }
+            });
+        }
     }
 
     private void initView(RongCallCommon.CallMediaType mediaType, RongCallAction callAction) {
@@ -713,8 +745,14 @@ public class SingleCallActivity extends BaseCallActivity implements Handler.Call
         }
     }
 
+    /**
+     * 挂断
+     *
+     * @param view
+     */
     public void onHangupBtnClick(View view) {
         unRegisterHeadsetplugReceiver();
+        callSurfaceDestroyed();
         RongCallSession session = RongCallClient.getInstance().getCallSession();
         if (session == null || isFinishing) {
             finish();
@@ -832,6 +870,7 @@ public class SingleCallActivity extends BaseCallActivity implements Handler.Call
                 RongIM.getInstance().insertIncomingMessage(Conversation.ConversationType.PRIVATE, callSession.getTargetId(), senderId, receivedStatus, message, serverTime, null);
             }
         }
+        callSurfaceDestroyed();
         postRunnableDelay(new Runnable() {
             @Override
             public void run() {
@@ -875,8 +914,9 @@ public class SingleCallActivity extends BaseCallActivity implements Handler.Call
     @Override
     public void onRestoreFloatBox(Bundle bundle) {
         super.onRestoreFloatBox(bundle);
-        if (bundle == null)
+        if (bundle == null) {
             return;
+        }
         muted = bundle.getBoolean("muted");
         handFree = bundle.getBoolean("handFree");
 
@@ -947,11 +987,13 @@ public class SingleCallActivity extends BaseCallActivity implements Handler.Call
         return getIntent().getAction();
     }
 
+    @Override
     public void onMinimizeClick(View view) {
         super.onMinimizeClick(view);
     }
 
     public void onSwitchCameraClick(View view) {
+        mSkippedFrames = 10;
         RongCallClient.getInstance().switchCamera();
     }
 
