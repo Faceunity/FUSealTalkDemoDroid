@@ -1,12 +1,12 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 26
-    //buildToolsVersion '28.0.2'
+    compileSdkVersion 28
+    buildToolsVersion '28.0.3'
 
     defaultConfig {
         minSdkVersion 16
-        targetSdkVersion 23
+        targetSdkVersion 28
         versionCode 2019080119
         versionName "2.9.21 Dev"
     }
@@ -25,12 +25,12 @@ android {
 dependencies {
     api fileTree(dir: 'libs', include: ['*.jar'])
     api 'androidx.legacy:legacy-support-v4:1.0.0'
-    api 'androidx.core:core:1.2.0-alpha01'
-    api 'cn.rongcloud.sdk:im_kit:2.9.19'
+    api 'androidx.core:core:1.2.0'
+    api 'cn.rongcloud.sdk:im_kit:2.9.21'
     //im_kit必须依赖im_lib，所以需要加入对应依赖
-    api 'cn.rongcloud.sdk:im_lib:2.9.19'
+    api 'cn.rongcloud.sdk:im_lib:2.9.21'
     api project(':CallLib')
-    api 'com.github.bumptech.glide:glide:4.7.1'
+    api 'com.github.bumptech.glide:glide:4.9.0'
     api 'com.google.code.gson:gson:2.8.5'
     api project(':faceunity')
 }

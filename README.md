@@ -1,52 +1,45 @@
-# FUSealTalkDemoDroid
-FUQiniuShortVideoDemo 是集成了 Faceunity 面部跟踪和虚拟道具功能和 [sealtalk-android](https://github.com/sealtalk/sealtalk-android) 的 Demo 。
-本文是 FaceUnity SDK 快速对接 sealtalk 的导读说明，关于 FaceUnity SDK 的更多详细说明，请参看 [FULiveDemo](https://github.com/Faceunity/FULiveDemoDroid/tree/dev).
+# FUSealTalkDemoDroid 快速接入文档
+
+FUSealTalkDemoDroid 是集成了 FaceUnity 美颜道具贴纸功能和 **[融云 sealtalk](https://github.com/sealtalk/sealtalk-android)** 的 Demo。
+
+本文是 FaceUnity SDK 快速对接 sealtalk 的导读说明，关于 `FaceUnity SDK` 的详细说明，请参看 **[FULiveDemoDroid](https://github.com/Faceunity/FULiveDemoDroid/)**
 
 ## 快速集成方法
-### 添加module
-添加faceunity module到工程中，在app dependencies里添加compile project(':faceunity')
-### 修改代码
-#### 生成与销毁
-在SingleCallActivity的
-onCreate方法中添加（初始化并加载美颜道具、默认道具）
-```
-mFURenderer = new FURenderer.Builder(this).createEGLContext(true).inputImageOrientation(270).build();
-mFURenderer.loadItems();
-```
-onDestroy方法中添加（销毁道具）
-```
-mFURenderer.destroyItems();
-```
-#### 渲染道具到原始数据上
-在SingleCallActivity的onCreate方法里使用FURenderer将道具渲染到原始数据上
-```
-RongCallClient.getInstance().registerVideoFrameListener(new IVideoFrameListener() {
-    @Override
-    public boolean onCaptureVideoFrame(AgoraVideoFrame agoraVideoFrame) {
-        mFURenderer.onDrawFrame(agoraVideoFrame.getyBuffer(), agoraVideoFrame.getuBuffer(), agoraVideoFrame.getvBuffer(), agoraVideoFrame.getyStride(), agoraVideoFrame.getuStride(), agoraVideoFrame.getvStride(), agoraVideoFrame.getWidth(), agoraVideoFrame.getHeight());
-        return true;
-    }
-});
-```
-### 修改默认美颜参数
-修改faceunity中faceunity中以下代码
-```
-private float mFaceBeautyALLBlurLevel = 1.0f;//精准磨皮
-private float mFaceBeautyType = 0.0f;//美肤类型
-private float mFaceBeautyBlurLevel = 0.7f;//磨皮
-private float mFaceBeautyColorLevel = 0.5f;//美白
-private float mFaceBeautyRedLevel = 0.5f;//红润
-private float mBrightEyesLevel = 1000.7f;//亮眼
-private float mBeautyTeethLevel = 1000.7f;//美牙
 
-private float mFaceBeautyFaceShape = 4.0f;//脸型
-private float mFaceBeautyEnlargeEye = 0.4f;//大眼
-private float mFaceBeautyCheekThin = 0.4f;//瘦脸
-private float mFaceBeautyEnlargeEye_old = 0.4f;//大眼
-private float mFaceBeautyCheekThin_old = 0.4f;//瘦脸
-private float mChinLevel = 0.3f;//下巴
-private float mForeheadLevel = 0.3f;//额头
-private float mThinNoseLevel = 0.5f;//瘦鼻
-private float mMouthShape = 0.4f;//嘴形
-```
-参数含义与取值范围参考[这里](http://www.faceunity.com/technical/android-beauty.html)，如果使用界面，则需要同时修改界面中的初始值。
+### 一、导入 SDK
+
+将 faceunity  模块添加到工程中，下面是一些对文件的说明。
+
+- jniLibs 文件夹下 libnama.so 和 libfuai.so 是人脸跟踪和道具绘制的静态库
+- libs 文件夹下 nama.jar 是供应用层调用的 JNI 接口
+- assets 文件夹下 AI_model/ai_face_processor.bundle 是人脸识别数据包（自 6.6.0 版本起，v3.bundle 不再使用）
+- assets 文件夹下 face_beautification.bundle 是美颜功能数据包
+- assets 文件夹下 normal 中的 \*.bundle 文件是特效贴纸文件，自定义特效贴纸制作的文档和工具，请联系技术支持获取。
+
+### 二、使用 SDK
+
+#### 1. 初始化
+
+在 `FURenderer` 类 的  `initFURenderer` 静态方法是对 FaceUnity SDK 一些全局数据初始化的封装，可以在 Application 中调用，也可以在工作线程调用，仅需初始化一次即可。
+
+#### 2.创建
+
+在 `FURenderer` 类 的  `onSurfaceCreated` 方法是对 FaceUnity SDK 每次使用前数据初始化的封装。
+
+#### 3. 图像处理
+
+在 `FURenderer` 类 的  `onDrawFrame` 方法是对 FaceUnity SDK 图像处理方法的封装，该方法有许多重载方法适用于不同的数据类型需求。
+
+#### 4. 销毁
+
+在 `FURenderer` 类 的  `onSurfaceDestroyed` 方法是对 FaceUnity SDK 数据销毁的封装。
+
+#### 5. 切换相机
+
+调用 `FURenderer` 类 的  `onCameraChange` 方法，用于重新为 SDK 设置参数。
+
+### 三、切换道具及调整美颜参数
+
+`FURenderer` 类实现了 `OnFaceUnityControlListener` 接口，而 `OnFaceUnityControlListener` 接口是对切换贴纸道具及调整美颜参数等一系列操作的封装。在 demo 中，`BeautyControlView` 用于实现用户交互，调用了 `OnFaceUnityControlListener` 的方法实现功能。
+
+**至此快速集成完毕，关于 FaceUnity SDK 的更多详细说明，请参看 [FULiveDemoDroid](https://github.com/Faceunity/FULiveDemoDroid/)**

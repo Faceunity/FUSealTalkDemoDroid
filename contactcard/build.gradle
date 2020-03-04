@@ -1,11 +1,11 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 26
-
+    compileSdkVersion 28
+    buildToolsVersion = '28.0.3'
     defaultConfig {
         minSdkVersion 16
-        targetSdkVersion 23
+        targetSdkVersion 28
         versionCode 1
         versionName "1.0"
     }
@@ -19,8 +19,8 @@ android {
 
 dependencies {
     api fileTree(dir: 'libs', include: ['*.jar'])
-    api 'cn.rongcloud.sdk:im_kit:2.9.19'
+    api 'cn.rongcloud.sdk:im_kit:2.9.21'
     //im_kit必须依赖im_lib，所以需要加入对应依赖
-    api 'cn.rongcloud.sdk:im_lib:2.9.19'
-    implementation 'androidx.fragment:fragment:1.0.0'
+    api 'cn.rongcloud.sdk:im_lib:2.9.21'
+    implementation 'androidx.fragment:fragment:1.2.2'
 }
