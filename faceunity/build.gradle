@@ -6,9 +6,9 @@ android {
     defaultConfig {
         minSdkVersion 15
         targetSdkVersion 28
-        versionCode 660
-        versionName "6.6.0"
-        // 6.6.0_tf_phy-93f13193-b9e3359-7fd8bd8
+        versionCode 670
+        versionName "6.7.0"
+        // 6.7.0_tf_phy-8e357ade-b9e3359-f4e482c
     }
     buildTypes {
         release {
@@ -20,6 +20,6 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar', '*.aar'])
-    implementation 'com.android.support:appcompat-v7:28.0.0'
-    implementation 'com.android.support:recyclerview-v7:28.0.0'
+    implementation("androidx.appcompat:appcompat:1.1.0")
+    implementation("androidx.recyclerview:recyclerview:1.1.0")
 }
