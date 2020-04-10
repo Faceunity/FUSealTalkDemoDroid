@@ -322,7 +322,7 @@ public class SingleCallActivity extends BaseCallActivity implements Handler.Call
                         if (mFURenderer != null) {
                             mCameraFacing = mCameraFacing == Camera.CameraInfo.CAMERA_FACING_FRONT ?
                                     Camera.CameraInfo.CAMERA_FACING_BACK : Camera.CameraInfo.CAMERA_FACING_FRONT;
-                            mFURenderer.onCameraChange(mCameraFacing, FURenderer.getCameraOrientation(mCameraFacing));
+                            mFURenderer.onCameraChanged(mCameraFacing, FURenderer.getCameraOrientation(mCameraFacing));
                             // 切换相机后有一帧画面倒置
                             mFURenderer.onDrawFrameSingleInput(tex, width, height);
                         }
