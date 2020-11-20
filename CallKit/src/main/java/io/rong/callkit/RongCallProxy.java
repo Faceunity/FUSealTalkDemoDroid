@@ -2,18 +2,16 @@ package io.rong.callkit;
 
 import android.view.SurfaceView;
 
-import java.util.Queue;
-import java.util.concurrent.LinkedBlockingQueue;
-
+import io.rong.callkit.util.IncomingCallExtraHandleUtil;
 import io.rong.calllib.IRongCallListener;
 import io.rong.calllib.RongCallCommon;
 import io.rong.calllib.RongCallSession;
 import io.rong.common.RLog;
+import java.util.HashMap;
+import java.util.Queue;
+import java.util.concurrent.LinkedBlockingQueue;
 
-/**
- * Created by jiangecho on 2016/10/27.
- */
-
+/** Created by jiangecho on 2016/10/27. */
 public class RongCallProxy implements IRongCallListener {
 
     private static final String TAG = "RongCallProxy";
@@ -35,12 +33,13 @@ public class RongCallProxy implements IRongCallListener {
     public void setCallListener(IRongCallListener listener) {
         RLog.d(TAG, "setCallListener listener = " + listener);
         this.mCallListener = listener;
-//        if (listener != null) {
-//            CallDisconnectedInfo callDisconnectedInfo = mCachedCallQueue.poll();
-//            if (callDisconnectedInfo != null) {
-//                listener.onCallDisconnected(callDisconnectedInfo.mCallSession, callDisconnectedInfo.mReason);
-//            }
-//        }
+        //        if (listener != null) {
+        //            CallDisconnectedInfo callDisconnectedInfo = mCachedCallQueue.poll();
+        //            if (callDisconnectedInfo != null) {
+        //                listener.onCallDisconnected(callDisconnectedInfo.mCallSession,
+        // callDisconnectedInfo.mReason);
+        //            }
+        //        }
     }
 
     @Override
@@ -58,11 +57,12 @@ public class RongCallProxy implements IRongCallListener {
     }
 
     @Override
-    public void onCallDisconnected(RongCallSession callSession, RongCallCommon.CallDisconnectedReason reason) {
+    public void onCallDisconnected(
+            RongCallSession callSession, RongCallCommon.CallDisconnectedReason reason) {
         RLog.d(TAG, "RongCallProxy onCallDisconnected mCallListener = " + mCallListener);
         if (mCallListener != null) {
             mCallListener.onCallDisconnected(callSession, reason);
-        } else {
+        } else if (!IncomingCallExtraHandleUtil.needNotify()) {
             mCachedCallQueue.offer(new CallDisconnectedInfo(callSession, reason));
         }
     }
@@ -75,7 +75,11 @@ public class RongCallProxy implements IRongCallListener {
     }
 
     @Override
-    public void onRemoteUserJoined(String userId, RongCallCommon.CallMediaType mediaType, int userType, SurfaceView remoteVideo) {
+    public void onRemoteUserJoined(
+            String userId,
+            RongCallCommon.CallMediaType mediaType,
+            int userType,
+            SurfaceView remoteVideo) {
         if (mCallListener != null) {
             mCallListener.onRemoteUserJoined(userId, mediaType, userType, remoteVideo);
         }
@@ -96,7 +100,8 @@ public class RongCallProxy implements IRongCallListener {
     }
 
     @Override
-    public void onMediaTypeChanged(String userId, RongCallCommon.CallMediaType mediaType, SurfaceView video) {
+    public void onMediaTypeChanged(
+            String userId, RongCallCommon.CallMediaType mediaType, SurfaceView video) {
         if (mCallListener != null) {
             mCallListener.onMediaTypeChanged(userId, mediaType, video);
         }
@@ -117,6 +122,13 @@ public class RongCallProxy implements IRongCallListener {
     }
 
     @Override
+    public void onRemoteMicrophoneDisabled(String userId, boolean disabled) {
+        if (mCallListener != null) {
+            mCallListener.onRemoteMicrophoneDisabled(userId, disabled);
+        }
+    }
+
+    @Override
     public void onNetworkSendLost(int lossRate, int delay) {
         if (mCallListener != null) {
             mCallListener.onNetworkSendLost(lossRate, delay);
@@ -126,7 +138,34 @@ public class RongCallProxy implements IRongCallListener {
     @Override
     public void onFirstRemoteVideoFrame(String userId, int height, int width) {
         if (mCallListener != null) {
-            mCallListener.onFirstRemoteVideoFrame(userId, height,width);
+            mCallListener.onFirstRemoteVideoFrame(userId, height, width);
+        }
+    }
+
+    @Override
+    public void onAudioLevelSend(String audioLevel) {
+        if (mCallListener != null) {
+            mCallListener.onAudioLevelSend(audioLevel);
+        }
+    }
+
+    public void onRemoteUserPublishVideoStream(
+            String userId, String streamId, String tag, SurfaceView surfaceView) {
+        if (mCallListener != null) {
+            mCallListener.onRemoteUserPublishVideoStream(userId, streamId, tag, surfaceView);
+        }
+    }
+
+    @Override
+    public void onAudioLevelReceive(HashMap<String, String> audioLevel) {
+        if (mCallListener != null) {
+            mCallListener.onAudioLevelReceive(audioLevel);
+        }
+    }
+
+    public void onRemoteUserUnpublishVideoStream(String userId, String streamId, String tag) {
+        if (mCallListener != null) {
+            mCallListener.onRemoteUserUnpublishVideoStream(userId, streamId, tag);
         }
     }
 
@@ -141,7 +180,8 @@ public class RongCallProxy implements IRongCallListener {
         RongCallSession mCallSession;
         RongCallCommon.CallDisconnectedReason mReason;
 
-        public CallDisconnectedInfo(RongCallSession callSession, RongCallCommon.CallDisconnectedReason reason) {
+        public CallDisconnectedInfo(
+                RongCallSession callSession, RongCallCommon.CallDisconnectedReason reason) {
             this.mCallSession = callSession;
             this.mReason = reason;
         }

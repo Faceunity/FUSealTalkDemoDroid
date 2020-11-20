@@ -2,9 +2,9 @@ package cn.rongcloud.im.ui.activity;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
@@ -22,11 +22,16 @@ import java.util.Locale;
 
 import cn.rongcloud.im.R;
 import cn.rongcloud.im.common.IntentExtra;
+import cn.rongcloud.im.db.model.FriendDescription;
 import cn.rongcloud.im.db.model.FriendStatus;
+import cn.rongcloud.im.db.model.GroupEntity;
+import cn.rongcloud.im.db.model.GroupMemberInfoDes;
 import cn.rongcloud.im.db.model.UserInfo;
+import cn.rongcloud.im.event.DeleteFriendEvent;
 import cn.rongcloud.im.model.Resource;
 import cn.rongcloud.im.model.Status;
 import cn.rongcloud.im.ui.dialog.CommonDialog;
+import cn.rongcloud.im.ui.dialog.OperatePhoneNumBottomDialog;
 import cn.rongcloud.im.ui.dialog.SimpleInputDialog;
 import cn.rongcloud.im.ui.view.SealTitleBar;
 import cn.rongcloud.im.ui.view.SettingItemView;
@@ -41,6 +46,7 @@ import io.rong.callkit.RongVoIPIntent;
 import io.rong.calllib.RongCallClient;
 import io.rong.calllib.RongCallCommon;
 import io.rong.calllib.RongCallSession;
+import io.rong.eventbus.EventBus;
 import io.rong.imkit.RongIM;
 import io.rong.imlib.model.Conversation;
 
@@ -54,20 +60,34 @@ public class UserDetailActivity extends TitleBaseActivity implements View.OnClic
 
     private SelectableRoundedImageView userPortraitIv;
     private TextView userDisplayNameTv;
+    //2.1 版本电话号码不显示，替换为 SealTalk 账号
     private TextView phoneTv;
     private TextView userNameTv;
-//    private TextView blackListTv;
+    private TextView groupProtectionTv;
+    //    private TextView blackListTv;
+    private TextView grouNickNameTv;
     private LinearLayout chatGroupLl;
     private LinearLayout friendMenuLl;
     private Button addFriendBtn;
 
+    private SettingItemView sivDescription;
+    private SettingItemView sivDesPhone;
+    private SettingItemView sivGroupInfo;
+
     private UserDetailViewModel userDetailViewModel;
     private String userId;
+    private String groupId;
+    private String groupNickName;
     private UserInfo latestUserInfo;
     private UserInfo myUserInfo;
     private String fromGroupName;
     private boolean isInBlackList = false;
+    /**
+     * 是否在删除好友操作，如果在删除中则不更新好友状态，防止在删除时会有界面刷新
+     */
+    private boolean isInDeleteAction = false;
     private SettingItemView blacklistSiv;
+    private SettingItemView deleteContactSiv;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -91,7 +111,7 @@ public class UserDetailActivity extends TitleBaseActivity implements View.OnClic
             finish();
             return;
         }
-
+        groupId = intent.getStringExtra(IntentExtra.GROUP_ID);
         // 如果从群中添加好友，则附带群名称
         fromGroupName = intent.getStringExtra(IntentExtra.STR_GROUP_NAME);
 
@@ -108,14 +128,24 @@ public class UserDetailActivity extends TitleBaseActivity implements View.OnClic
         // 好友相关设置
         friendMenuLl = findViewById(R.id.profile_ll_detail_friend_menu_container);
 
+        //设置群信息
+        sivGroupInfo = findViewById(R.id.profile_siv_detail_group);
+        if (!TextUtils.isEmpty(groupId)) {
+            sivGroupInfo.setVisibility(View.VISIBLE);
+            sivGroupInfo.setOnClickListener(this);
+        }
         // 设置备注
-        findViewById(R.id.profile_siv_detail_alias).setOnClickListener(this);
+        sivDescription = findViewById(R.id.profile_siv_detail_alias);
+        sivDescription.setOnClickListener(this);
+        //设置号码
+        sivDesPhone = findViewById(R.id.profile_siv_detail_phone);
+        sivDesPhone.setOnClickListener(this);
         // 加入，移除黑名单
         blacklistSiv = findViewById(R.id.profile_siv_detail_blacklist);
         blacklistSiv.setOnClickListener(this);
         // 删除联系人
-        findViewById(R.id.profile_siv_detail_delete_contact).setOnClickListener(this);
-
+        deleteContactSiv = findViewById(R.id.profile_siv_detail_delete_contact);
+        deleteContactSiv.setOnClickListener(this);
         // 发起聊天相关
         chatGroupLl = findViewById(R.id.profile_ll_detail_chat_button_group);
 
@@ -125,6 +155,11 @@ public class UserDetailActivity extends TitleBaseActivity implements View.OnClic
         // 添加好友
         addFriendBtn = findViewById(R.id.profile_btn_detail_add_friend);
         addFriendBtn.setOnClickListener(this);
+
+        //群昵称
+        grouNickNameTv = findViewById(R.id.profile_tv_group_nick_name);
+
+        groupProtectionTv = findViewById(R.id.tv_group_protection_tips);
     }
 
     private void initViewModel() {
@@ -132,7 +167,8 @@ public class UserDetailActivity extends TitleBaseActivity implements View.OnClic
 
         // 获取用户状态
         userDetailViewModel.getUserInfo().observe(this, resource -> {
-            if (resource.data != null) {
+            if (resource.data != null
+                    && !isInDeleteAction) { //在删除好友时不进行好友信息的刷新，防止删除成功时画面会刷新再关闭
                 updateUserInfo(resource.data);
             }
         });
@@ -151,7 +187,9 @@ public class UserDetailActivity extends TitleBaseActivity implements View.OnClic
         userDetailViewModel.getIsInBlackList().observe(this, new Observer<Boolean>() {
             @Override
             public void onChanged(Boolean isInBlackList) {
-                updateBlackListItem(isInBlackList);
+                if (!isInDeleteAction) {
+                    updateBlackListItem(isInBlackList);
+                }
             }
         });
 
@@ -159,10 +197,12 @@ public class UserDetailActivity extends TitleBaseActivity implements View.OnClic
         userDetailViewModel.getAddBlackListResult().observe(this, new Observer<Resource<Void>>() {
             @Override
             public void onChanged(Resource<Void> resource) {
-                if (resource.status == Status.SUCCESS) {
-                    ToastUtils.showToast(R.string.common_add_successful);
-                } else if (resource.status == Status.ERROR) {
-                    ToastUtils.showToast(resource.message);
+                if (!isInDeleteAction){
+                    if (resource.status == Status.SUCCESS) {
+                        ToastUtils.showToast(R.string.common_add_successful);
+                    } else if (resource.status == Status.ERROR) {
+                        ToastUtils.showToast(resource.message);
+                    }
                 }
             }
         });
@@ -185,7 +225,12 @@ public class UserDetailActivity extends TitleBaseActivity implements View.OnClic
             public void onChanged(Resource<Void> resource) {
                 if (resource.status == Status.SUCCESS) {
                     ToastUtils.showToast(R.string.common_delete_successful);
+                    EventBus.getDefault().post(new DeleteFriendEvent(userId,true));
+                    // 删除成功后关闭界面
+                    finish();
                 } else if (resource.status == Status.ERROR) {
+                    // 删除失败时置回删除行为
+                    isInDeleteAction = false;
                     ToastUtils.showToast(resource.message);
                 }
             }
@@ -201,6 +246,122 @@ public class UserDetailActivity extends TitleBaseActivity implements View.OnClic
                 }
             }
         });
+
+        userDetailViewModel.getFriendDescription().observe(this, new Observer<Resource<FriendDescription>>() {
+            @Override
+            public void onChanged(Resource<FriendDescription> friendDescriptionResource) {
+                if (friendDescriptionResource.status != Status.LOADING && friendDescriptionResource.data != null) {
+                    updateDescription(friendDescriptionResource.data);
+                }
+            }
+        });
+        // 如果来自群聊，获取群信息
+        if (!TextUtils.isEmpty(groupId)) {
+            userDetailViewModel.requestMemberInfoDes(groupId, userId);
+            userDetailViewModel.getGroupMemberInfoDes().observe(this, new Observer<Resource<GroupMemberInfoDes>>() {
+                @Override
+                public void onChanged(Resource<GroupMemberInfoDes> groupMemberInfoDesResource) {
+                    if (groupMemberInfoDesResource.status != Status.LOADING && groupMemberInfoDesResource.data != null) {
+                        updateGroupInfoDes(groupMemberInfoDesResource.data);
+                    }
+                }
+            });
+            userDetailViewModel.groupInfoResult().observe(this, new Observer<GroupEntity>() {
+                @Override
+                public void onChanged(GroupEntity groupEntity) {
+                    updateMemberProtectStatus(groupEntity);
+                }
+            });
+        }
+    }
+
+    private void updateMemberProtectStatus(GroupEntity groupEntity) {
+        if (groupEntity != null) {
+            // 1 为开启了群成员保护模式
+            if (groupEntity.getMemberProtection() == 1) {
+                FriendStatus friendStatus = FriendStatus.getStatus(latestUserInfo.getFriendStatus());
+                if (!(friendStatus == FriendStatus.IS_FRIEND
+                        || friendStatus == FriendStatus.IN_BLACK_LIST)) {
+                    // 隐藏好友相关内容,
+//                    friendMenuLl.setVisibility(View.GONE);
+                    friendMenuLl.setVisibility(View.VISIBLE);
+                    sivDesPhone.setVisibility(View.GONE);
+                    sivDescription.setVisibility(View.GONE);
+                    blacklistSiv.setVisibility(View.GONE);
+                    deleteContactSiv.setVisibility(View.GONE);
+                    // 不显示添加好友
+                    addFriendBtn.setVisibility(View.GONE);
+                    //不显示 SealTalk 号
+                    phoneTv.setVisibility(View.GONE);
+                    //提示群保护(自己不显示),自己不显示个人信息
+                    if (!latestUserInfo.getId().equals(RongIM.getInstance().getCurrentUserId())) {
+                        groupProtectionTv.setVisibility(View.VISIBLE);
+                    }else{
+                        sivGroupInfo.setVisibility(View.GONE);
+                    }
+                }
+            } else {
+                // 自己时不显示添加好友
+                friendMenuLl.setVisibility(View.VISIBLE);
+                sivDesPhone.setVisibility(View.GONE);
+                sivDescription.setVisibility(View.GONE);
+                blacklistSiv.setVisibility(View.GONE);
+                deleteContactSiv.setVisibility(View.GONE);
+                //是自己的时候不显示添加好友按钮
+                if (latestUserInfo.getId().equals(RongIM.getInstance().getCurrentUserId())) {
+                    addFriendBtn.setVisibility(View.GONE);
+                } else {
+                    addFriendBtn.setVisibility(View.VISIBLE);
+                }
+            }
+        }
+    }
+
+    //更新群昵称
+    private void updateGroupInfoDes(GroupMemberInfoDes data) {
+        if (!TextUtils.isEmpty(data.getGroupNickname())) {
+            groupNickName = data.getGroupNickname();
+            grouNickNameTv.setText(getString(R.string.seal_mine_my_account_group_nick_name) + groupNickName);
+            grouNickNameTv.setVisibility(View.VISIBLE);
+        } else {
+            grouNickNameTv.setVisibility(View.GONE);
+        }
+    }
+
+    private void updateDescription(FriendDescription data) {
+        if (!TextUtils.isEmpty(data.getDescription())) {
+            sivDesPhone.setVisibility(View.VISIBLE);
+            sivDescription.setContent(R.string.profile_set_display_des);
+            sivDescription.setValue(data.getDescription());
+            sivDescription.getValueView().setSingleLine();
+            sivDescription.getValueView().setMaxEms(10);
+            sivDescription.getValueView().setEllipsize(TextUtils.TruncateAt.END);
+        } else {
+            // 同时为空显示'设置备注和描述'
+            if (TextUtils.isEmpty(data.getPhone())) {
+                sivDescription.setContent(R.string.profile_set_display_name);
+            } else {
+                sivDescription.setContent(R.string.profile_set_display_des);
+            }
+            sivDescription.setValue("");
+        }
+        if (!TextUtils.isEmpty(data.getPhone())) {
+            sivDesPhone.setVisibility(View.VISIBLE);
+            sivDesPhone.setValue(data.getPhone());
+            sivDesPhone.getValueView().setTextColor(getResources().getColor(R.color.color_blue_9F));
+            sivDesPhone.getValueView().setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    showOperatePhoneNumDialog();
+                }
+            });
+        } else {
+            //描述和电话好吗同时为空的时候才消失
+            if (TextUtils.isEmpty(data.getDescription())) {
+                sivDesPhone.setVisibility(View.GONE);
+            }
+            sivDesPhone.setValue("");
+        }
     }
 
     /**
@@ -212,7 +373,8 @@ public class UserDetailActivity extends TitleBaseActivity implements View.OnClic
         latestUserInfo = userInfo;
 
         FriendStatus friendStatus = FriendStatus.getStatus(userInfo.getFriendStatus());
-        if (friendStatus == FriendStatus.IS_FRIEND) {
+        if (friendStatus == FriendStatus.IS_FRIEND
+                || friendStatus == FriendStatus.IN_BLACK_LIST) {
             // 显示好友相关设置
             friendMenuLl.setVisibility(View.VISIBLE);
 
@@ -225,7 +387,6 @@ public class UserDetailActivity extends TitleBaseActivity implements View.OnClic
             if (!TextUtils.isEmpty(alias)) {
                 // 当有备注名时，主显示备注名，在底部显示额外的用户昵称
                 userDisplayNameTv.setText(alias);
-
                 userNameTv.setVisibility(View.VISIBLE);
                 String name = getString(R.string.seal_mine_my_account_nickname) + ":" + userInfo.getName();
                 userNameTv.setText(name);
@@ -236,25 +397,44 @@ public class UserDetailActivity extends TitleBaseActivity implements View.OnClic
             }
 
             // 当好友时显示手机号码
-            phoneTv.setVisibility(View.VISIBLE);
-            String phone = getString(R.string.seal_mine_my_account_phone_number) + ":" + userInfo.getPhoneNumber();
-            phoneTv.setText(phone);
+//            String phone = getString(R.string.seal_mine_my_account_phone_number) + ":" + userInfo.getPhoneNumber();
+//            phoneTv.setText(phone);
         } else {
             // 当非好友时隐藏聊天按钮组，显示添加好友
             chatGroupLl.setVisibility(View.GONE);
-            // 隐藏好友相关内容
-            friendMenuLl.setVisibility(View.GONE);
+            // 隐藏好友相关内容,
+            if (!TextUtils.isEmpty(groupId)) {
+                //获取是否开启群保护(来自群)
+                userDetailViewModel.getGroupInfo(groupId);
+            } else {
+                friendMenuLl.setVisibility(View.GONE);
 
+                // 自己时不显示添加好友
+                if (userInfo.getId().equals(RongIM.getInstance().getCurrentUserId())) {
+                    addFriendBtn.setVisibility(View.GONE);
+                } else {
+                    addFriendBtn.setVisibility(View.VISIBLE);
+                }
+            }
             userDisplayNameTv.setText(userInfo.getName());
             userNameTv.setVisibility(View.GONE);
-            phoneTv.setVisibility(View.GONE);
-
-            // 自己时不显示添加好友
-            if (userInfo.getId().equals(RongIM.getInstance().getCurrentUserId())) {
-                addFriendBtn.setVisibility(View.GONE);
-            } else {
-                addFriendBtn.setVisibility(View.VISIBLE);
-            }
+        }
+        //显示性别图标
+        Drawable drawable;
+        if (TextUtils.isEmpty(userInfo.getGender()) || "male".equals(userInfo.getGender())) {
+            drawable = getResources().getDrawable(R.drawable.seal_account_man);
+        } else {
+            drawable = getResources().getDrawable(R.drawable.seal_account_female);
+        }
+        drawable.setBounds(0, 0, drawable.getIntrinsicWidth(),
+                drawable.getIntrinsicHeight());
+        userDisplayNameTv.setCompoundDrawablePadding(14);
+        userDisplayNameTv.setCompoundDrawables(null, null, drawable, null);
+        //显示 SealTalk 账号
+        if (!TextUtils.isEmpty(userInfo.getStAccount())) {
+            phoneTv.setVisibility(View.VISIBLE);
+            String stAccount = getString(R.string.seal_mine_my_account_st_account) + userInfo.getStAccount();
+            phoneTv.setText(stAccount);
         }
         // 更新头像
         ImageLoaderUtils.displayUserPortraitImage(userInfo.getPortraitUri(), userPortraitIv);
@@ -279,6 +459,12 @@ public class UserDetailActivity extends TitleBaseActivity implements View.OnClic
         switch (v.getId()) {
             case R.id.profile_ll_detail_info_group:
                 break;
+            case R.id.profile_siv_detail_group:
+                toGroupUserInfoDetail();
+                break;
+            case R.id.profile_siv_detail_phone:
+                toSetAliasName();
+                break;
             case R.id.profile_siv_detail_alias:
                 toSetAliasName();
                 break;
@@ -301,17 +487,29 @@ public class UserDetailActivity extends TitleBaseActivity implements View.OnClic
                 showAddFriendDialog();
                 break;
             case R.id.profile_tv_detail_phone:
-                toCallPhone();
             default:
                 break;
         }
+    }
+
+    private void toGroupUserInfoDetail() {
+        Intent intentUserInfo = new Intent(this, GroupUserInfoActivity.class);
+        intentUserInfo.putExtra(IntentExtra.START_FROM_ID, GroupUserInfoActivity.FROM_USER_DETAIL);
+        intentUserInfo.putExtra(IntentExtra.GROUP_ID, groupId);
+        intentUserInfo.putExtra(IntentExtra.STR_TARGET_ID, userId);
+        startActivity(intentUserInfo);
+    }
+
+    private void showOperatePhoneNumDialog() {
+        OperatePhoneNumBottomDialog dialog = new OperatePhoneNumBottomDialog(sivDesPhone.getValueView().getText().toString());
+        dialog.show(getSupportFragmentManager(), null);
     }
 
     /**
      * 跳转到设置备注名
      */
     private void toSetAliasName() {
-        Intent intent = new Intent(this, EditAliasActivity.class);
+        Intent intent = new Intent(this, EditUserDescribeActivity.class);//EditAliasActivity
         intent.putExtra(IntentExtra.STR_TARGET_ID, userId);
         startActivity(intent);
     }
@@ -353,7 +551,10 @@ public class UserDetailActivity extends TitleBaseActivity implements View.OnClic
                 .setDialogButtonClickListener(new CommonDialog.OnDialogButtonClickListener() {
                     @Override
                     public void onPositiveClick(View v, Bundle bundle) {
+                        // 标记正在删除好友
+                        isInDeleteAction = true;
                         userDetailViewModel.deleteFriend(userId);
+                        userDetailViewModel.addToBlackList();
                     }
 
                     @Override
@@ -384,7 +585,7 @@ public class UserDetailActivity extends TitleBaseActivity implements View.OnClic
         if (latestUserInfo == null) return;
 
         RongCallSession profile = RongCallClient.getInstance().getCallSession();
-        if (profile != null && profile.getActiveTime() > 0) {
+        if (profile != null && profile.getStartTime() > 0) {
             ToastUtils.showToast(profile.getMediaType() == RongCallCommon.CallMediaType.AUDIO ?
                             getString(io.rong.callkit.R.string.rc_voip_call_audio_start_fail) :
                             getString(io.rong.callkit.R.string.rc_voip_call_video_start_fail),
@@ -414,7 +615,7 @@ public class UserDetailActivity extends TitleBaseActivity implements View.OnClic
         if (latestUserInfo == null) return;
 
         RongCallSession profile = RongCallClient.getInstance().getCallSession();
-        if (profile != null && profile.getActiveTime() > 0) {
+        if (profile != null && profile.getStartTime() > 0) {
             ToastUtils.showToast(
                     profile.getMediaType() == RongCallCommon.CallMediaType.AUDIO ?
                             getString(io.rong.callkit.R.string.rc_voip_call_audio_start_fail) :
@@ -461,18 +662,5 @@ public class UserDetailActivity extends TitleBaseActivity implements View.OnClic
             }
         });
         dialog.show(getSupportFragmentManager(), null);
-    }
-
-    /**
-     * 拨打电话
-     */
-    private void toCallPhone() {
-        String phone = phoneTv.getText().toString();
-        if (!TextUtils.isEmpty(phoneTv.getText().toString())) {
-            Uri telUri = Uri.parse("tel:" + phone);
-            Intent intent = new Intent(Intent.ACTION_DIAL, telUri);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
-        }
     }
 }

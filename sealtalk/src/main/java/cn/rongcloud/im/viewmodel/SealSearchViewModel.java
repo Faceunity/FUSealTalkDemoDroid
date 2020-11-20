@@ -115,15 +115,9 @@ public class SealSearchViewModel extends AndroidViewModel {
     }
 
     public void searchGroupByName(String match) {
-        SLog.i(TAG, "searchGroupByName match: " + match);
-        groupMatchbyName = match;
-        groupSearhByName.setSource(groupTask.searchGroupByName(match));
-    }
-
-    public void searchGroupContactByName(String match) {
         SLog.i(TAG, "searchGroupContactByName match: " + match);
         groupContactMatchByName = match;
-        groupContactSearhByName.setSource(groupTask.searchGroupContactByName(match));
+        groupContactSearhByName.setSource(groupTask.searchGroupByName(match));
     }
 
     /**
@@ -283,8 +277,8 @@ public class SealSearchViewModel extends AndroidViewModel {
             return;
         int priorityTarget = models.get(0).getPriority();
         List<SearchModel> removeList = new ArrayList<>();
-        for(SearchModel model : resultAll){
-            if(model.getPriority() == priorityTarget){
+        for (SearchModel model : resultAll) {
+            if (model.getPriority() == priorityTarget) {
                 removeList.add(model);
             }
         }
@@ -373,8 +367,10 @@ public class SealSearchViewModel extends AndroidViewModel {
                 }
             } else if (result.getConversation().getConversationType() == Conversation.ConversationType.GROUP) {
                 GroupEntity groupEntity = groupTask.getGroupInfoSync(result.getConversation().getTargetId());
-                name = groupEntity.getName();
-                portraitUrl = groupEntity.getPortraitUri();
+                if (groupEntity != null) {
+                    name = groupEntity.getName();
+                    portraitUrl = groupEntity.getPortraitUri();
+                }
             }
             searchConversationModel = new SearchConversationModel(result, R.layout.serach_fragment_recycler_conversation_item, conversationMatch, name, portraitUrl);
             output.add(searchConversationModel);

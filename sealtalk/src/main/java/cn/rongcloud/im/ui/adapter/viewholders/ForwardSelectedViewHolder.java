@@ -35,12 +35,17 @@ public class ForwardSelectedViewHolder extends BaseItemViewHolder<ListItemModel>
     }
 
     @Override
+    public void setOnLongClickItemListener(View.OnLongClickListener listener) {
+
+    }
+
+    @Override
     public void update(ListItemModel model) {
         if (model != null) {
             if (model.getItemView().getType() == ListItemModel.ItemView.Type.GROUP ) {
                 GroupEntity group = (GroupEntity)model.getData();
               userInfoUiv.setName(model.getDisplayName() + "（" + group.getMemberCount()+"）");
-            } else if (model.getItemView().getType() == ListItemModel.ItemView.Type.GROUP ) {
+            } else if (model.getItemView().getType() == ListItemModel.ItemView.Type.FRIEND ) {
                 userInfoUiv.setName(model.getDisplayName());
             }
             ImageLoaderUtils.displayGroupPortraitImage(model.getPortraitUrl(), userInfoUiv.getHeaderImageView());

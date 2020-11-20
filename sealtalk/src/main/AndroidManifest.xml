@@ -2,6 +2,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="cn.rongcloud.im">
 
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="MediaStore.Images.Media.INTERNAL_CONTENT_URI"/>
+    <uses-permission android:name="MediaStore.Images.Media.EXTERNAL_CONTENT_URI"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <!-- ⼩米 配置开始 < -->
     <permission
@@ -46,6 +51,11 @@
     <uses-permission android:name="com.coloros.mcs.permission.SEND_MCS_MESSAGE" />
     <!-- OPPO 配置结束-->
 
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+
+    <uses-permission android:name="android.permission.VIBRATE" />
+
 
     <application
         android:name=".SealApp"
@@ -57,13 +67,19 @@
         android:theme="@style/AppTheme">
 
         <activity
-            android:name=".NeedFaceUnityAcct"
-            android:screenOrientation="portrait"
-            android:windowSoftInputMode="stateHidden">
+            android:name="NeedFaceUnityAcct"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".ui.activity.SplashActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/SplashTheme"
+            android:windowSoftInputMode="stateHidden">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -74,13 +90,17 @@
                     android:host="*"
                     android:scheme="sealtalk" />
             </intent-filter>
-        </activity>
 
-        <activity
-            android:name=".ui.activity.SplashActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/SplashTheme"
-            android:windowSoftInputMode="stateHidden" />
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data
+                    android:host="cn.rongcloud.im"
+                    android:pathPrefix="/conversationlist"
+                    android:scheme="rong" />
+            </intent-filter>
+        </activity>
 
         <activity
             android:name=".ui.activity.LoginActivity"
@@ -131,7 +151,11 @@
         <activity
             android:name=".ui.activity.NewFriendListActivity"
             android:screenOrientation="portrait"
-            android:windowSoftInputMode="stateHidden|adjustResize"></activity>
+            android:windowSoftInputMode="stateHidden|adjustResize" />
+        <activity
+            android:name=".ui.activity.GroupNoticeListActivity"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden|adjustResize" />
         <activity
             android:name=".ui.activity.SealSearchActivity"
             android:screenOrientation="portrait" />
@@ -207,30 +231,40 @@
             android:screenOrientation="portrait" />
         <activity
             android:name=".ui.activity.SelectSingleFriendActivity"
-            android:screenOrientation="portrait"></activity>
+            android:screenOrientation="portrait" />
         <activity
             android:name=".ui.activity.SelectGroupMemberActivity"
-            android:screenOrientation="portrait"></activity>
+            android:screenOrientation="portrait" />
         <activity
-            android:name=".ui.activity.SelectFriendExcluedGroupActivity"
-            android:screenOrientation="portrait"></activity>
+            android:name=".ui.activity.SelectGroupMemberAllowEmptyActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.activity.SelectFriendExcludeGroupActivity"
+            android:screenOrientation="portrait" />
 
         <activity
             android:name=".ui.activity.SelectForwardCreateChatActivity"
             android:screenOrientation="portrait" />
         <activity
             android:name=".ui.activity.SelectCreateGroupActivity"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden" />
         <activity
             android:name=".ui.activity.ForwardActivity"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustPan" />
         <activity
             android:name=".ui.activity.MyAccountActivity"
-            android:screenOrientation="portrait"></activity>
+            android:screenOrientation="portrait" />
         <activity
             android:name=".ui.activity.UpdateNameActivity"
-            android:screenOrientation="portrait"></activity>
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.activity.UpdateStAccountActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.activity.UpdateGenderActivity"
+            android:screenOrientation="portrait" />
 
         <activity
             android:name=".ui.activity.CreateGroupActivity"
@@ -248,6 +282,15 @@
             android:name=".ui.activity.BlackListActivity"
             android:screenOrientation="portrait" />
         <activity
+            android:name=".ui.activity.GroupUserInfoActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.activity.SelectChatBgActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.activity.ImagePreviewActivity"
+            android:screenOrientation="portrait" />
+        <activity
             android:name=".ui.activity.NewMessageRemindActivity"
             android:screenOrientation="portrait" />
         <activity
@@ -259,6 +302,11 @@
         <activity
             android:name=".ui.activity.QrCodeDisplayActivity"
             android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".ui.activity.QrCodeDisplayWindowActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/TranslucentNoTitleActivity" />
 
         <activity
             android:name=".ui.activity.SealPicturePagerActivity"
@@ -281,13 +329,49 @@
             android:name=".ui.activity.GroupSetNewGroupOwnerActivity"
             android:screenOrientation="portrait" />
         <activity
+            android:name=".ui.activity.GroupCopyActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.activity.GroupExitedListActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.activity.ClearChatMessageActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.activity.EditUserDescribeActivity"
+            android:screenOrientation="portrait" />
+        <activity
             android:name=".ui.activity.SelectForwardMoreContactActivity"
             android:screenOrientation="portrait" />
         <activity
             android:name=".ui.activity.ForwardSelectedDetailActivity"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.activity.ScanActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.activity.AddFriendActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.activity.AddFriendFromContactActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.activity.InviteFriendFromContactActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.activity.RequestContactPermissionActivity"
+            android:screenOrientation="portrait" />
 
-        </activity>
+        <activity
+            android:name=".ui.activity.PokeInviteChatActivity"
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait"
+            android:theme="@style/DeepBlackTranslucentNoTitleActivity" />
+
+        <activity
+            android:name=".ui.activity.MultiDeleteFriendsActivity"
+            android:screenOrientation="portrait" />
+
 
         <!-- 请将CHANNAL改为app的发布渠道 < -->
         <meta-data
@@ -295,22 +379,28 @@
             android:value="CHANNAL" />
 
         <!-- 高德地图-->
+        <!--
         <meta-data
             android:name="com.amap.api.v2.apikey"
-            android:value="e09af6a2b26c02086e9216bd07c960ae" />
+            android:value="替换你申请的高德地图 ApiKey" />
+        -->
 
+        <!--
         <meta-data
             android:name="UMENG_APPKEY"
-            android:value="577b2b55e0f55afbcb0026c6" />
+            android:value="替换您申请的 UMeng AppKey" />
+        -->
 
+        <!--
         <meta-data
             android:name="UMENG_CHANNEL"
-            android:value="RongCloudApp" />
+            android:value="替换您申请的 UMeng Channel" />
+        -->
 
         <!-- push start-->
         <receiver
             android:name=".push.SealNotificationReceiver"
-            android:exported="true">
+            android:exported="false">
             <intent-filter>
                 <action android:name="io.rong.push.intent.MESSAGE_ARRIVED" />
                 <action android:name="io.rong.push.intent.MESSAGE_CLICKED" />
@@ -371,69 +461,8 @@
         </receiver>
         <!-- 小米 配置结束 < -->
 
-        <!-- HMS 配置开始-->
-        <meta-data
-            android:name="com.huawei.hms.client.appid"
-            android:value="10535759" />
-
-        <!-- BridgeActivity定义了HMS-SDK中一些跳转所需要的透明页面-->
-        <activity
-            android:name="com.huawei.hms.activity.BridgeActivity"
-            android:configChanges="orientation|locale|screenSize|layoutDirection|fontScale"
-            android:excludeFromRecents="true"
-            android:exported="false"
-            android:hardwareAccelerated="true"
-            android:theme="@android:style/Theme.Translucent">
-            <meta-data
-                android:name="hwc-theme"
-                android:value="androidhwext:style/Theme.Emui.Translucent" />
-        </activity>
-
-        <!-- 解决华为移动服务升级问题的透明界面（必须声明）-->
-        <activity
-            android:name="io.rong.push.platform.hms.common.HMSAgentActivity"
-            android:configChanges="orientation|locale|screenSize|layoutDirection|fontScale"
-            android:excludeFromRecents="true"
-            android:exported="false"
-            android:hardwareAccelerated="true"
-            android:theme="@android:style/Theme.Translucent">
-            <meta-data
-                android:name="hwc-theme"
-                android:value="androidhwext:style/Theme.Emui.Translucent" />
-        </activity>
-
-        <provider
-            android:name="com.huawei.hms.update.provider.UpdateProvider"
-            android:authorities="cn.rongcloud.im.hms.update.provider"
-            android:exported="false"
-            android:grantUriPermissions="true"></provider>
-
-
-        <!-- 第三方相关 :接收Push消息（注册、Push消息、Push连接状态）广播 -->
-
-
-        <receiver android:name="io.rong.push.platform.hms.HMSReceiver">
-            <intent-filter>
-                <!-- 必须,用于接收token -->
-                <action android:name="com.huawei.android.push.intent.REGISTRATION" />
-                <!-- 必须，用于接收消息 -->
-                <action android:name="com.huawei.android.push.intent.RECEIVE" />
-                <!-- 可选，用于点击通知栏或通知栏上的按钮后触发onEvent回调 -->
-                <action android:name="com.huawei.android.push.intent.CLICK" />
-                <!-- 可选，查看push通道是否连接，不查看则不需要 -->
-                <action android:name="com.huawei.intent.action.PUSH_STATE" />
-            </intent-filter>
-        </receiver>
-        <receiver android:name="com.huawei.hms.support.api.push.PushEventReceiver">
-            <intent-filter>
-
-                <!-- 接收通道发来的通知栏消息，兼容老版本Push -->
-                <action android:name="com.huawei.intent.action.PUSH" />
-            </intent-filter>
-        </receiver>
-        <!-- HMS 配置结束-->
-
         <!-- [START firebase_service] -->
+        <!--
         <service
             android:name="io.rong.push.platform.google.RongFirebaseMessagingService"
             android:stopWithTask="false">
@@ -441,15 +470,14 @@
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
-
         <meta-data
             android:name="firebase_messaging_auto_init_enabled"
             android:value="false" />
         <meta-data
             android:name="firebase_analytics_collection_enabled"
             android:value="false" />
+         -->
         <!-- [END firebase_service] -->
-
 
         <!-- MeiZu 配置开始 < -->
         <receiver android:name="io.rong.push.platform.meizu.MeiZuReceiver">
@@ -484,13 +512,25 @@
         <activity
             android:name=".ui.activity.GroupReadReceiptDetailActivity"
             android:screenOrientation="portrait" />
+
+        <!-- 微信 接收微信的请求及返回值 -->
+        <activity android:name=".wxapi.WXEntryActivity"
+            android:label="@string/app_name"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar"
+            android:exported="true"
+            android:taskAffinity="net.sourceforge.simcpux"
+            android:launchMode="singleTask"
+            />
+
         <!--推送配置项-->
+        <!--
         <meta-data
             android:name="com.vivo.push.api_key"
-            android:value="2efff5bb-2713-424a-8042-5242421b3dc9" />
+            android:value="您申请的 vivo 推送 ApiKey" />
         <meta-data
             android:name="com.vivo.push.app_id"
-            android:value="10441" />
+            android:value="您申请的 vivo 推送 AppId" />
+         -->
 
         <!-- push 应用定义消息 receiver 声明 -->
         <receiver android:name="io.rong.push.platform.vivo.VivoPushMessageReceiver">
@@ -501,19 +541,15 @@
         </receiver>
         <!-- vivo 推送配置 结束 -->
 
-        <!-- OPPO push 配置开始-->
-        <service
-            android:name="com.coloros.mcssdk.PushService"
-            android:permission="com.coloros.mcs.permission.SEND_MCS_MESSAGE">
-            <intent-filter>
-                <action android:name="com.coloros.mcs.action.RECEIVE_MCS_MESSAGE" />
-            </intent-filter>
-        </service>
-        <!-- OPPO push 配置结束-->
-
         <!--第三方推送的权限 广播 服务 配置结束-->
         <!-- push end -->
 
+        <!-- bugly 配置 APP ID -->
+        <!--
+        <meta-data
+            android:name="BUGLY_APPID"
+            android:value="您申请 BUGLY 的 AppId" />
+        -->
 
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -524,6 +560,11 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/rc_file_path" />
         </provider>
+
+        <service android:name="io.rong.push.platform.hms.HMSPushService" android:exported="false">
+            <intent-filter>
+                <action android:name="com.huawei.push.action.MESSAGING_EVENT" /> </intent-filter>
+        </service>
     </application>
 
 </manifest>

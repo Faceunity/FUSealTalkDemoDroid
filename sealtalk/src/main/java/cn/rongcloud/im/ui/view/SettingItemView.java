@@ -26,6 +26,8 @@ public class SettingItemView extends LinearLayout {
     private boolean isShowSelected = false;
     private ImageView ivRightImage;
 
+    private CompoundButton.OnCheckedChangeListener checkedListener;
+
     public SettingItemView(Context context) {
         super(context);
         init(null);
@@ -204,6 +206,15 @@ public class SettingItemView extends LinearLayout {
     }
 
     /**
+     * 设置右侧图片的隐藏
+     *
+     * @param visibility
+     */
+    public void setRightImageVisibility(int visibility) {
+        ivRightImage.setVisibility(visibility);
+    }
+
+    /**
      * 设置标示图片显示隐藏
      *
      * @param visibility
@@ -237,7 +248,12 @@ public class SettingItemView extends LinearLayout {
      * @param listener
      */
     public void setSwitchCheckListener(CompoundButton.OnCheckedChangeListener listener) {
-        sbSwitch.setOnCheckedChangeListener(listener);
+        checkedListener = listener;
+        sbSwitch.setOnCheckedChangeListener(checkedListener);
+    }
+
+    public void setSwitchTouchListener(OnTouchListener listener) {
+        sbSwitch.setOnTouchListener(listener);
     }
 
 
@@ -271,7 +287,15 @@ public class SettingItemView extends LinearLayout {
     }
 
     /**
+     * 设置 value 颜色
+     */
+    public TextView getValueView() {
+        return tvValue;
+    }
+
+    /**
      * 获取value
+     *
      * @return
      */
     public String getValue() {
@@ -327,12 +351,41 @@ public class SettingItemView extends LinearLayout {
     }
 
     /**
+     * 设置 switch 按钮选择状态,不触发选中事件
+     *
+     * @param isChecked
+     */
+    public void setCheckedWithOutEvent(boolean isChecked) {
+        sbSwitch.setOnCheckedChangeListener(null);
+        sbSwitch.setChecked(isChecked);
+        sbSwitch.setOnCheckedChangeListener(checkedListener);
+    }
+
+    /**
      * 立即设置 switch 按钮选择状态，没有动画
      *
      * @param isChecked
      */
     public void setCheckedImmediately(boolean isChecked) {
         sbSwitch.setCheckedImmediately(isChecked);
+    }
+
+    /**
+     * 立即设置 switch 按钮选择状态，没有动画,不触发选中事件
+     *
+     * @param isChecked
+     */
+    public void setCheckedImmediatelyWithOutEvent(boolean isChecked) {
+        sbSwitch.setOnCheckedChangeListener(null);
+        sbSwitch.setCheckedImmediately(isChecked);
+        sbSwitch.setOnCheckedChangeListener(checkedListener);
+    }
+
+    /**
+     * 获取当前 switch 状态
+     */
+    public boolean isChecked() {
+        return sbSwitch.isChecked();
     }
 
     @Override

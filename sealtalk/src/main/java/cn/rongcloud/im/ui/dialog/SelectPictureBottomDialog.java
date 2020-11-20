@@ -20,8 +20,9 @@ import static io.rong.imkit.plugin.image.PictureSelectorActivity.REQUEST_CODE_AS
 
 public class SelectPictureBottomDialog extends BaseBottomDialog {
 
-    private PhotoUtils photoUtils ;
+    private PhotoUtils photoUtils;
     private static OnSelectPictureListener listener;
+    private int mType;
 
     @Nullable
     @Override
@@ -33,9 +34,9 @@ public class SelectPictureBottomDialog extends BaseBottomDialog {
                 if (Build.VERSION.SDK_INT >= 23) {
                     int checkPermission = getActivity().checkSelfPermission(Manifest.permission.CAMERA);
                     if (checkPermission != PackageManager.PERMISSION_GRANTED) {
-                        if (shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)) {
-                            requestPermissions(new String[]{Manifest.permission.CAMERA}, REQUEST_CODE_ASK_PERMISSIONS);
-                        }
+                        //if (shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)) {
+                        requestPermissions(new String[]{Manifest.permission.CAMERA}, REQUEST_CODE_ASK_PERMISSIONS);
+                        //}
                         return;
                     }
 
@@ -85,7 +86,7 @@ public class SelectPictureBottomDialog extends BaseBottomDialog {
             public void onPhotoCancel() {
                 dismiss();
             }
-        });
+        },mType);
         return view;
     }
 
@@ -123,6 +124,14 @@ public class SelectPictureBottomDialog extends BaseBottomDialog {
      */
     public interface OnSelectPictureListener {
         void onSelectPicture(Uri uri);
+    }
+
+    /**
+     * 设置是否需要裁剪的类型
+     * @param type
+     */
+    public void setType(int type){
+        mType = type;
     }
 
 }

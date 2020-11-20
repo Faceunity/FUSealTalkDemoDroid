@@ -13,7 +13,7 @@ public class IntentExtra {
 
     public final static String LIST_EXCLUDE_ID_LIST = "exculde_id_list";
 
-    public final static String LIST_ALREADY_CHECKED_FRIEND_ID_LIST = "list_already_check_friend_id_list";
+    public final static String LIST_ALREADY_CHECKED_USER_ID_LIST = "list_already_check_user_id_list";
 
     public final static String LIST_ALREADY_CHECKED_GROUP_ID_LIST = "list_already_check_group_id_list";
 
@@ -27,6 +27,10 @@ public class IntentExtra {
 
     public final static String URL = "url";
 
+    public final static String ORGIN = "orgin";
+
+    public final static String IMAGE_PREVIEW_TYPE = "image_preview_type";
+
     public final static String USER_ID = "userId";
 
     public final static String SERIA_QRCODE_DISPLAY_TYPE = "qrcode_display";
@@ -36,7 +40,21 @@ public class IntentExtra {
 
     public final static String FORWARD_MESSAGE_LIST = "forward_message_list";
 
+    public final static String FORWARD_MESSAGE_ID_LIST = "messageIds";
+
+    public final static String BOOLEAN_FORWARD_USE_SDK = "forward_use_sdk";
+
     public static final String GROUP_ID = "group_id";
+
+    public static final String GROUP_NICK_NAME = "group_nick_name";
+
+    public final static String BOOLEAN_ENABLE_TOAST = "enable_toast";
+
+    public final static String BOOLEAN_KICKED_BY_OTHER_USER = "kick_by_other_user";
+
+    public final static String BOOLEAN_CONNECT_TIME_OUT = "connect_timeout";
+
+    public final static String OPERATE_PICTURE_ACTION = "operate_picture_action";
 
     /**
      * 创建群组时是否返回结果，默认是 false ，代表创建群组后直接跳转到群聊界面
@@ -48,4 +66,7 @@ public class IntentExtra {
     public static final String FRIEND_LIST = "friend_list";
     public static final String FORWARD_FINISH = "forward_finish";
     public static final String IS_SELECT = "is_select";
+
+    public static final String STR_POKE_MESSAGE = "poke_message";
+    public static final String CONFIRM_SEND = "confirm_send";
 }

@@ -1,23 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/callkit_black">
+	android:background="@color/callkit_black"
+    android:layout_height="match_parent">
 
-    <FrameLayout
+    <RelativeLayout
         android:id="@+id/rc_voip_call_large_preview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="gone"></FrameLayout>
+        android:visibility="gone">
+    </RelativeLayout>
 
     <FrameLayout
         android:id="@+id/rc_voip_call_small_preview"
         android:layout_width="100dp"
         android:layout_height="180dp"
-        android:layout_gravity="right|top"
         android:layout_marginTop="12dp"
         android:layout_marginRight="5dp"
-        android:visibility="gone"></FrameLayout>
+        android:layout_gravity="right|top"
+        android:visibility="gone">
+    </FrameLayout>
 
     <RelativeLayout
         android:id="@+id/rc_voip_call_information"
@@ -25,34 +27,24 @@
         android:layout_height="match_parent">
 
         <LinearLayout
+            android:orientation="vertical"
             android:id="@+id/rc_voip_user_info"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/rc_voip_call_minimize"
             android:gravity="center"
-            android:orientation="vertical">
+            android:layout_below="@+id/rc_voip_call_minimize">
 
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/rc_tv_connection_state"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_above="@+id/rc_voip_audio_chat"
-            android:layout_centerHorizontal="true"
-            android:layout_marginBottom="100dp"
-            android:textColor="@color/rc_voip_white"
-            android:textSize="16sp"
-            android:visibility="gone" />
 
         <RelativeLayout
             android:id="@+id/rc_voip_audio_chat"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_above="@+id/rc_voip_btn_layout"
+            android:layout_above="@+id/rc_voip_btn"
             android:layout_alignParentRight="true"
-            android:layout_marginRight="45dp"
             android:layout_marginBottom="20dp"
+            android:layout_marginRight="45dp"
             android:visibility="gone">
 
             <ImageView
@@ -63,13 +55,13 @@
                 android:src="@drawable/rc_voip_phone" />
 
             <TextView
-                style="@style/rc_voip_text_style_style"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/rc_voip_audio_chat_btn"
                 android:layout_centerHorizontal="true"
                 android:layout_marginTop="10dp"
-                android:text="@string/rc_voip_switch_to_audio" />
+                android:text="@string/rc_voip_switch_to_audio"
+                style="@style/rc_voip_text_style_style" />
         </RelativeLayout>
 
 
@@ -80,15 +72,37 @@
             android:layout_alignParentBottom="true"
             android:orientation="vertical">
 
-            <com.faceunity.nama.ui.BeautyControlView
+            <com.faceunity.nama.ui.FaceUnityView
                 android:id="@+id/faceunity_control"
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/x98" />
+                android:layout_height="wrap_content" />
 
             <FrameLayout
                 android:id="@+id/rc_voip_btn"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"></FrameLayout>
+                android:layout_height="wrap_content"/>
         </LinearLayout>
     </RelativeLayout>
+
+    <TextView
+        android:id="@+id/rc_tv_connection_state"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/rc_voip_audio_chat"
+        android:layout_centerHorizontal="true"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        android:textColor="@color/rc_voip_white"
+        android:textSize="16sp"/>
+
+
+    <TextView
+        android:id="@+id/tv_fps"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="0"
+        android:layout_margin="10dp"
+        android:textColor="@color/rc_voip_white"
+        android:textSize="16sp"/>
+
 </FrameLayout>

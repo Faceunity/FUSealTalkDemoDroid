@@ -14,5 +14,25 @@
     <!-- 开启之后，用户在其他端上阅读过的消息，当前客户端会清掉该消息的未读数。目前仅支持单聊、群聊、讨论组。-->
     <bool name="rc_enable_sync_read_status">true</bool>
 
+    <!--PictureSelectorActivity 选择媒体资源时，是否包含视频文件 -->
+    <bool name="rc_media_selector_contain_video">true</bool>
+
+    <!--设置输入状态监听 -->
+    <bool name="rc_typing_status">true</bool>
+
+    <!--是否允许 WebView 加载 JavaScript-->
+    <bool name="rc_set_java_script_enabled">true</bool>
+
+    <!--是否启用阅后即焚插件-->
+    <bool name="rc_open_destruct_plugin">true</bool>
+
+    <!--是否开启合并转发功能-->
+    <bool name="rc_enable_send_combine_message">true</bool>
+
+    <!-- 退出客服页面是否关闭客服 -->
+    <bool name="rc_stop_custom_service_when_quit">true</bool>
+
+    <!--是否开启引用消息功能，默认关闭，开启之后，聊天页面长按消息支持引用（目前仅支持文本消息、文件消息、图文消息、图片消息、引用消息的引用）-->
+    <bool name="rc_enable_reference_message">true</bool>
 
 </resources>

@@ -9,21 +9,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 import cn.rongcloud.im.R;
-import cn.rongcloud.im.ui.adapter.SelectFriendAdapter;
+import cn.rongcloud.im.ui.adapter.SelectContactAdapter;
 import cn.rongcloud.im.ui.adapter.models.CheckableContactModel;
 import cn.rongcloud.im.ui.adapter.models.ContactModel;
 import cn.rongcloud.im.ui.interfaces.OnCheckContactClickListener;
 import cn.rongcloud.im.viewmodel.SelectBaseViewModel;
 import cn.rongcloud.im.utils.log.SLog;
 
-import static cn.rongcloud.im.common.IntentExtra.LIST_ALREADY_CHECKED_FRIEND_ID_LIST;
+import static cn.rongcloud.im.common.IntentExtra.LIST_ALREADY_CHECKED_USER_ID_LIST;
 import static cn.rongcloud.im.common.IntentExtra.LIST_ALREADY_CHECKED_GROUP_ID_LIST;
 import static cn.rongcloud.im.common.IntentExtra.LIST_CAN_NOT_CHECK_ID_LIST;
 import static cn.rongcloud.im.common.IntentExtra.LIST_EXCLUDE_ID_LIST;
 
 public class SelectBaseFragment extends BaseContactFragment implements OnCheckContactClickListener {
     private static final String TAG = "SelectBaseFragment";
-    private SelectFriendAdapter adapter;
+    private SelectContactAdapter adapter;
     private SelectBaseViewModel viewModel;
     protected ArrayList<String> uncheckableInitIdList;//初始化 不能选的列表
     protected ArrayList<String> excludeInitIdList; // 初始化 从列表中排除
@@ -39,16 +39,21 @@ public class SelectBaseFragment extends BaseContactFragment implements OnCheckCo
         super.onInitView(savedInstanceState, intent);
         uncheckableInitIdList = intent.getStringArrayListExtra(LIST_CAN_NOT_CHECK_ID_LIST); //不可选的列表
         excludeInitIdList = intent.getStringArrayListExtra(LIST_EXCLUDE_ID_LIST); // 不在列表中
-        adapter = new SelectFriendAdapter(this);
+        adapter = getAdapter();
         recyclerView.setAdapter(adapter);
         viewModel = getViewModel();
         if (viewModel == null) return;
-        checkedInitIdList = intent.getStringArrayListExtra(LIST_ALREADY_CHECKED_FRIEND_ID_LIST);    //已经选择的列表
+        checkedInitIdList = intent.getStringArrayListExtra(LIST_ALREADY_CHECKED_USER_ID_LIST);    //已经选择的列表
         checkedInitGroupList = intent.getStringArrayListExtra(LIST_ALREADY_CHECKED_GROUP_ID_LIST); //已经选择的群组
         viewModel.getFriendShipLiveData().observe(this, observable);
-        viewModel.getGroupMembersLiveData().observe(this, observable);
+        viewModel.getGroupFriendsLiveData().observe(this, observable);
         viewModel.getExcludeGroupLiveData().observe(this, observable);
+        viewModel.getAllGroupMemberLiveData().observe(this, observable);
         onLoadData(viewModel);
+    }
+
+    protected SelectContactAdapter getAdapter() {
+        return new SelectContactAdapter(this);
     }
 
     private Observer observable = new Observer<List<ContactModel>>() {
@@ -64,12 +69,21 @@ public class SelectBaseFragment extends BaseContactFragment implements OnCheckCo
     /**
      * 数据已经展示
      */
-    protected void onDataShowed(){
+    protected void onDataShowed() {
 
     }
 
     protected void onLoadData(SelectBaseViewModel viewModel) {
         viewModel.loadFriendShip(uncheckableInitIdList, checkedInitIdList, checkedInitGroupList);
+    }
+
+    /**
+     * 搜索好友
+     *
+     * @param keyword
+     */
+    public void searchFriend(String keyword) {
+        viewModel.searchFriend(keyword);
     }
 
     public String getTitle() {
@@ -100,7 +114,7 @@ public class SelectBaseFragment extends BaseContactFragment implements OnCheckCo
     }
 
     public ArrayList<String> getCheckedFriendList() {
-        return viewModel.getCheckedList();
+        return viewModel.getCheckedFriendIdList();
     }
 
     public ArrayList<String> getCheckedGroupList() {
