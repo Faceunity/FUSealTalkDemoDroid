@@ -7,6 +7,7 @@ import java.util.List;
 import cn.rongcloud.im.db.model.FriendBlackInfo;
 import cn.rongcloud.im.db.model.UserInfo;
 import cn.rongcloud.im.model.ContactGroupResult;
+import cn.rongcloud.im.model.GetPokeResult;
 import cn.rongcloud.im.model.LoginResult;
 import cn.rongcloud.im.model.RegionResult;
 import cn.rongcloud.im.model.RegisterResult;
@@ -52,6 +53,12 @@ public interface UserService {
     @POST(SealTalkUrl.SET_NICK_NAME)
     LiveData<Result> setMyNickName(@Body RequestBody requestBody);
 
+    @POST(SealTalkUrl.SET_ST_ACCOUNT)
+    LiveData<Result> setStAccount(@Body RequestBody requestBody);
+
+    @POST(SealTalkUrl.SET_GENDER)
+    LiveData<Result> setGender(@Body RequestBody requestBody);
+
     @GET(SealTalkUrl.GET_IMAGE_UPLOAD_TOKEN)
     LiveData<Result<UploadTokenResult>> getImageUploadToken();
 
@@ -72,6 +79,7 @@ public interface UserService {
 
     /**
      * 添加到黑名单
+     *
      * @param body
      * @return
      */
@@ -80,6 +88,7 @@ public interface UserService {
 
     /**
      * 移除黑名单
+     *
      * @param body
      * @return
      */
@@ -93,4 +102,21 @@ public interface UserService {
      */
     @GET(SealTalkUrl.GROUP_GET_ALL_IN_CONTACT)
     LiveData<Result<ContactGroupResult>> getGroupListInContact();
+
+    /**
+     * 设置接收戳一下消息状态
+     *
+     * @param body
+     * @return
+     */
+    @POST(SealTalkUrl.SET_RECEIVE_POKE_MESSAGE_STATUS)
+    LiveData<Result> setReceivePokeMessageStatus(@Body RequestBody body);
+
+    /**
+     * 获取接收戳一下消息状态
+     *
+     * @return
+     */
+    @GET(SealTalkUrl.GET_RECEIVE_POKE_MESSAGE_STATUS)
+    LiveData<Result<GetPokeResult>> getReceivePokeMessageStatus();
 }

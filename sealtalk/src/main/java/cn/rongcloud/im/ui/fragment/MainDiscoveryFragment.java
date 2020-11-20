@@ -4,8 +4,10 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import cn.rongcloud.im.R;
@@ -50,16 +52,31 @@ public class MainDiscoveryFragment extends BaseFragment {
         appViewModel.getChatRoonList().observe(this, listResource -> {
             List<ChatRoomResult> chatRoomResultList = listResource.data;
             if (chatRoomResultList != null) {
-                latestChatRoomList = chatRoomResultList;
+                latestChatRoomList = new ArrayList<>();
+                /**
+                 * 筛选出结果中 type 为 chatroom 的结果
+                 */
+                for (ChatRoomResult roomResult : chatRoomResultList) {
+                    if ("chatroom".equals(roomResult.getType())) {
+                        latestChatRoomList.add(roomResult);
+                    }
+                }
             }
         });
 
+
+        /*
+         * 以下代码使用 lambda 表达式会崩溃，因为 lambda 特性复用时注册同一个 Observer 时引发崩溃
+         */
         // 监听聊天室加入状态
-        IMManager.getInstance().getChatRoomAction().observe(this, chatRoomAction -> {
-            if (chatRoomAction.status == ChatRoomAction.Status.ERROR) {
-                ToastUtils.showToast(R.string.discovery_chat_room_join_failure);
-            } else {
-                SLog.d(LogTag.IM, "ChatRoom action, status: " + chatRoomAction.status.name() + " - ChatRoom id:" + chatRoomAction.roomId);
+        IMManager.getInstance().getChatRoomAction().observe(this, new Observer<ChatRoomAction>() {
+            @Override
+            public void onChanged(ChatRoomAction chatRoomAction) {
+                if (chatRoomAction.status == ChatRoomAction.Status.ERROR) {
+                    ToastUtils.showToast(R.string.discovery_chat_room_join_failure);
+                } else {
+                    SLog.d(LogTag.IM, "ChatRoom action, status: " + chatRoomAction.status.name() + " - ChatRoom id:" + chatRoomAction.roomId);
+                }
             }
         });
 

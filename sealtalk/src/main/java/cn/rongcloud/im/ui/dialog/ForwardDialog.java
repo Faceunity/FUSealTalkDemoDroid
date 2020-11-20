@@ -3,6 +3,7 @@ package cn.rongcloud.im.ui.dialog;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -16,17 +17,26 @@ import cn.rongcloud.im.db.model.GroupEntity;
 import cn.rongcloud.im.ui.view.UserInfoItemView;
 import cn.rongcloud.im.utils.ImageLoaderUtils;
 import io.rong.imkit.widget.AsyncImageView;
+import io.rong.imlib.RongIMClient;
 import io.rong.imlib.model.Message;
+import io.rong.imlib.model.MessageContent;
+import io.rong.message.FileMessage;
+import io.rong.message.HQVoiceMessage;
+import io.rong.message.ImageMessage;
+import io.rong.message.LocationMessage;
+import io.rong.message.SightMessage;
 import io.rong.message.TextMessage;
+import io.rong.message.VoiceMessage;
 
 public class ForwardDialog extends CommonDialog {
 
     private ArrayList<GroupEntity> groupList;
     private ArrayList<FriendShipInfo> friendList;
     private ArrayList<Message> messageList;
+    private ArrayList<Integer> messageIdList;
 
     @Override
-    protected View onCreateContentView() {
+    protected View onCreateContentView(ViewGroup container) {
         View view = View.inflate(getContext(), R.layout.dialog_forward, null);
         View multiLayout = view.findViewById(R.id.hsv_container);
         LinearLayout multiContainer = view.findViewById(R.id.ll_selected_contact_container);
@@ -38,6 +48,7 @@ public class ForwardDialog extends CommonDialog {
             messageList = expandParams.getParcelableArrayList(IntentExtra.FORWARD_MESSAGE_LIST);
             groupList = expandParams.getParcelableArrayList(IntentExtra.GROUP_LIST);
             friendList = expandParams.getParcelableArrayList(IntentExtra.FRIEND_LIST);
+            messageIdList = expandParams.getIntegerArrayList(IntentExtra.FORWARD_MESSAGE_ID_LIST);
         }
 
         int groupSize = groupList == null ? 0 : groupList.size();
@@ -54,7 +65,7 @@ public class ForwardDialog extends CommonDialog {
 
             if (friendList != null && friendList.size() > 0) {
                 final FriendShipInfo friendShipInfo = friendList.get(0);
-                selectSingleUiv.setName(TextUtils.isEmpty(friendShipInfo.getDisplayName()) ?  friendShipInfo.getUser().getNickname() : friendShipInfo.getDisplayName());
+                selectSingleUiv.setName(TextUtils.isEmpty(friendShipInfo.getDisplayName()) ? friendShipInfo.getUser().getNickname() : friendShipInfo.getDisplayName());
                 ImageLoaderUtils.displayGroupPortraitImage(friendShipInfo.getUser().getPortraitUri(), selectSingleUiv.getHeaderImageView());
             }
 
@@ -84,35 +95,54 @@ public class ForwardDialog extends CommonDialog {
             }
         }
 
-        if (messageList != null) {
+        if (messageList != null && messageList.size() > 0) {
             String content = "...";
-            final Message message = messageList.get(0);
-            final String objectName = message.getObjectName();
-            if (objectName.equals("RC:TxtMsg")) {
-                content = ((TextMessage) message.getContent()).getContent();
-            } else if (objectName.equals("RC:VcMsg") || objectName.equals("RC:HQVCMsg")) {
-                content = getString(R.string.rc_message_content_voice);
-            } else if (objectName.equals("RC:FileMsg")) {
-                content = getString(R.string.rc_message_content_file);
-
-            } else if (objectName.equals("RC:ImgMsg")) {
-                content = getString(R.string.rc_message_content_image);
-
-            } else if (objectName.equals("RC:LBSMsg")) {
-                content = getString(R.string.rc_message_content_location);
-
-            } else if (objectName.equals("RC:SightMsg")) {
-                content = getString(R.string.rc_message_content_sight);
-
-            }
-
+            Message message = messageList.get(0);
+            content = getMessageContent(message);
             if (messageList.size() > 1) {
-                content = content + "...";
+//                content = content + "...";
+                content = getString(R.string.seal_selected_contact_content,content.length());
             }
             messageTv.setText(content);
-        }
+        } else if (messageIdList != null && messageIdList.size() > 0) {
+            RongIMClient.getInstance().getMessage(messageIdList.get(0), new RongIMClient.ResultCallback<Message>() {
+                @Override
+                public void onSuccess(Message message) {
+                    String content = getMessageContent(message);
+                    if (messageIdList.size() > 1) {
+//                        content = content + "...";
+                        content = getString(R.string.seal_selected_contact_content,messageIdList.size());
+                    }
+                    messageTv.setText(content);
+                }
 
+                @Override
+                public void onError(RongIMClient.ErrorCode errorCode) {
+                }
+            });
+        }
         return view;
+    }
+
+    private String getMessageContent(Message message) {
+        String content = "";
+        if (message != null) {
+            final MessageContent messageContent = message.getContent();
+            if (messageContent instanceof TextMessage) {
+                content = ((TextMessage) message.getContent()).getContent();
+            } else if (messageContent instanceof VoiceMessage || messageContent instanceof HQVoiceMessage) {
+                content = getString(R.string.rc_message_content_voice);
+            } else if (messageContent instanceof FileMessage) {
+                content = getString(R.string.rc_message_content_file);
+            } else if (messageContent instanceof ImageMessage) {
+                content = getString(R.string.rc_message_content_image);
+            } else if (messageContent instanceof LocationMessage) {
+                content = getString(R.string.rc_message_content_location);
+            } else if (messageContent instanceof SightMessage) {
+                content = getString(R.string.rc_message_content_sight);
+            }
+        }
+        return content;
     }
 
 

@@ -8,8 +8,6 @@ import android.view.View;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
-import com.jrmf360.rylib.JrmfClient;
-
 import cn.rongcloud.im.R;
 import cn.rongcloud.im.common.IntentExtra;
 import cn.rongcloud.im.db.model.UserInfo;
@@ -28,6 +26,7 @@ import cn.rongcloud.im.utils.ImageLoaderUtils;
 import cn.rongcloud.im.viewmodel.AppViewModel;
 import cn.rongcloud.im.viewmodel.UserInfoViewModel;
 import io.rong.imkit.RongIM;
+import io.rong.imkit.userInfoCache.RongUserInfoManager;
 import io.rong.imkit.utilities.LangUtils;
 import io.rong.imlib.model.CSCustomServiceInfo;
 
@@ -50,7 +49,6 @@ public class MainMeFragment extends BaseFragment {
         findView(R.id.siv_setting_qrcode, true);
         findView(R.id.siv_setting_account, true);
         sivLanguage = findView(R.id.siv_language, true);
-        findView(R.id.siv_my_wallet, true);
         findView(R.id.siv_feedback, true);
         sivAbout = findView(R.id.siv_about, true);
     }
@@ -114,22 +112,23 @@ public class MainMeFragment extends BaseFragment {
                 startActivity(new Intent(getActivity(), ChangeLanguageActivity.class));
 
                 break;
-            case R.id.siv_my_wallet:
-                JrmfClient.intentWallet(getActivity());
-                break;
             case R.id.siv_feedback:
                 CSCustomServiceInfo.Builder builder = new CSCustomServiceInfo.Builder();
                 builder.province(getString(R.string.beijing));
                 builder.city(getString(R.string.beijing));
-                RongIM.getInstance().startCustomerServiceChat(getActivity(), "KEFU146001495753714", getString(R.string.seal_main_mine_online_custom_service), builder.build());
-
+                io.rong.imlib.model.UserInfo info = RongUserInfoManager.getInstance().getUserInfo(RongIM.getInstance().getCurrentUserId());
+                if (info != null && !TextUtils.isEmpty(info.getName())) {
+                    builder.name(info.getName());
+                }
+                //佳信客服配置
+                builder.referrer("10001");
+                RongIM.getInstance().startCustomerServiceChat(getActivity(), "service", getString(R.string.seal_main_mine_online_custom_service), builder.build());
                 break;
             case R.id.siv_about:
-                sivAbout.setTagImageVisibility(View.GONE);
                 Intent intent = new Intent(getActivity(), AboutSealTalkActivity.class);
-                VersionInfo.AndroidVersion data = appViewModel.getHasNewVersion().getValue().data;
-                if (data != null && !TextUtils.isEmpty(data.getUrl())) {
-                    intent.putExtra(IntentExtra.URL, data.getUrl());
+                Resource<VersionInfo.AndroidVersion> resource = appViewModel.getHasNewVersion().getValue();
+                if (resource != null && resource.data != null && !TextUtils.isEmpty(resource.data.getUrl())) {
+                    intent.putExtra(IntentExtra.URL, resource.data.getUrl());
                 }
                 startActivity(intent);
                 break;
