@@ -40,17 +40,17 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
+                android:gravity="center"
                 android:maxLength="16"
                 android:maxLines="1"
                 android:textColor="@color/color_black_text"
                 android:textSize="@dimen/seal_user_detail_userinfo_display_name" />
 
+            <!--android:layout_marginTop="@dimen/seal_user_detail_userinfo_text_margin"-->
             <TextView
                 android:id="@+id/profile_tv_detail_phone"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/seal_user_detail_userinfo_text_margin"
-                android:layout_marginBottom="@dimen/seal_user_detail_userinfo_text_margin"
                 android:maxLines="1"
                 android:textColor="@color/seal_user_detail_userinfo_text_color"
                 android:textSize="@dimen/seal_user_detail_userinfo_text_size"
@@ -67,6 +67,18 @@
                 android:textSize="@dimen/seal_user_detail_userinfo_text_size"
                 android:visibility="gone" />
 
+            <TextView
+                android:id="@+id/profile_tv_group_nick_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/seal_user_detail_userinfo_text_margin"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:visibility="gone"
+                android:textColor="@color/seal_user_detail_userinfo_text_color"
+                android:textSize="@dimen/seal_user_detail_userinfo_text_size"
+                />
+
         </LinearLayout>
     </LinearLayout>
 
@@ -74,42 +86,60 @@
         android:id="@+id/profile_ll_detail_friend_menu_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/seal_user_detail_item_margin"
         android:orientation="vertical"
         android:visibility="gone"
-        tools:visibility="visible"
-        >
+        tools:visibility="visible">
+
+        <cn.rongcloud.im.ui.view.SettingItemView
+            android:id="@+id/profile_siv_detail_phone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:item_content="@string/profile_set_display_phone"
+            android:visibility="gone"
+            app:item_divider="true" />
 
         <cn.rongcloud.im.ui.view.SettingItemView
             android:id="@+id/profile_siv_detail_alias"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:item_content="@string/profile_set_display_name"
-            android:layout_marginTop="@dimen/seal_user_detail_item_margin"
-            >
+            app:item_divider="true"
+            app:item_content="@string/profile_set_display_name"/>
 
-        </cn.rongcloud.im.ui.view.SettingItemView>
+        <cn.rongcloud.im.ui.view.SettingItemView
+            android:id="@+id/profile_siv_detail_group"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            app:item_content="@string/profile_set_group_info"/>
 
         <cn.rongcloud.im.ui.view.SettingItemView
             android:id="@+id/profile_siv_detail_blacklist"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:item_content="@string/profile_detail_join_the_blacklist"
             android:layout_marginTop="@dimen/seal_user_detail_item_margin"
-            >
-
-        </cn.rongcloud.im.ui.view.SettingItemView>
+            app:item_content="@string/profile_detail_join_the_blacklist"
+            app:item_divider="true"/>
 
         <cn.rongcloud.im.ui.view.SettingItemView
             android:id="@+id/profile_siv_detail_delete_contact"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:item_content="@string/profile_delete_from_contact"
-            android:visibility="gone"
-            >
-
-        </cn.rongcloud.im.ui.view.SettingItemView>
+            app:item_content="@string/profile_delete_from_contact"/>
 
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/tv_group_protection_tips"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:paddingLeft="36dp"
+        android:paddingRight="36dp"
+        android:textColor="@color/default_sub_text"
+        android:gravity="left"
+        android:visibility="gone"
+        android:text="@string/profile_group_protection_tips"/>
 
     <LinearLayout
         android:id="@+id/profile_ll_detail_chat_button_group"
@@ -124,8 +154,7 @@
             style="@style/seal_profile_user_detail_btn"
             android:background="@drawable/profile_btn_contact_blue_selector"
             android:text="@string/profile_detail_start_chat"
-            android:textColor="@color/white"
-            />
+            android:textColor="@color/white" />
 
         <!--CallKit start-->
         <Button
@@ -133,16 +162,14 @@
             style="@style/seal_profile_user_detail_btn"
             android:background="@drawable/profile_btn_contact_white_selector"
             android:text="@string/profile_detail_start_voice"
-            android:textColor="@color/color_black_text"
-            />
+            android:textColor="@color/color_black_text" />
 
         <Button
             android:id="@+id/profile_btn_detail_start_video"
             style="@style/seal_profile_user_detail_btn"
             android:background="@drawable/profile_btn_contact_white_selector"
             android:text="@string/profile_detail_start_video"
-            android:textColor="@color/color_black_text"
-            />
+            android:textColor="@color/color_black_text" />
         <!--CallKit end-->
     </LinearLayout>
 

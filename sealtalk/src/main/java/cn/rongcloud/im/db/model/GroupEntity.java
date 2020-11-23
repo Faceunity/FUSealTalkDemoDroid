@@ -65,6 +65,60 @@ public class GroupEntity implements Parcelable {
      */
     @ColumnInfo(name = "is_in_contact")
     private int isInContact;
+    /**
+     * 定时删除时间状态
+     */
+    @ColumnInfo(name = "regular_clear_state")
+    private int regularClearState;
+    /**
+     * 全员禁言
+     */
+    @ColumnInfo(name = "is_mute_all")
+    private int isMute;
+
+    /**
+     * 入群认证
+     */
+    @ColumnInfo(name = "certification_status")
+    private int certiStatus;
+
+    /**
+     * 成员保护
+     */
+    @ColumnInfo(name = "member_protection")
+    private int memberProtection;
+
+    public int getMemberProtection() {
+        return memberProtection;
+    }
+
+    public void setMemberProtection(int memberProtection) {
+        this.memberProtection = memberProtection;
+    }
+
+    public int getIsMute() {
+        return isMute;
+    }
+
+    public void setIsMute(int isMute) {
+        this.isMute = isMute;
+    }
+
+    public int getRegularClearState() {
+        return regularClearState;
+    }
+
+    public void setRegularClearState(int regularClearState) {
+        this.regularClearState = regularClearState;
+    }
+
+    public int getCertiStatus() {
+        return certiStatus;
+    }
+
+    public void setCertiStatus(int certiStatus) {
+        this.certiStatus = certiStatus;
+    }
 
     @NonNull
     public String getId() {
@@ -179,10 +233,6 @@ public class GroupEntity implements Parcelable {
         this.isInContact = isInContact;
     }
 
-    @Override
-    public int hashCode() {
-        return id.hashCode();
-    }
 
     @Override
     public int describeContents() {
@@ -205,6 +255,10 @@ public class GroupEntity implements Parcelable {
         dest.writeLong(this.bulletinTime);
         dest.writeLong(this.deletedAt != null ? this.deletedAt.getTime() : -1);
         dest.writeInt(this.isInContact);
+        dest.writeInt(this.regularClearState);
+        dest.writeInt(this.isMute);
+        dest.writeInt(this.certiStatus);
+        dest.writeInt(this.memberProtection);
     }
 
     public GroupEntity() {
@@ -226,9 +280,13 @@ public class GroupEntity implements Parcelable {
         long tmpDeletedAt = in.readLong();
         this.deletedAt = tmpDeletedAt == -1 ? null : new Date(tmpDeletedAt);
         this.isInContact = in.readInt();
+        this.regularClearState = in.readInt();
+        this.isMute = in.readInt();
+        this.certiStatus = in.readInt();
+        this.memberProtection = in.readInt();
     }
 
-    public static final Parcelable.Creator<GroupEntity> CREATOR = new Parcelable.Creator<GroupEntity>() {
+    public static final Creator<GroupEntity> CREATOR = new Creator<GroupEntity>() {
         @Override
         public GroupEntity createFromParcel(Parcel source) {
             return new GroupEntity(source);
@@ -257,6 +315,10 @@ public class GroupEntity implements Parcelable {
                 ", bulletinTime=" + bulletinTime +
                 ", deletedAt=" + deletedAt +
                 ", isInContact=" + isInContact +
+                ", regularClearState=" + regularClearState +
+                ", isMute=" + isMute +
+                ", certiStatus=" + certiStatus +
+                ", memberProtection=" + memberProtection +
                 '}';
     }
 }

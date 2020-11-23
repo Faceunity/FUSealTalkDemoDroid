@@ -14,10 +14,12 @@ public class ImageLoaderUtils {
 
      private static DisplayImageOptions privateOptions;
      private static DisplayImageOptions groupOptions;
+    private static DisplayImageOptions descriptionOptions;
 
      static {
          privateOptions = createDefaultDisplayOptions(R.drawable.rc_default_portrait);
          groupOptions = createDefaultDisplayOptions(R.drawable.rc_default_group_portrait);
+         descriptionOptions = createDefaultDisplayOptions(android.R.color.transparent);
      }
 
     public static void displayUserPortraitImage(String uri, ImageView imageView) {
@@ -30,11 +32,14 @@ public class ImageLoaderUtils {
         ImageLoader.getInstance().displayImage(uri, imageView, groupOptions, null);
     }
 
+    public static void displayUserDescritpionImage(String uri, ImageView imageView) {
+        ImageLoader.getInstance().displayImage(uri, imageView, descriptionOptions, null);
+    }
+
 
     private static DisplayImageOptions createDefaultDisplayOptions(int defaultImgId) {
         DisplayImageOptions.Builder builder = new DisplayImageOptions.Builder();
-        builder.showImageOnLoading(defaultImgId == 0 ? R.drawable.rc_default_portrait : defaultImgId) //设置加载失败的图片
-                .showImageOnFail(defaultImgId == 0 ? R.drawable.rc_default_portrait : defaultImgId)
+        builder.showImageOnFail(defaultImgId == 0 ? R.drawable.rc_default_portrait : defaultImgId) //设置加载失败的图片
                 .cacheInMemory(true)
                 .cacheOnDisk(true)
                 .bitmapConfig(Bitmap.Config.RGB_565)

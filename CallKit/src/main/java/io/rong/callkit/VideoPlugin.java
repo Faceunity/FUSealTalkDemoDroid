@@ -4,15 +4,10 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-
-import android.widget.Toast;
-
-import java.util.ArrayList;
-import java.util.Locale;
-
 import io.rong.callkit.util.CallKitUtils;
 import io.rong.calllib.RongCallClient;
 import io.rong.calllib.RongCallCommon;
@@ -26,10 +21,10 @@ import io.rong.imkit.utilities.PermissionCheckUtil;
 import io.rong.imlib.RongIMClient;
 import io.rong.imlib.model.Conversation;
 import io.rong.imlib.model.Discussion;
+import java.util.ArrayList;
+import java.util.Locale;
 
-/**
- * Created by weiqinxiao on 16/8/16.
- */
+/** Created by weiqinxiao on 16/8/16. */
 public class VideoPlugin implements IPluginModule, IPluginRequestPermissionResultCallback {
     private static final String TAG = "VideoPlugin";
     private ArrayList<String> allMembers;
@@ -58,7 +53,10 @@ public class VideoPlugin implements IPluginModule, IPluginRequestPermissionResul
         if (PermissionCheckUtil.checkPermissions(currentFragment.getActivity(), permissions)) {
             startVideoActivity(extension);
         } else {
-            extension.requestPermissionForPluginResult(permissions, IPluginRequestPermissionResultCallback.REQUEST_CODE_PERMISSION_PLUGIN, this);
+            extension.requestPermissionForPluginResult(
+                    permissions,
+                    IPluginRequestPermissionResultCallback.REQUEST_CODE_PERMISSION_PLUGIN,
+                    this);
         }
     }
 
@@ -66,16 +64,21 @@ public class VideoPlugin implements IPluginModule, IPluginRequestPermissionResul
 
         RongCallSession profile = RongCallClient.getInstance().getCallSession();
         if (profile != null && profile.getStartTime() > 0) {
-            Toast.makeText(context,
-                    profile.getMediaType() == RongCallCommon.CallMediaType.AUDIO ?
-                            context.getString(R.string.rc_voip_call_audio_start_fail) :
-                            context.getString(R.string.rc_voip_call_video_start_fail),
-                    Toast.LENGTH_SHORT)
+            Toast.makeText(
+                            context,
+                            profile.getMediaType() == RongCallCommon.CallMediaType.AUDIO
+                                    ? context.getString(R.string.rc_voip_call_audio_start_fail)
+                                    : context.getString(R.string.rc_voip_call_video_start_fail),
+                            Toast.LENGTH_SHORT)
                     .show();
             return;
         }
         if (!CallKitUtils.isNetworkAvailable(context)) {
-            Toast.makeText(context, context.getString(R.string.rc_voip_call_network_error), Toast.LENGTH_SHORT).show();
+            Toast.makeText(
+                            context,
+                            context.getString(R.string.rc_voip_call_network_error),
+                            Toast.LENGTH_SHORT)
+                    .show();
             return;
         }
         if (conversationType.equals(Conversation.ConversationType.PRIVATE)) {
@@ -87,27 +90,35 @@ public class VideoPlugin implements IPluginModule, IPluginRequestPermissionResul
             intent.setPackage(context.getPackageName());
             context.getApplicationContext().startActivity(intent);
         } else if (conversationType.equals(Conversation.ConversationType.DISCUSSION)) {
-            RongIM.getInstance().getDiscussion(targetId, new RongIMClient.ResultCallback<Discussion>() {
-                @Override
-                public void onSuccess(Discussion discussion) {
+            RongIM.getInstance()
+                    .getDiscussion(
+                            targetId,
+                            new RongIMClient.ResultCallback<Discussion>() {
+                                @Override
+                                public void onSuccess(Discussion discussion) {
 
-                    Intent intent = new Intent(context, CallSelectMemberActivity.class);
-                    allMembers = (ArrayList<String>) discussion.getMemberIdList();
-                    intent.putStringArrayListExtra("allMembers", allMembers);
-                    String myId = RongIMClient.getInstance().getCurrentUserId();
-                    ArrayList<String> invited = new ArrayList<>();
-                    invited.add(myId);
-                    intent.putStringArrayListExtra("invitedMembers", invited);
-                    intent.putExtra("conversationType", conversationType.getValue());
-                    intent.putExtra("mediaType", RongCallCommon.CallMediaType.VIDEO.getValue());
-                    extension.startActivityForPluginResult(intent, 110, VideoPlugin.this);
-                }
+                                    Intent intent =
+                                            new Intent(context, CallSelectMemberActivity.class);
+                                    allMembers = (ArrayList<String>) discussion.getMemberIdList();
+                                    intent.putStringArrayListExtra("allMembers", allMembers);
+                                    String myId = RongIMClient.getInstance().getCurrentUserId();
+                                    ArrayList<String> invited = new ArrayList<>();
+                                    invited.add(myId);
+                                    intent.putStringArrayListExtra("invitedMembers", invited);
+                                    intent.putExtra(
+                                            "conversationType", conversationType.getValue());
+                                    intent.putExtra(
+                                            "mediaType",
+                                            RongCallCommon.CallMediaType.VIDEO.getValue());
+                                    extension.startActivityForPluginResult(
+                                            intent, 110, VideoPlugin.this);
+                                }
 
-                @Override
-                public void onError(RongIMClient.ErrorCode e) {
-                    RLog.d(TAG, "get discussion errorCode = " + e.getValue());
-                }
-            });
+                                @Override
+                                public void onError(RongIMClient.ErrorCode e) {
+                                    RLog.d(TAG, "get discussion errorCode = " + e.getValue());
+                                }
+                            });
         } else if (conversationType.equals(Conversation.ConversationType.GROUP)) {
             Intent intent = new Intent(context, CallSelectMemberActivity.class);
             String myId = RongIMClient.getInstance().getCurrentUserId();
@@ -119,7 +130,6 @@ public class VideoPlugin implements IPluginModule, IPluginRequestPermissionResul
             intent.putExtra("mediaType", RongCallCommon.CallMediaType.VIDEO.getValue());
             extension.startActivityForPluginResult(intent, 110, this);
         }
-
     }
 
     @Override
@@ -143,12 +153,20 @@ public class VideoPlugin implements IPluginModule, IPluginRequestPermissionResul
     }
 
     @Override
-    public boolean onRequestPermissionResult(Fragment fragment, RongExtension extension, int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public boolean onRequestPermissionResult(
+            Fragment fragment,
+            RongExtension extension,
+            int requestCode,
+            @NonNull String[] permissions,
+            @NonNull int[] grantResults) {
         if (PermissionCheckUtil.checkPermissions(fragment.getActivity(), permissions)) {
             startVideoActivity(extension);
         } else {
-            extension.showRequestPermissionFailedAlter(PermissionCheckUtil.getNotGrantedPermissionMsg(context, permissions, grantResults));
+            extension.showRequestPermissionFailedAlter(
+                    PermissionCheckUtil.getNotGrantedPermissionMsg(
+                            context, permissions, grantResults));
         }
+
         return true;
     }
 }

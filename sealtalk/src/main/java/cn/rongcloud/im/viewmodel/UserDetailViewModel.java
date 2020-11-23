@@ -3,37 +3,50 @@ package cn.rongcloud.im.viewmodel;
 import android.app.Application;
 
 import androidx.annotation.NonNull;
+import androidx.arch.core.util.Function;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.Transformations;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
+import java.util.List;
+
+import cn.rongcloud.im.db.model.FriendDescription;
 import cn.rongcloud.im.db.model.FriendShipInfo;
+import cn.rongcloud.im.db.model.GroupEntity;
+import cn.rongcloud.im.db.model.GroupMemberInfoDes;
 import cn.rongcloud.im.db.model.UserInfo;
 import cn.rongcloud.im.model.AddFriendResult;
 import cn.rongcloud.im.model.Resource;
 import cn.rongcloud.im.model.Status;
 import cn.rongcloud.im.model.UserSimpleInfo;
 import cn.rongcloud.im.task.FriendTask;
+import cn.rongcloud.im.task.GroupTask;
 import cn.rongcloud.im.task.UserTask;
 import cn.rongcloud.im.utils.SingleSourceLiveData;
+import cn.rongcloud.im.utils.SingleSourceMapLiveData;
 
 /**
  * 用户详细视图模型
  */
 public class UserDetailViewModel extends AndroidViewModel {
     private MediatorLiveData<Resource<UserInfo>> userInfoLiveData = new MediatorLiveData<>();
-    private SingleSourceLiveData<Resource<AddFriendResult>> inviteResult = new SingleSourceLiveData<>();
-    private SingleSourceLiveData<Resource<Void>> addBlackListResult = new SingleSourceLiveData<>();
-    private SingleSourceLiveData<Resource<Void>> removeBlackListResult = new SingleSourceLiveData<>();
+    private SingleSourceMapLiveData<Resource<AddFriendResult>, Resource<AddFriendResult>> inviteResult;
+    private SingleSourceMapLiveData<Resource<Void>, Resource<Void>> addBlackListResult;
+    private SingleSourceMapLiveData<Resource<Void>, Resource<Void>> removeBlackListResult;
     private SingleSourceLiveData<Resource<Void>> removeFriendResult = new SingleSourceLiveData<>();
     private LiveData<Boolean> isInBlackList;
+    private SingleSourceLiveData<Resource<FriendDescription>> friendDescription = new SingleSourceLiveData<>();
+    private SingleSourceLiveData<Resource<GroupMemberInfoDes>> groupMemberInfoDes = new SingleSourceLiveData<>();
+    private MediatorLiveData<GroupEntity> groupInfo = new MediatorLiveData<>();
 
     private String userId;
     private UserTask userTask;
     private FriendTask friendTask;
+    private GroupTask groupTask;
 
     public UserDetailViewModel(@NonNull Application application) {
         super(application);
@@ -46,6 +59,7 @@ public class UserDetailViewModel extends AndroidViewModel {
 
         userTask = new UserTask(application);
         friendTask = new FriendTask(application);
+        groupTask = new GroupTask(application);
 
         // 获取用于信息前先获取好友信息
         LiveData<Resource<FriendShipInfo>> friendInfo = friendTask.getFriendInfo(userId);
@@ -62,6 +76,41 @@ public class UserDetailViewModel extends AndroidViewModel {
             UserSimpleInfo data = resource.data;
             return data != null;
         });
+
+        addBlackListResult = new SingleSourceMapLiveData<>(new Function<Resource<Void>, Resource<Void>>() {
+            @Override
+            public Resource<Void> apply(Resource<Void> input) {
+                if (input.status == Status.SUCCESS) {
+                    // 在添加黑名单成功后刷新好友列表
+                    updateFriendList();
+                }
+                return input;
+            }
+        });
+
+        removeBlackListResult = new SingleSourceMapLiveData<>(new Function<Resource<Void>, Resource<Void>>() {
+            @Override
+            public Resource<Void> apply(Resource<Void> input) {
+                if (input.status == Status.SUCCESS) {
+                    // 在移除黑名单成功后刷新好友列表
+                    updateFriendList();
+                }
+                return input;
+            }
+        });
+
+        inviteResult = new SingleSourceMapLiveData<>(new Function<Resource<AddFriendResult>, Resource<AddFriendResult>>() {
+            @Override
+            public Resource<AddFriendResult> apply(Resource<AddFriendResult> input) {
+                if (input.status == Status.SUCCESS) {
+                    // 邀请好友后刷新好友列表
+                    updateFriendList();
+                }
+                return input;
+            }
+        });
+
+        requestFriendDescription();
     }
 
     /**
@@ -98,9 +147,10 @@ public class UserDetailViewModel extends AndroidViewModel {
 
     /**
      * 删除好友
+     *
      * @param friendId
      */
-    public void deleteFriend(String friendId){
+    public void deleteFriend(String friendId) {
         removeFriendResult.setSource(friendTask.deleteFriend(friendId));
     }
 
@@ -109,7 +159,7 @@ public class UserDetailViewModel extends AndroidViewModel {
      *
      * @return
      */
-    public LiveData<Resource<Void>> getDeleteFriendResult(){
+    public LiveData<Resource<Void>> getDeleteFriendResult() {
         return removeFriendResult;
     }
 
@@ -147,6 +197,68 @@ public class UserDetailViewModel extends AndroidViewModel {
      */
     public LiveData<Resource<AddFriendResult>> getInviteFriendResult() {
         return inviteResult;
+    }
+
+    /**
+     * 刷新好友列表
+     */
+    private void updateFriendList() {
+        LiveData<Resource<List<FriendShipInfo>>> allFriends = friendTask.getAllFriends();
+        allFriends.observeForever(new Observer<Resource<List<FriendShipInfo>>>() {
+            @Override
+            public void onChanged(Resource<List<FriendShipInfo>> listResource) {
+                if (listResource.status != Status.LOADING) {
+                    allFriends.removeObserver(this);
+                }
+            }
+        });
+    }
+
+    /**
+     * 获取朋友描述
+     */
+    public void requestFriendDescription() {
+        friendDescription.setSource(friendTask.getFriendDescription(userId));
+    }
+
+    public LiveData<Resource<FriendDescription>> getFriendDescription() {
+        return friendDescription;
+    }
+
+    /**
+     * 获取群成员用户信息
+     *
+     * @param groupId
+     * @param memberId
+     */
+    public void requestMemberInfoDes(String groupId, String memberId) {
+        groupMemberInfoDes.setSource(groupTask.getGroupMemberInfoDes(groupId, memberId));
+    }
+
+    public LiveData<Resource<GroupMemberInfoDes>> getGroupMemberInfoDes() {
+        return groupMemberInfoDes;
+    }
+
+    /**
+     * 获取群信息
+     *
+     * @param groupId
+     */
+    public void getGroupInfo(String groupId) {
+        LiveData<GroupEntity> mGroupEntity = groupTask.getGroupInfoInDB(groupId);
+        groupInfo.addSource(mGroupEntity, new Observer<GroupEntity>() {
+            @Override
+            public void onChanged(GroupEntity groupEntity) {
+                if (groupEntity != null) {
+                    groupInfo.removeSource(mGroupEntity);
+                    groupInfo.postValue(groupEntity);
+                }
+            }
+        });
+    }
+
+    public LiveData<GroupEntity> groupInfoResult() {
+        return groupInfo;
     }
 
     public static class Factory implements ViewModelProvider.Factory {

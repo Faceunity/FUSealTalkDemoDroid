@@ -23,7 +23,7 @@ public class NeedFaceUnityAcct extends AppCompatActivity {
         setContentView(R.layout.act_faceunity);
 
         final Button button = (Button) findViewById(R.id.btn_set);
-        String isOpen = PreferenceUtil.getString(this, PreferenceUtil.KEY_FACEUNITY_ISON);
+        String isOpen = PreferenceUtil.getString(this, PreferenceUtil.KEY_FACEUNITY_IS_ON);
         if (TextUtils.isEmpty(isOpen) || isOpen.equals("false")) {
             isOn = false;
         } else {
@@ -44,7 +44,7 @@ public class NeedFaceUnityAcct extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(NeedFaceUnityAcct.this, SplashActivity.class);
-                PreferenceUtil.persistString(NeedFaceUnityAcct.this, PreferenceUtil.KEY_FACEUNITY_ISON,
+                PreferenceUtil.persistString(NeedFaceUnityAcct.this, PreferenceUtil.KEY_FACEUNITY_IS_ON,
                         isOn + "");
                 startActivity(intent);
                 finish();

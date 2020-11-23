@@ -1,8 +1,11 @@
 package cn.rongcloud.im.ui.activity;
 
 import android.content.Intent;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -49,8 +52,7 @@ public class MainActivity extends BaseActivity implements MorePopWindow.OnPopWin
     private ImageView ivSearch;
     private ImageView ivMore;
     private AppViewModel appViewModel;
-    private MainViewModel mainViewModel;
-
+    public MainViewModel mainViewModel;
 
     /**
      * tab 项枚举
@@ -115,6 +117,28 @@ public class MainActivity extends BaseActivity implements MorePopWindow.OnPopWin
         setContentView(R.layout.main_activity_main);
         initView();
         initViewModel();
+        clearBadgeStatu();
+    }
+
+    //清除华为的角标
+    private void clearBadgeStatu() {
+        if (Build.MANUFACTURER.equalsIgnoreCase("HUAWEI")) {
+            try {
+                String packageName = getPackageName();
+                String launchClassName = getPackageManager()
+                        .getLaunchIntentForPackage(packageName)
+                        .getComponent().getClassName();
+                Bundle bundle = new Bundle();//需要存储的数据
+                bundle.putString("package", packageName);//包名
+                bundle.putString("class", launchClassName);//启动的Activity完整名称
+                bundle.putInt("badgenumber", 0);//未读信息条数清空
+                getContentResolver().call(
+                        Uri.parse("content://com.huawei.android.launcher.settings/badge/"),
+                        "change_badge", null, bundle);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
 
@@ -208,7 +232,6 @@ public class MainActivity extends BaseActivity implements MorePopWindow.OnPopWin
             }
         });
         ((MainBottomTabItem) tabGroupView.getView(Tab.CHAT.getValue())).setNumVisibility(View.VISIBLE);
-
     }
 
 
@@ -291,12 +314,25 @@ public class MainActivity extends BaseActivity implements MorePopWindow.OnPopWin
             }
         });
 
+        // 新朋友数量
+        mainViewModel.getNewFriendNum().observe(this, new Observer<Integer>() {
+            @Override
+            public void onChanged(Integer count) {
+                MainBottomTabItem chatTab = tabGroupView.getView(Tab.CONTACTS.getValue());
+                if (count > 0) {
+                    chatTab.setRedVisibility(View.VISIBLE);
+                } else {
+                    chatTab.setRedVisibility(View.GONE);
+                }
+            }
+        });
+
         mainViewModel.getPrivateChatLiveData().observe(this, new Observer<FriendShipInfo>() {
             @Override
             public void onChanged(FriendShipInfo friendShipInfo) {
                 RongIM.getInstance().startPrivateChat(MainActivity.this,
                         friendShipInfo.getUser().getId(),
-                        TextUtils.isEmpty(friendShipInfo.getDisplayName())?
+                        TextUtils.isEmpty(friendShipInfo.getDisplayName()) ?
                                 friendShipInfo.getUser().getNickname() : friendShipInfo.getDisplayName());
             }
         });
@@ -360,7 +396,16 @@ public class MainActivity extends BaseActivity implements MorePopWindow.OnPopWin
      */
     @Override
     public void onAddFriendClick() {
-        Intent intent = new Intent(this, SearchFriendActivity.class);
+        Intent intent = new Intent(this, AddFriendActivity.class);
+        startActivity(intent);
+    }
+
+    /**
+     * 扫一扫
+     */
+    @Override
+    public void onScanClick() {
+        Intent intent = new Intent(this, ScanActivity.class);
         startActivity(intent);
     }
 

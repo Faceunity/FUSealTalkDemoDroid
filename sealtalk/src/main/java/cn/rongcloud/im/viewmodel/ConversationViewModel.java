@@ -1,6 +1,7 @@
 package cn.rongcloud.im.viewmodel;
 
 import android.app.Application;
+import android.content.SharedPreferences;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
@@ -24,10 +25,13 @@ import cn.rongcloud.im.db.model.GroupEntity;
 import cn.rongcloud.im.im.IMManager;
 import cn.rongcloud.im.model.EvaluateInfo;
 import cn.rongcloud.im.model.Resource;
+import cn.rongcloud.im.model.ScreenCaptureResult;
 import cn.rongcloud.im.model.Status;
 import cn.rongcloud.im.model.TypingInfo;
 import cn.rongcloud.im.task.FriendTask;
 import cn.rongcloud.im.task.GroupTask;
+import cn.rongcloud.im.task.PrivacyTask;
+import cn.rongcloud.im.utils.SingleSourceLiveData;
 import io.rong.imlib.CustomServiceConfig;
 import io.rong.imlib.MessageTag;
 import io.rong.imlib.RongIMClient;
@@ -47,7 +51,8 @@ public class ConversationViewModel extends AndroidViewModel {
 
     private IMManager imManager;
     private FriendTask friendTask;
-    private LiveData<String> groupAt ;
+    private LiveData<String> groupAt;
+    private PrivacyTask privacyTask;
 
     public ConversationViewModel(Application application) {
         super(application);
@@ -58,6 +63,7 @@ public class ConversationViewModel extends AndroidViewModel {
         imManager = IMManager.getInstance();
         friendTask = new FriendTask(application);
         groupTask = new GroupTask(application);
+        privacyTask = new PrivacyTask(application);
 
         /**
          * 设置人工评价监听
@@ -77,41 +83,35 @@ public class ConversationViewModel extends AndroidViewModel {
          */
         imManager.setTypingStatusListener(new RongIMClient.TypingStatusListener() {
             @Override
-            public void onTypingStatusChanged(Conversation.ConversationType conversationType, String s, Collection<TypingStatus> collection) {
-                RongIMClient.setTypingStatusListener(new RongIMClient.TypingStatusListener() {
-                    @Override
-                    public void onTypingStatusChanged(Conversation.ConversationType type, String targetId, Collection<TypingStatus> typingStatusSet) {
+            public void onTypingStatusChanged(Conversation.ConversationType type, String targetId, Collection<TypingStatus> typingStatusSet) {
+                TypingInfo info = new TypingInfo();
+                info.conversationType = type;
+                info.targetId = targetId;
+                int count = typingStatusSet.size();
+                if (count > 0) {
+                    List<TypingInfo.Typing> typingsList = new ArrayList<>();
+                    Iterator iterator = typingStatusSet.iterator();
+                    while (iterator.hasNext()) {
+                        TypingInfo.Typing typing = new TypingInfo.Typing();
+                        TypingStatus status = (TypingStatus) iterator.next();
+                        String objectName = status.getTypingContentType();
+                        MessageTag textTag = TextMessage.class.getAnnotation(MessageTag.class);
+                        MessageTag voiceTag = VoiceMessage.class.getAnnotation(MessageTag.class);
 
-                        TypingInfo info = new TypingInfo();
-                        info.conversationType = type;
-                        info.targetId = targetId;
-                        int count = typingStatusSet.size();
-                        if (count > 0) {
-                            List<TypingInfo.Typing> typingsList = new ArrayList<>();
-                            Iterator iterator = typingStatusSet.iterator();
-                            while (iterator.hasNext()) {
-                                TypingInfo.Typing typing = new TypingInfo.Typing();
-                                TypingStatus status = (TypingStatus) iterator.next();
-                                String objectName = status.getTypingContentType();
-                                MessageTag textTag = TextMessage.class.getAnnotation(MessageTag.class);
-                                MessageTag voiceTag = VoiceMessage.class.getAnnotation(MessageTag.class);
-
-                                //匹配对方正在输入的是文本消息还是语音消息
-                                if (objectName.equals(textTag.value())) {
-                                    typing.type = TypingInfo.Typing.Type.text;
-                                } else if (objectName.equals(voiceTag.value())) {
-                                    typing.type = TypingInfo.Typing.Type.voice;
-                                }
-
-                                typing.sendTime = status.getSentTime();
-                                typing.userId = status.getUserId();
-                                typingsList.add(typing);
-                            }
+                        //匹配对方正在输入的是文本消息还是语音消息
+                        if (objectName.equals(textTag.value())) {
+                            typing.type = TypingInfo.Typing.Type.text;
+                        } else if (objectName.equals(voiceTag.value())) {
+                            typing.type = TypingInfo.Typing.Type.voice;
                         }
 
-                        typingStatusInfo.postValue(info);
+                        typing.sendTime = status.getSentTime();
+                        typing.userId = status.getUserId();
+                        typingsList.add(typing);
                     }
-                });
+                    info.typingList = typingsList;
+                }
+                typingStatusInfo.postValue(info);
             }
         });
 
@@ -121,6 +121,7 @@ public class ConversationViewModel extends AndroidViewModel {
 
     /**
      * 获取 title 根据不同的 type
+     *
      * @param targetId
      * @param conversationType
      * @param title
@@ -150,7 +151,7 @@ public class ConversationViewModel extends AndroidViewModel {
 
                         if (!TextUtils.isEmpty(displayName)) {
                             titleStr.postValue(displayName);
-                        } else  if (!TextUtils.isEmpty(title)){
+                        } else if (!TextUtils.isEmpty(title)) {
                             titleStr.postValue(title);
                         } else {
                             titleStr.postValue(targetId);
@@ -179,7 +180,7 @@ public class ConversationViewModel extends AndroidViewModel {
                     }
                     if (!TextUtils.isEmpty(name)) {
                         titleStr.postValue(name);
-                    } else  if (!TextUtils.isEmpty(title)){
+                    } else if (!TextUtils.isEmpty(title)) {
                         titleStr.postValue(title);
                     } else {
                         titleStr.postValue(targetId);
@@ -275,6 +276,7 @@ public class ConversationViewModel extends AndroidViewModel {
 
     /**
      * 会话标题
+     *
      * @return
      */
     public LiveData<String> getTitleStr() {
@@ -283,6 +285,7 @@ public class ConversationViewModel extends AndroidViewModel {
 
     /**
      * 群 @
+     *
      * @return
      */
     public LiveData<String> getGroupAt() {
@@ -313,4 +316,22 @@ public class ConversationViewModel extends AndroidViewModel {
             }
         }
     }
+
+    /**
+     * 获取是否开启截屏通知
+     */
+    public LiveData<Resource<ScreenCaptureResult>> getScreenCaptureStatus(int conversationType, String targetId) {
+        return privacyTask.getScreenCapture(conversationType, targetId);
+    }
+
+    /**
+     * 发送截屏通知
+     *
+     * @param conversationType
+     * @param targetId
+     */
+    public LiveData<Resource<Void>> sendScreenShotMsg(int conversationType, String targetId) {
+        return privacyTask.sendScreenShotMessage(conversationType, targetId);
+    }
+
 }

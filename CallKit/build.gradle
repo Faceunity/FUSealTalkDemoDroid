@@ -1,14 +1,14 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 28
-    buildToolsVersion '28.0.3'
+    compileSdkVersion 26
+    //buildToolsVersion '28.0.2'
 
     defaultConfig {
-        minSdkVersion 16
-        targetSdkVersion 28
-        versionCode 2019080119
-        versionName "2.9.21 Dev"
+        minSdkVersion 19
+        targetSdkVersion 23
+        versionCode 20200619
+        versionName "4.0.0_release"
     }
 
     buildTypes {
@@ -24,13 +24,17 @@ android {
 
 dependencies {
     api fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'androidx.appcompat:appcompat:1.0.0'
     api 'androidx.legacy:legacy-support-v4:1.0.0'
     api 'androidx.core:core:1.2.0'
-    api 'cn.rongcloud.sdk:im_kit:2.9.21'
-    //im_kit必须依赖im_lib，所以需要加入对应依赖
-    api 'cn.rongcloud.sdk:im_lib:2.9.21'
-    api project(':CallLib')
+
+    api 'cn.rongcloud.sdk:im_lib:4.0.1' // 即时通讯基础能力库
+    api 'cn.rongcloud.sdk:im_kit:4.0.1' // 即时通讯 UI 基础组件
+//    api 'cn.rongcloud.sdk:call_kit:4.0.1' // 音视频通话能力 UI 组件
+    api 'cn.rongcloud.sdk:call_lib:4.0.1' // 音视频呼叫信令
+
     api 'com.github.bumptech.glide:glide:4.9.0'
-    api 'com.google.code.gson:gson:2.8.5'
+    api 'com.google.code.gson:gson:2.8.1'
+
     api project(':faceunity')
 }
