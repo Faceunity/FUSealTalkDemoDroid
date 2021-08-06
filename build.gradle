@@ -6,7 +6,7 @@ buildscript {
         google()
         jcenter()
         mavenCentral()
-        maven {url  "https://dl.bintray.com/rongcloud/maven"}
+        maven {url  "http://maven.rongcloud.cn/repository/maven-releases/"}
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.3.2'
@@ -24,7 +24,8 @@ allprojects {
         jcenter()
         mavenCentral()
         maven {url 'http://developer.huawei.com/repo/'}
-        maven {url  "https://dl.bintray.com/rongcloud/maven"}
+        maven { url 'http://maven.faceunity.com/repository/maven-public/' }
+        maven {url  "http://maven.rongcloud.cn/repository/maven-releases/"}
     }
 }
 

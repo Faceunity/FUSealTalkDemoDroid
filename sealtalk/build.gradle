@@ -48,6 +48,22 @@ android {
             jniLibs.srcDirs = ['libs']
         }
     }
+    applicationVariants.all { variant ->
+        variant.mergeAssetsProvider.configure {
+            doLast {
+                delete(fileTree(dir: outputDir,
+                        includes: ['model/ai_bgseg_green.bundle',
+                                   'model/ai_face_processor_lite.bundle',
+                                   'model/ai_hairseg.bundle',
+                                   'model/ai_hand_processor.bundle',
+                                   'model/ai_human_processor_mb_fast.bundle',
+                                   'graphics/controller_cpp.bundle',
+                                   'graphics/fuzzytoonfilter.bundle',
+                                   'graphics/tongue.bundle',
+                                   'graphics/fxaa.bundle']))
+            }
+        }
+    }
 }
 
 
@@ -80,12 +96,11 @@ dependencies {
     implementation 'com.tencent.bugly:nativecrashreport:3.7.1'
     implementation 'com.tencent.mm.opensdk:wechat-sdk-android-with-mta:+'
 
-    api 'cn.rongcloud.sdk:im_kit:4.0.0.3'
-    //im_kit必须依赖im_lib，所以需要加入对应依赖
-    api 'cn.rongcloud.sdk:im_lib:4.0.0.3'
+    api 'cn.rongcloud.sdk:im_lib:4.0.3.14' // 即时通讯基础能力库
+    api 'cn.rongcloud.sdk:im_kit:4.0.3.14' // 即时通讯 UI 基础组件
 
-    api 'cn.rongcloud.sdk:rcsticker:4.0.0.3'
-    api 'cn.rongcloud.sdk:sight:4.0.0.3'
+    api 'cn.rongcloud.sdk:rcsticker:4.0.3.13'
+    api 'cn.rongcloud.sdk:sight:4.0.3.13'
 
     api project(path: ':CallKit')
     api project(path: ':contactcard')

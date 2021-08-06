@@ -10,9 +10,10 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.media.AudioManager;
 import android.media.SoundPool;
+import android.opengl.EGL14;
+import android.opengl.GLES20;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.HandlerThread;
 import android.os.Message;
 import android.text.TextUtils;
 import android.util.Log;
@@ -27,19 +28,24 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.faceunity.core.entity.FURenderOutputData;
+import com.faceunity.core.enumeration.CameraFacingEnum;
+import com.faceunity.core.enumeration.FUAIProcessorEnum;
+import com.faceunity.core.enumeration.FUInputTextureEnum;
+import com.faceunity.core.enumeration.FUTransformMatrixEnum;
+import com.faceunity.core.faceunity.OffLineRenderHandler;
+import com.faceunity.core.utils.CameraUtils;
 import com.faceunity.nama.FURenderer;
-import com.faceunity.nama.IFURenderer;
+import com.faceunity.nama.data.FaceUnityDataFactory;
+import com.faceunity.nama.listener.FURendererListener;
 import com.faceunity.nama.ui.FaceUnityView;
-import com.faceunity.nama.utils.CameraUtils;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.CountDownLatch;
 
 import cn.rongcloud.rtc.utils.FinLog;
 import io.rong.callkit.profile.CSVUtils;
@@ -67,7 +73,7 @@ import io.rong.imlib.RongIMClient;
 import io.rong.imlib.model.Conversation;
 import io.rong.imlib.model.UserInfo;
 
-public class SingleCallActivity extends BaseCallActivity implements Handler.Callback , SensorEventListener {
+public class SingleCallActivity extends BaseCallActivity implements Handler.Callback, SensorEventListener {
     private static final String TAG = "VoIPSingleActivity";
     private static final int LOSS_RATE_ALARM = 20;
     private LayoutInflater inflater;
@@ -92,15 +98,15 @@ public class SingleCallActivity extends BaseCallActivity implements Handler.Call
     private RongCallCommon.CallMediaType mediaType;
 
     private FURenderer mFURenderer;
-    private Handler mGlHandler;
+    private FaceUnityDataFactory mFaceUnityDataFactory;
     // 渲染是否暂停，当 APP 退到后台时
     private boolean mIsRenderPaused;
     // 切换相机时，跳过几十帧
-    private int mSkippedFrames = -1;
+    private int mSkippedFrames = CAMERA_SWITCH_SKIP_FRAME;
     // 相机方向，默认前置
     private int mCameraFacing = Camera.CameraInfo.CAMERA_FACING_FRONT;
     // 相机切换跳过 5 帧，如果还有问题，可以增加帧数
-    private static final int CAMERA_SWITCH_SKIP_FRAME = 5;
+    private static final int CAMERA_SWITCH_SKIP_FRAME = 0;
     private SensorManager mSensorManager;
     private TextView mTvFps;
     private CSVUtils mCSVUtils;
@@ -119,7 +125,7 @@ public class SingleCallActivity extends BaseCallActivity implements Handler.Call
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.rc_voip_activity_single_call);
-        Log.i("AudioPlugin","savedInstanceState != null="+ (savedInstanceState != null)+ ",,,RongCallClient.getInstance() == null" + (RongCallClient.getInstance() == null));
+        Log.i("AudioPlugin", "savedInstanceState != null=" + (savedInstanceState != null) + ",,,RongCallClient.getInstance() == null" + (RongCallClient.getInstance() == null));
         if (savedInstanceState != null && RongCallClient.getInstance() == null) {
             // 音视频请求权限时，用户在设置页面取消权限，导致应用重启，退出当前activity.
             Log.i("AudioPlugin", "音视频请求权限时，用户在设置页面取消权限，导致应用重启，退出当前activity");
@@ -170,41 +176,58 @@ public class SingleCallActivity extends BaseCallActivity implements Handler.Call
         String isOpenFU = PreferenceUtil.getString(this, PreferenceUtil.KEY_FACEUNITY_IS_ON);
 
         if ("true".equals(isOpenFU)) {
-            FURenderer.setup(this);
-            mFURenderer = new FURenderer
-                    .Builder(SingleCallActivity.this)
-                    .setInputTextureType(FURenderer.INPUT_TEXTURE_2D)
-                    .setCreateEglContext(true)
-                    .setInputImageOrientation(CameraUtils.getCameraOrientation(mCameraFacing))
-                    .setRunBenchmark(true)
-                    .setOnDebugListener(new FURenderer.OnDebugListener() {
-                        @Override
-                        public void onFpsChanged(double fps, double callTime) {
-                            final String FPS = String.format(Locale.getDefault(), "%.2f", fps);
-//                            Log.e(TAG, "onFpsChanged: FPS " + FPS + " callTime " + String.format(Locale.getDefault(), "%.2f", callTime));
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    if (mTvFps != null) {
-                                        mTvFps.setText("FPS: " + FPS);
-                                    }
-                                }
-                            });
-                        }
-                    })
-                    .build();
-            beautyControlView.setModuleManager(mFURenderer);
+            FURenderer.getInstance().setup(this);
+            mFURenderer = FURenderer.getInstance();
+            mFURenderer.setInputTextureType(FUInputTextureEnum.FU_ADM_FLAG_COMMON_TEXTURE);
+            mFURenderer.setCameraFacing(mCameraFacing == Camera.CameraInfo.CAMERA_FACING_FRONT ? CameraFacingEnum.CAMERA_FRONT : CameraFacingEnum.CAMERA_BACK);
+            mFURenderer.setInputBufferMatrix(FUTransformMatrixEnum.CCROT0_FLIPVERTICAL);
+            mFURenderer.setInputTextureMatrix(FUTransformMatrixEnum.CCROT0_FLIPVERTICAL);
+            mFURenderer.setOutputMatrix(FUTransformMatrixEnum.CCROT0);
+            mFURenderer.setInputOrientation(CameraUtils.INSTANCE.getCameraOrientation(mCameraFacing));
+            mFURenderer.setMarkFPSEnable(true);
+            mFaceUnityDataFactory = FaceUnityDataFactory.getInstance();
+            beautyControlView.bindDataFactory(mFaceUnityDataFactory);
             mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
             Sensor sensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
             mSensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
 
-            HandlerThread handlerThread = new HandlerThread("effect");
-            handlerThread.start();
-            mGlHandler = new Handler(handlerThread.getLooper());
         } else {
             beautyControlView.setVisibility(View.GONE);
         }
     }
+
+    private FURendererListener mFURendererListener = new FURendererListener() {
+
+        @Override
+        public void onPrepare() {
+            mFaceUnityDataFactory.bindCurrentRenderer();
+            Log.e(TAG, "mFURendererListener: onPrepare: ");
+        }
+
+        @Override
+        public void onTrackStatusChanged(FUAIProcessorEnum type, int status) {
+            Log.e(TAG, "onTrackStatusChanged: 人脸数: " + status);
+        }
+
+        @Override
+        public void onFpsChanged(double fps, double callTime) {
+            final String FPS = String.format(Locale.getDefault(), "%.2f", fps);
+            Log.d(TAG, "onFpsChanged FPS: " + FPS + ", callTime: " + String.format("%.2f", callTime));
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (mTvFps != null) {
+                        mTvFps.setText(FPS);
+                    }
+                }
+            });
+        }
+
+        @Override
+        public void onRelease() {
+//            RongCallClient.getInstance().unregisterVideoFrameObserver();
+        }
+    };
 
     @Override
     protected void onNewIntent(Intent intent) {
@@ -256,9 +279,9 @@ public class SingleCallActivity extends BaseCallActivity implements Handler.Call
                     }
                 } else {
                     Toast.makeText(
-                                    this,
-                                    getString(R.string.rc_permission_grant_needed),
-                                    Toast.LENGTH_SHORT)
+                            this,
+                            getString(R.string.rc_permission_grant_needed),
+                            Toast.LENGTH_SHORT)
                             .show();
                     if (startForCheckPermissions) {
                         startForCheckPermissions = false;
@@ -359,13 +382,13 @@ public class SingleCallActivity extends BaseCallActivity implements Handler.Call
         }
         if (callAction.equals(RongCallAction.ACTION_INCOMING_CALL) && userInfo != null) {
             ImageView iv_icoming_backgroud =
-                (ImageView) mUserInfoContainer.findViewById(R.id.iv_icoming_backgroud);
+                    (ImageView) mUserInfoContainer.findViewById(R.id.iv_icoming_backgroud);
             if (iv_icoming_backgroud != null) {
                 iv_icoming_backgroud.setVisibility(View.VISIBLE);
                 GlideUtils.showBlurTransformation(
-                    SingleCallActivity.this,
-                    iv_icoming_backgroud,
-                    userInfo.getPortraitUri());
+                        SingleCallActivity.this,
+                        iv_icoming_backgroud,
+                        userInfo.getPortraitUri());
             }
         }
         createPickupDetector();
@@ -379,39 +402,24 @@ public class SingleCallActivity extends BaseCallActivity implements Handler.Call
             pickupDetector.register(this);
         }
         mIsRenderPaused = false;
-
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        callSurfaceDestroyed();
         if (pickupDetector != null) {
             pickupDetector.unRegister();
         }
-        RongCallClient.getInstance().unregisterVideoFrameObserver();
     }
 
     private void callSurfaceDestroyed() {
-        Log.e(TAG, "callSurfaceDestroyed: onSurfaceDestroyed  mGlHandler " + mGlHandler + " mIsRenderPaused " + mIsRenderPaused);
-        if (mGlHandler != null && !mIsRenderPaused) {
-            final CountDownLatch countDownLatch = new CountDownLatch(1);
-            mGlHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    mIsRenderPaused = true;
-                    mFURenderer.onSurfaceDestroyed();
-                    if (mCSVUtils != null) {
-                        mCSVUtils.close();
-                    }
-                    countDownLatch.countDown();
-                }
-            });
-            try {
-                countDownLatch.await();
-                mGlHandler.getLooper().quitSafely();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+        if (!mIsRenderPaused) {
+            mFURenderer.release();
+            mIsRenderPaused = true;
+            mIsFirstFrame = true;
+            FaceUnityDataFactory.release();
+            if (mCSVUtils != null) {
+                mCSVUtils.close();
             }
         }
     }
@@ -542,9 +550,9 @@ public class SingleCallActivity extends BaseCallActivity implements Handler.Call
                     ImageView iv_icoming_backgroud =
                             mUserInfoContainer.findViewById(R.id.iv_icoming_backgroud);
                     GlideUtils.showBlurTransformation(
-                        SingleCallActivity.this,
-                        iv_icoming_backgroud,
-                        InviterUserIdInfo.getPortraitUri());
+                            SingleCallActivity.this,
+                            iv_icoming_backgroud,
+                            InviterUserIdInfo.getPortraitUri());
                     iv_icoming_backgroud.setVisibility(View.VISIBLE);
                     mUserInfoContainer
                             .findViewById(R.id.iv_large_preview_Mask)
@@ -675,67 +683,54 @@ public class SingleCallActivity extends BaseCallActivity implements Handler.Call
         this.remoteUserId = userId;
     }
 
+    private volatile int rotation;
+    private volatile int width;
+    private volatile int height;
+    private volatile byte[] buffer;
+    private volatile FURenderOutputData outputData;
+
+    private boolean mIsFirstFrame = true;
+    private volatile boolean mSkip;
+    private final Object readBackLock = new Object();
+    private final Object rendererLock = new Object();
+
+
     private void addPreviewCallback() {
         String isOpenFU = PreferenceUtil.getString(this, PreferenceUtil.KEY_FACEUNITY_IS_ON);
         if ("false".equals(isOpenFU)) {
             return;
         }
+
         RongCallClient.getInstance().registerVideoFrameListener(new IVideoFrameListener() {
-            private byte[] mInputBuffer;
-            private byte[] mReadbackBuffer;
-            private int width = 0;
-            private int height = 0;
-            private boolean mIsFirstFrame = true;
-//            private int mRotation;
-
-            private Runnable effectRunnable = new Runnable() {
-                @Override
-                public void run() {
-                    long start = System.nanoTime();
-                    mFURenderer.onDrawFrameSingleInput(mInputBuffer, width, height, IFURenderer.INPUT_FORMAT_NV21_BUFFER, mReadbackBuffer, width, height);
-                    long time = System.nanoTime() - start;
-                    mCSVUtils.writeCsv(null, time);
-                }
-            };
-
             @Override
             public CallVideoFrame processVideoFrame(CallVideoFrame callVideoFrame) {
-                mInputBuffer = callVideoFrame.getData();
-
-                if (mIsFirstFrame) {
-                    mIsFirstFrame = false;
-//                    mRotation = callVideoFrame.getRotation();
-                    mReadbackBuffer = Arrays.copyOf(mInputBuffer, mInputBuffer.length);
-                    mGlHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            mFURenderer.onSurfaceCreated();
-                            initCsvUtil(SingleCallActivity.this);
-                        }
-                    });
-                }
-
+//                Log.e(TAG, "processVideoFrame: egl context " + EGL14.eglGetCurrentContext());
+                rotation = callVideoFrame.getRotation();
                 width = callVideoFrame.getWidth();
                 height = callVideoFrame.getHeight();
-
-//                if (mRotation != callVideoFrame.getRotation()) {
-//                    mGlHandler.post(effectRunnable);
-//                    mRotation = callVideoFrame.getRotation();
-//                    Log.i(TAG, "processVideoFrame: camera rotation changed " + mRotation);
-//                    return callVideoFrame;
-//                }
-
-                if (mIsRenderPaused || mSkippedFrames > 0) {
-                    mGlHandler.post(effectRunnable);
-                    --mSkippedFrames;
-//                    Log.d(TAG, "processVideoFrame: return skip " + mSkippedFrames);
+                if (mIsRenderPaused) {
                     return callVideoFrame;
                 }
+                if (mIsFirstFrame) {
+                    mIsFirstFrame = false;
+                    initCsvUtil(SingleCallActivity.this);
+                    mFURenderer.prepareRenderer(mFURendererListener);
+                }
 
-//                Log.e(TAG, "processVideoFrame: is Texture " + callVideoFrame.getCurrentCaptureDataType());
-//                Log.e(TAG, "processVideoFrame: " + (callVideoFrame.getData() == null) + " texture " + callVideoFrame.getOesTextureId());
-                mGlHandler.post(effectRunnable);
-                callVideoFrame.setData(mReadbackBuffer);
+                long start = System.nanoTime();
+                mFURenderer.setInputOrientation(callVideoFrame.getRotation());
+                FURenderOutputData data = mFURenderer.onDrawFrameInputWithReturn(callVideoFrame.getData(), width, height);
+                long time = System.nanoTime() - start;
+                if (mCSVUtils != null) {
+                    mCSVUtils.writeCsv(null, time);
+                }
+                if (mSkippedFrames > 0 || mSkip) {
+                    --mSkippedFrames;
+                    return callVideoFrame;
+                }
+                if (data != null && data.getImage() != null && data.getImage().getBuffer() != null) {
+                    callVideoFrame.setData(data.getImage().getBuffer());
+                }
                 return callVideoFrame;
             }
         });
@@ -821,9 +816,9 @@ public class SingleCallActivity extends BaseCallActivity implements Handler.Call
     /**
      * 当通话中的某一个参与者切换通话类型，例如由 audio 切换至 video，回调 onMediaTypeChanged。
      *
-     * @param userId 切换者的 userId。
+     * @param userId    切换者的 userId。
      * @param mediaType 切换者，切换后的媒体类型。
-     * @param video 切换着，切换后的 camera 信息，如果由 video 切换至 audio，则为 null。
+     * @param video     切换着，切换后的 camera 信息，如果由 video 切换至 audio，则为 null。
      */
     @Override
     public void onMediaTypeChanged(
@@ -879,7 +874,9 @@ public class SingleCallActivity extends BaseCallActivity implements Handler.Call
         }
     }
 
-    /** 视频转语音 * */
+    /**
+     * 视频转语音 *
+     */
     private void initAudioCallView() {
         mLPreviewContainer.removeAllViews();
         mLPreviewContainer.setVisibility(View.GONE);
@@ -916,9 +913,9 @@ public class SingleCallActivity extends BaseCallActivity implements Handler.Call
                 ImageView iv_large_preview = mUserInfoContainer.findViewById(R.id.iv_large_preview);
                 iv_large_preview.setVisibility(View.VISIBLE);
                 GlideUtils.showBlurTransformation(
-                    SingleCallActivity.this,
-                    iv_large_preview,
-                    userInfo.getPortraitUri());
+                        SingleCallActivity.this,
+                        iv_large_preview,
+                        userInfo.getPortraitUri());
             }
         }
         mUserInfoContainer.setVisibility(View.VISIBLE);
@@ -942,11 +939,11 @@ public class SingleCallActivity extends BaseCallActivity implements Handler.Call
         ImageView iv_large_preview = mUserInfoContainer.findViewById(R.id.iv_icoming_backgroud);
 
         if (null != userInfo
-            && callSession.getMediaType().equals(RongCallCommon.CallMediaType.AUDIO)) {
+                && callSession.getMediaType().equals(RongCallCommon.CallMediaType.AUDIO)) {
             GlideUtils.showBlurTransformation(
-                SingleCallActivity.this,
-                iv_large_preview,
-                userInfo.getPortraitUri());
+                    SingleCallActivity.this,
+                    iv_large_preview,
+                    userInfo.getPortraitUri());
             iv_large_preview.setVisibility(View.VISIBLE);
         }
 
@@ -1018,7 +1015,7 @@ public class SingleCallActivity extends BaseCallActivity implements Handler.Call
                     public void onClick(View v) {
                         if (RongIMClient.getInstance().getCurrentConnectionStatus()
                                 == RongIMClient.ConnectionStatusListener.ConnectionStatus
-                                        .CONNECTED) {
+                                .CONNECTED) {
                             RongCallClient.getInstance()
                                     .changeCallMediaType(RongCallCommon.CallMediaType.AUDIO);
                             callSession.setMediaType(RongCallCommon.CallMediaType.AUDIO);
@@ -1253,25 +1250,33 @@ public class SingleCallActivity extends BaseCallActivity implements Handler.Call
         return getIntent().getAction();
     }
 
+    @Override
     public void onMinimizeClick(View view) {
         super.onMinimizeClick(view);
     }
 
     public void onSwitchCameraClick(View view) {
+//        mSkip = true;
         boolean isFront = mCameraFacing == Camera.CameraInfo.CAMERA_FACING_FRONT;
         final int cameraFacing = isFront ? Camera.CameraInfo.CAMERA_FACING_BACK : Camera.CameraInfo.CAMERA_FACING_FRONT;
         RongCallClient.getInstance().switchCamera(cameraFacing, !isFront, new CameraSwitchCallBack() {
             @Override
             public void onCameraSwitchDone(boolean b) {
                 Log.i(TAG, "onCameraSwitchDone: " + b);
-                mSkippedFrames = CAMERA_SWITCH_SKIP_FRAME;
+//                mSkippedFrames = CAMERA_SWITCH_SKIP_FRAME;
                 mCameraFacing = cameraFacing;
                 if (mFURenderer != null) {
-                    mFURenderer.onCameraChanged(cameraFacing, CameraUtils.getCameraOrientation(cameraFacing));
-                    if (mFURenderer.getMakeupModule() != null) {
-                        mFURenderer.getMakeupModule().setIsMakeupFlipPoints(cameraFacing == Camera.CameraInfo.CAMERA_FACING_FRONT ? 0 : 1);
-                    }
+                    mFURenderer.setCameraFacing(cameraFacing == Camera.CameraInfo.CAMERA_FACING_FRONT ? CameraFacingEnum.CAMERA_FRONT : CameraFacingEnum.CAMERA_BACK);
+                    mFURenderer.setInputOrientation(CameraUtils.INSTANCE.getCameraOrientation(cameraFacing));
+                    mFURenderer.setInputBufferMatrix(cameraFacing == Camera.CameraInfo.CAMERA_FACING_FRONT ? FUTransformMatrixEnum.CCROT0_FLIPVERTICAL : FUTransformMatrixEnum.CCROT0);
+                    mFURenderer.setInputTextureMatrix(cameraFacing == Camera.CameraInfo.CAMERA_FACING_FRONT ? FUTransformMatrixEnum.CCROT0_FLIPVERTICAL : FUTransformMatrixEnum.CCROT0);
+                    mFURenderer.setOutputMatrix(cameraFacing == Camera.CameraInfo.CAMERA_FACING_FRONT ? FUTransformMatrixEnum.CCROT0 : FUTransformMatrixEnum.CCROT0_FLIPVERTICAL);
                 }
+                synchronized (readBackLock) {
+                    outputData=null;
+                }
+                mSkip = false;
+                Log.e("ECRP", "onCameraSwitchDone   mSkip:" + mSkip);
             }
 
             @Override
@@ -1389,15 +1394,16 @@ public class SingleCallActivity extends BaseCallActivity implements Handler.Call
         float y = event.values[1];
         if (Math.abs(x) > 3 || Math.abs(y) > 3) {
             if (Math.abs(x) > Math.abs(y)) {
-                mFURenderer.onDeviceOrientationChanged(x > 0 ? 0 : 180);
+                mFURenderer.setDeviceOrientation(x > 0 ? 0 : 180);
             } else {
-                mFURenderer.onDeviceOrientationChanged(y > 0 ? 90 : 270);
+                mFURenderer.setDeviceOrientation(y > 0 ? 90 : 270);
             }
         }
     }
 
     @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {}
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+    }
 
     private void initCsvUtil(Context context) {
         mCSVUtils = new CSVUtils(context);
@@ -1409,7 +1415,7 @@ public class SingleCallActivity extends BaseCallActivity implements Handler.Call
         String filePath = Constant.filePath + dateStrDir + File.separator + "excel-" + dateStrFile + ".csv";
         Log.d(TAG, "initLog: CSV file path:" + filePath);
         StringBuilder headerInfo = new StringBuilder();
-        headerInfo.append("version：").append(FURenderer.getVersion()).append(CSVUtils.COMMA)
+        headerInfo.append("version：").append(FURenderer.getInstance().getVersion()).append(CSVUtils.COMMA)
                 .append("机型：").append(android.os.Build.MANUFACTURER).append(android.os.Build.MODEL)
                 .append("处理方式：Texture").append(CSVUtils.COMMA);
         mCSVUtils.initHeader(filePath, headerInfo);
