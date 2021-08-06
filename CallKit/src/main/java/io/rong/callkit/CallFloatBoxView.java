@@ -25,6 +25,11 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.faceunity.core.faceunity.FURenderKit;
+import com.faceunity.nama.FURenderer;
+import com.faceunity.nama.data.FaceUnityDataFactory;
+
 import io.rong.callkit.util.ActivityStartCheckUtils;
 import io.rong.callkit.util.BluetoothUtil;
 import io.rong.callkit.util.CallKitUtils;
@@ -292,6 +297,9 @@ public class CallFloatBoxView {
                                 RongCallClient.getInstance()
                                         .setVoIPCallListener(RongCallProxy.getInstance());
                                 BluetoothUtil.stopBlueToothSco(mContext);
+
+                                FURenderer.getInstance().release();
+                                FaceUnityDataFactory.release();
                             }
 
                             @Override

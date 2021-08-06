@@ -34,8 +34,7 @@ android {
 
 dependencies {
     api fileTree(include: ['*.jar'], dir: 'libs')
-    api 'cn.rongcloud.sdk:im_kit:2.9.21'
-    //im_kit必须依赖im_lib，所以需要加入对应依赖
-    api 'cn.rongcloud.sdk:im_lib:2.9.21'
+    api 'cn.rongcloud.sdk:im_lib:4.0.3.14' // 即时通讯基础能力库
+    api 'cn.rongcloud.sdk:im_kit:4.0.3.14' // 即时通讯 UI 基础组件
     api 'androidx.legacy:legacy-support-v4:1.0.0'
 }
