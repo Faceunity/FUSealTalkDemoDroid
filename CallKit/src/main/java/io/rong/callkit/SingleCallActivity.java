@@ -180,9 +180,9 @@ public class SingleCallActivity extends BaseCallActivity implements Handler.Call
             mFURenderer = FURenderer.getInstance();
             mFURenderer.setInputTextureType(FUInputTextureEnum.FU_ADM_FLAG_COMMON_TEXTURE);
             mFURenderer.setCameraFacing(mCameraFacing == Camera.CameraInfo.CAMERA_FACING_FRONT ? CameraFacingEnum.CAMERA_FRONT : CameraFacingEnum.CAMERA_BACK);
-            mFURenderer.setInputBufferMatrix(FUTransformMatrixEnum.CCROT0_FLIPVERTICAL);
-            mFURenderer.setInputTextureMatrix(FUTransformMatrixEnum.CCROT0_FLIPVERTICAL);
-            mFURenderer.setOutputMatrix(FUTransformMatrixEnum.CCROT0);
+            mFURenderer.setInputBufferMatrix(FUTransformMatrixEnum.CCROT90_FLIPHORIZONTAL);
+            mFURenderer.setInputTextureMatrix(FUTransformMatrixEnum.CCROT90_FLIPHORIZONTAL);
+            mFURenderer.setOutputMatrix(FUTransformMatrixEnum.CCROT270);
             mFURenderer.setInputOrientation(CameraUtils.INSTANCE.getCameraOrientation(mCameraFacing));
             mFURenderer.setMarkFPSEnable(true);
             mFaceUnityDataFactory = FaceUnityDataFactory.getInstance();
@@ -1268,9 +1268,9 @@ public class SingleCallActivity extends BaseCallActivity implements Handler.Call
                 if (mFURenderer != null) {
                     mFURenderer.setCameraFacing(cameraFacing == Camera.CameraInfo.CAMERA_FACING_FRONT ? CameraFacingEnum.CAMERA_FRONT : CameraFacingEnum.CAMERA_BACK);
                     mFURenderer.setInputOrientation(CameraUtils.INSTANCE.getCameraOrientation(cameraFacing));
-                    mFURenderer.setInputBufferMatrix(cameraFacing == Camera.CameraInfo.CAMERA_FACING_FRONT ? FUTransformMatrixEnum.CCROT0_FLIPVERTICAL : FUTransformMatrixEnum.CCROT0);
-                    mFURenderer.setInputTextureMatrix(cameraFacing == Camera.CameraInfo.CAMERA_FACING_FRONT ? FUTransformMatrixEnum.CCROT0_FLIPVERTICAL : FUTransformMatrixEnum.CCROT0);
-                    mFURenderer.setOutputMatrix(cameraFacing == Camera.CameraInfo.CAMERA_FACING_FRONT ? FUTransformMatrixEnum.CCROT0 : FUTransformMatrixEnum.CCROT0_FLIPVERTICAL);
+                    mFURenderer.setInputBufferMatrix(cameraFacing == Camera.CameraInfo.CAMERA_FACING_FRONT ? FUTransformMatrixEnum.CCROT90_FLIPHORIZONTAL : FUTransformMatrixEnum.CCROT270);
+                    mFURenderer.setInputTextureMatrix(cameraFacing == Camera.CameraInfo.CAMERA_FACING_FRONT ? FUTransformMatrixEnum.CCROT90_FLIPHORIZONTAL : FUTransformMatrixEnum.CCROT270);
+                    mFURenderer.setOutputMatrix(cameraFacing == Camera.CameraInfo.CAMERA_FACING_FRONT ? FUTransformMatrixEnum.CCROT270 : FUTransformMatrixEnum.CCROT90_FLIPVERTICAL);
                 }
                 synchronized (readBackLock) {
                     outputData=null;
