@@ -9,10 +9,13 @@ buildscript {
         maven {url  "http://maven.rongcloud.cn/repository/maven-releases/"}
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.3.2'
+        // 华为推送需要开启下面注释
+        // classpath 'com.huawei.agconnect:agcp:1.1.1.300'
+
+        classpath 'com.android.tools.build:gradle:4.2.2'
 
         // just for GCM.
-        classpath 'com.google.gms:google-services:4.3.3'
+//        classpath 'com.google.gms:google-services:4.2.0'
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
     }
@@ -24,9 +27,11 @@ allprojects {
         jcenter()
         mavenCentral()
         maven {url 'http://developer.huawei.com/repo/'}
-        maven { url 'http://maven.faceunity.com/repository/maven-public/' }
         maven {url  "http://maven.rongcloud.cn/repository/maven-releases/"}
-    }
+        maven {url 'http://maven.faceunity.com/repository/maven-public/'}
+	//UMeng统计
+        maven { url 'https://repo1.maven.org/maven2/' }   
+ }
 }
 
 task clean(type: Delete) {

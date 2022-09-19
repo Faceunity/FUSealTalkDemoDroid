@@ -1,11 +1,14 @@
 package cn.rongcloud.im.im;
 
+import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Looper;
 import android.text.TextUtils;
 import android.view.View;
+import android.widget.EditText;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -13,6 +16,7 @@ import androidx.lifecycle.MutableLiveData;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import cn.rongcloud.im.BuildConfig;
@@ -23,8 +27,7 @@ import cn.rongcloud.im.common.IntentExtra;
 import cn.rongcloud.im.common.LogTag;
 import cn.rongcloud.im.common.NetConstant;
 import cn.rongcloud.im.common.ResultCallback;
-import cn.rongcloud.im.common.ThreadManager;
-import cn.rongcloud.im.db.DbManager;
+import cn.rongcloud.im.db.DBManager;
 import cn.rongcloud.im.im.message.GroupApplyMessage;
 import cn.rongcloud.im.im.message.GroupClearMessage;
 import cn.rongcloud.im.im.message.PokeMessage;
@@ -33,12 +36,11 @@ import cn.rongcloud.im.im.message.SealGroupConNtfMessage;
 import cn.rongcloud.im.im.message.SealGroupNotificationMessage;
 import cn.rongcloud.im.im.plugin.PokeExtensionModule;
 import cn.rongcloud.im.im.provider.ContactNotificationMessageProvider;
-import cn.rongcloud.im.im.provider.GroupApplyMessageProvider;
+import cn.rongcloud.im.im.provider.GroupApplyMessageItemProvider;
 import cn.rongcloud.im.im.provider.PokeMessageItemProvider;
 import cn.rongcloud.im.im.provider.SealGroupConNtfMessageProvider;
 import cn.rongcloud.im.im.provider.SealGroupNotificationMessageItemProvider;
 import cn.rongcloud.im.model.ChatRoomAction;
-import cn.rongcloud.im.model.ContactNotificationMessageData;
 import cn.rongcloud.im.model.ConversationRecord;
 import cn.rongcloud.im.model.LoginResult;
 import cn.rongcloud.im.model.QuietHours;
@@ -49,65 +51,76 @@ import cn.rongcloud.im.net.HttpClientManager;
 import cn.rongcloud.im.net.service.UserService;
 import cn.rongcloud.im.sp.UserCache;
 import cn.rongcloud.im.sp.UserConfigCache;
+import cn.rongcloud.im.task.AppTask;
 import cn.rongcloud.im.ui.activity.ConversationActivity;
 import cn.rongcloud.im.ui.activity.ForwardActivity;
 import cn.rongcloud.im.ui.activity.GroupNoticeListActivity;
+import cn.rongcloud.im.ui.activity.GroupReadReceiptDetailActivity;
+import cn.rongcloud.im.ui.activity.MainActivity;
 import cn.rongcloud.im.ui.activity.NewFriendListActivity;
 import cn.rongcloud.im.ui.activity.PokeInviteChatActivity;
-import cn.rongcloud.im.ui.activity.SealPicturePagerActivity;
+import cn.rongcloud.im.ui.activity.SubConversationListActivity;
 import cn.rongcloud.im.ui.activity.UserDetailActivity;
 import cn.rongcloud.im.utils.log.SLog;
+import io.rong.common.RLog;
 import io.rong.contactcard.ContactCardExtensionModule;
 import io.rong.contactcard.IContactCardInfoProvider;
-import io.rong.imkit.DefaultExtensionModule;
-import io.rong.imkit.IExtensionModule;
-import io.rong.imkit.RongContext;
-import io.rong.imkit.RongExtensionManager;
-import io.rong.imkit.RongIM;
-import io.rong.imkit.RongMessageItemLongClickActionManager;
-import io.rong.imkit.manager.IUnReadMessageObserver;
-import io.rong.imkit.manager.SendImageManager;
-import io.rong.imkit.mention.IMentionedInputListener;
-import io.rong.imkit.mention.RongMentionManager;
-import io.rong.imkit.model.Event;
+import io.rong.imkit.IMCenter;
+import io.rong.imkit.MessageInterceptor;
+import io.rong.imkit.config.ConversationClickListener;
+import io.rong.imkit.config.ConversationListBehaviorListener;
+import io.rong.imkit.config.DataProcessor;
+import io.rong.imkit.config.RongConfigCenter;
+import io.rong.imkit.conversation.extension.RongExtensionManager;
+import io.rong.imkit.conversation.messgelist.provider.GroupNotificationMessageItemProvider;
+import io.rong.imkit.conversationlist.model.BaseUiConversation;
+import io.rong.imkit.feature.mention.IExtensionEventWatcher;
+import io.rong.imkit.feature.mention.IMentionedInputListener;
+import io.rong.imkit.feature.mention.RongMentionManager;
+import io.rong.imkit.feature.quickreply.IQuickReplyProvider;
+import io.rong.imkit.manager.UnReadMessageManager;
 import io.rong.imkit.model.GroupNotificationMessageData;
-import io.rong.imkit.model.GroupUserInfo;
-import io.rong.imkit.model.UIConversation;
-import io.rong.imkit.model.UIMessage;
-import io.rong.imkit.notification.MessageNotificationManager;
-import io.rong.imkit.userInfoCache.RongUserInfoManager;
-import io.rong.imkit.widget.provider.MessageItemLongClickAction;
-import io.rong.imkit.widget.provider.RealTimeLocationMessageProvider;
-import io.rong.imlib.CustomServiceConfig;
+import io.rong.imkit.notification.RongNotificationManager;
+import io.rong.imkit.userinfo.RongUserInfoManager;
+import io.rong.imkit.userinfo.model.GroupUserInfo;
+import io.rong.imkit.utils.RouteUtils;
 import io.rong.imlib.IRongCallback;
+import io.rong.imlib.IRongCoreEnum;
 import io.rong.imlib.RongIMClient;
+import io.rong.imlib.chatroom.base.RongChatRoomClient;
 import io.rong.imlib.common.DeviceUtils;
+import io.rong.imlib.cs.CustomServiceConfig;
 import io.rong.imlib.cs.CustomServiceManager;
-import io.rong.imlib.location.message.RealTimeLocationStartMessage;
+import io.rong.imlib.model.AndroidConfig;
+import io.rong.imlib.model.ConnectOption;
 import io.rong.imlib.model.Conversation;
-import io.rong.imlib.model.Discussion;
 import io.rong.imlib.model.Group;
+import io.rong.imlib.model.IOSConfig;
 import io.rong.imlib.model.MentionedInfo;
 import io.rong.imlib.model.Message;
+import io.rong.imlib.model.MessageConfig;
 import io.rong.imlib.model.MessageContent;
-import io.rong.imlib.model.PublicServiceProfile;
+import io.rong.imlib.model.MessagePushConfig;
 import io.rong.imlib.model.UserInfo;
+import io.rong.imlib.publicservice.model.PublicServiceProfile;
 import io.rong.message.ContactNotificationMessage;
 import io.rong.message.GroupNotificationMessage;
-import io.rong.message.ImageMessage;
-import io.rong.message.NotificationMessage;
-import io.rong.message.TextMessage;
-import io.rong.message.VoiceMessage;
+import io.rong.push.PushEventListener;
+import io.rong.push.PushType;
 import io.rong.push.RongPushClient;
+import io.rong.push.notification.PushNotificationMessage;
 import io.rong.push.pushconfig.PushConfig;
 import io.rong.recognizer.RecognizeExtensionModule;
 import io.rong.sight.SightExtensionModule;
 
+import static android.content.Context.MODE_PRIVATE;
+
 public class IMManager {
     private static volatile IMManager instance;
-
+    private final String TAG = IMManager.class.getSimpleName();
     private MutableLiveData<ChatRoomAction> chatRoomActionLiveData = new MutableLiveData<>();
     private Context context;
+    private AppTask appTask;
 
     private UserConfigCache configCache;
     private UserCache userCache;
@@ -138,11 +151,16 @@ public class IMManager {
         return instance;
     }
 
+    public Context getContext() {
+        return context;
+    }
+
     /**
-     * @param context
+     * @param application
      */
-    public void init(Context context) {
-        this.context = context.getApplicationContext();
+    public void init(Application application) {
+        this.context = application.getApplicationContext();
+        appTask = new AppTask(this.context);
 
         // 初始化 IM 相关缓存
         initIMCache();
@@ -150,8 +168,14 @@ public class IMManager {
         // 初始化推送
         initPush();
 
+        initPhrase();
+
         // 调用 RongIM 初始化
-        initRongIM(context);
+        initRongIM(application);
+
+        initDebug();
+
+        initIMConfig();
 
         // 初始化用户和群组信息内容提供者
         initInfoProvider(context);
@@ -161,15 +185,6 @@ public class IMManager {
 
         // 初始化扩展模块
         initExtensionModules(context);
-
-        // 初始化已读回执类型
-        initReadReceiptConversation();
-
-        // 初始化会话界面相关内容
-        initConversation();
-
-        // 初始化会话列表界面相关内容
-        initConversationList();
 
         // 初始化连接状态变化监听
         initConnectStateChangeListener();
@@ -182,13 +197,41 @@ public class IMManager {
 
         // 缓存连接
         cacheConnectIM();
+        RongExtensionManager.getInstance().addExtensionEventWatcher(new IExtensionEventWatcher() {
+            @Override
+            public void onTextChanged(Context context, Conversation.ConversationType type, String targetId, int cursorPos, int count, String text) {
+
+            }
+
+            @Override
+            public void onSendToggleClick(Message message) {
+                if (message != null &&
+                        message.getContent() != null &&
+                        message.getContent().getMentionedInfo() != null &&
+                        message.getContent().getMentionedInfo().getMentionedUserIdList() != null &&
+                        message.getContent().getMentionedInfo().getMentionedUserIdList().size() > 0 &&
+                        message.getContent().getMentionedInfo().getMentionedUserIdList().get(0).equals(String.valueOf(-1))) {
+                    message.getContent().getMentionedInfo().setType(MentionedInfo.MentionedType.ALL);
+                }
+            }
+
+            @Override
+            public void onDeleteClick(Conversation.ConversationType type, String targetId, EditText editText, int cursorPos) {
+
+            }
+
+            @Override
+            public void onDestroy(Conversation.ConversationType type, String targetId) {
+
+            }
+        });
     }
 
     /**
      * 缓存登录
      */
     private void cacheConnectIM() {
-        if (RongIM.getInstance().getCurrentConnectionStatus() == RongIMClient.ConnectionStatusListener.ConnectionStatus.CONNECTED) {
+        if (RongIMClient.getInstance().getCurrentConnectionStatus() == RongIMClient.ConnectionStatusListener.ConnectionStatus.CONNECTED) {
             autologinResult.setValue(true);
             return;
         }
@@ -246,16 +289,6 @@ public class IMManager {
 
 
     /**
-     * 获取讨论组信息
-     *
-     * @param targetId
-     * @param callback
-     */
-    public void getDiscussion(String targetId, RongIMClient.ResultCallback<Discussion> callback) {
-        RongIM.getInstance().getDiscussion(targetId, callback);
-    }
-
-    /**
      * 获取从公众号信息
      *
      * @param type
@@ -263,226 +296,36 @@ public class IMManager {
      * @param callback
      */
     public void getPublicServiceProfile(Conversation.PublicServiceType type, String targetId, RongIMClient.ResultCallback<PublicServiceProfile> callback) {
-        RongIM.getInstance().getPublicServiceProfile(type, targetId, callback);
-    }
-
-    /**
-     * 获取会话通知消息免打扰状态
-     *
-     * @param conversationType
-     * @param targetId
-     * @return Resource 中 data 为 true 表示进行消息通知，false 表示消息免打扰
-     */
-    public LiveData<Resource<Boolean>> getConversationNotificationStatus(Conversation.ConversationType conversationType, String targetId) {
-        MutableLiveData<Resource<Boolean>> result = new MutableLiveData<>();
-        result.postValue(Resource.loading(null));
-
-        RongIM.getInstance().getConversationNotificationStatus(conversationType, targetId, new RongIMClient.ResultCallback<Conversation.ConversationNotificationStatus>() {
+        RongIMClient.getInstance().getPublicServiceProfile(type, targetId, new RongIMClient.ResultCallback<PublicServiceProfile>() {
             @Override
-            public void onSuccess(Conversation.ConversationNotificationStatus status) {
-                if (status != null) {
-                    result.postValue(Resource.success(status == Conversation.ConversationNotificationStatus.NOTIFY));
-                } else {
-                    result.postValue(Resource.success(true));
+            public void onSuccess(PublicServiceProfile publicServiceProfile) {
+                if (callback != null) {
+                    callback.onSuccess(publicServiceProfile);
                 }
             }
 
             @Override
-            public void onError(RongIMClient.ErrorCode errorCode) {
-                SLog.e(LogTag.IM, "get conversation notification status error, msg:" + errorCode.getMessage() + ", code:" + errorCode.getValue());
-                result.postValue(Resource.error(ErrorCode.IM_ERROR.getCode(), null));
-            }
-        });
-
-        return result;
-    }
-
-    /**
-     * 获取会话是否置顶
-     *
-     * @param conversationType
-     * @param targetId
-     * @return
-     */
-    public LiveData<Resource<Boolean>> getConversationIsOnTop(Conversation.ConversationType conversationType, String targetId) {
-        MutableLiveData<Resource<Boolean>> result = new MutableLiveData<>();
-        result.postValue(Resource.loading(null));
-
-        RongIM.getInstance().getConversation(conversationType, targetId, new RongIMClient.ResultCallback<Conversation>() {
-            @Override
-            public void onSuccess(Conversation conversation) {
-                if (conversation != null) {
-                    result.postValue(Resource.success(conversation.isTop()));
-                } else {
-                    result.postValue(Resource.success(false));
+            public void onError(RongIMClient.ErrorCode e) {
+                if (callback != null) {
+                    callback.onError(RongIMClient.ErrorCode.valueOf(e.getValue()));
                 }
             }
-
-            @Override
-            public void onError(RongIMClient.ErrorCode errorCode) {
-                SLog.e(LogTag.IM, "get conversation error, msg:" + errorCode.getMessage() + ", code:" + errorCode.getValue());
-                result.postValue(Resource.error(ErrorCode.IM_ERROR.getCode(), null));
-            }
         });
-
-        return result;
     }
 
-    /**
-     * 设置会话免打扰状态
-     *
-     * @param conversationType
-     * @param targetId
-     * @param isNotify
-     * @return
-     */
-    public LiveData<Resource<Boolean>> setConversationNotificationStatus(Conversation.ConversationType conversationType, String targetId, boolean isNotify) {
-        MutableLiveData<Resource<Boolean>> result = new MutableLiveData<>();
-        result.postValue(Resource.loading(null));
-
-        RongIM.getInstance().setConversationNotificationStatus(conversationType, targetId,
-                isNotify ? Conversation.ConversationNotificationStatus.NOTIFY
-                        : Conversation.ConversationNotificationStatus.DO_NOT_DISTURB
-                , new RongIMClient.ResultCallback<Conversation.ConversationNotificationStatus>() {
-                    @Override
-                    public void onSuccess(Conversation.ConversationNotificationStatus status) {
-                        result.postValue(Resource.success(isNotify));
-                    }
-
-                    @Override
-                    public void onError(RongIMClient.ErrorCode errorCode) {
-                        SLog.e(LogTag.IM, "get conversation notification status error, msg:" + errorCode.getMessage() + ", code:" + errorCode.getValue());
-                        result.postValue(Resource.error(ErrorCode.IM_ERROR.getCode(), !isNotify));
-                    }
-                });
-
-        return result;
-    }
-
-    /**
-     * 设置会话置顶
-     *
-     * @param conversationType
-     * @param targetId
-     * @param isTop
-     * @return
-     */
-    public LiveData<Resource<Boolean>> setConversationToTop(Conversation.ConversationType conversationType, String targetId, boolean isTop) {
-        MutableLiveData<Resource<Boolean>> result = new MutableLiveData<>();
-        result.postValue(Resource.loading(null));
-
-        RongIM.getInstance().setConversationToTop(conversationType, targetId, isTop, new RongIMClient.ResultCallback<Boolean>() {
-            @Override
-            public void onSuccess(Boolean aBoolean) {
-                result.setValue(Resource.success(isTop));
-            }
-
-            @Override
-            public void onError(RongIMClient.ErrorCode errorCode) {
-                SLog.e(LogTag.IM, "get conversation to top error, msg:" + errorCode.getMessage() + ", code:" + errorCode.getValue());
-                result.setValue(Resource.error(ErrorCode.IM_ERROR.getCode(), !isTop));
-            }
-        });
-
-        return result;
-    }
-
-    /**
-     * 清除会话历史聊天信息
-     *
-     * @param conversationType
-     * @param targetId
-     * @return
-     */
-    public LiveData<Resource<Boolean>> cleanHistoryMessage(Conversation.ConversationType conversationType, String targetId) {
-        MutableLiveData<Resource<Boolean>> result = new MutableLiveData<>();
-        result.postValue(Resource.loading(null));
-
-        RongIM.getInstance().clearMessages(conversationType, targetId, new RongIMClient.ResultCallback<Boolean>() {
-            @Override
-            public void onSuccess(Boolean aBoolean) {
-                result.postValue(Resource.success(true));
-            }
-
-            @Override
-            public void onError(RongIMClient.ErrorCode errorCode) {
-                SLog.e(LogTag.IM, "clean history message, msg:" + errorCode.getMessage() + ", code:" + errorCode.getValue());
-                result.postValue(Resource.error(ErrorCode.IM_ERROR.getCode(), false));
-            }
-        });
-
-        // 清除远端消息
-        RongIMClient.getInstance().cleanRemoteHistoryMessages(
-                conversationType,
-                targetId, System.currentTimeMillis(),
-                null);
-
-        return result;
-    }
-
-    /**
-     * @param conversationType
-     * @param targetId
-     * @param recordTime       删除此时间之前的数据
-     * @param cleanRemote      是否删除远端数据
-     * @return
-     */
-    public LiveData<Resource<Boolean>> cleanHistoryMessage(Conversation.ConversationType conversationType, String targetId, long recordTime,
-                                                           boolean cleanRemote) {
-        MutableLiveData<Resource<Boolean>> result = new MutableLiveData<>();
-        result.postValue(Resource.loading(null));
-
-        RongIMClient.getInstance().cleanHistoryMessages(conversationType, targetId, recordTime, cleanRemote, new RongIMClient.OperationCallback() {
-
-            @Override
-            public void onSuccess() {
-                result.postValue(Resource.success(true));
-                //如过没有会话界面没有消息的话，直接清除会话列表的最新消息
-                RongIMClient.getInstance().getLatestMessages(conversationType, targetId, 1, new RongIMClient.ResultCallback<List<Message>>() {
-                    @Override
-                    public void onSuccess(List<Message> messages) {
-                        if (messages == null || messages.size() <= 0) {
-                            RongContext.getInstance().getEventBus().post(new Event.MessagesClearEvent(conversationType, targetId));
-                        }
-                    }
-
-                    @Override
-                    public void onError(RongIMClient.ErrorCode errorCode) {
-
-                    }
-                });
-
-
-            }
-
-            @Override
-            public void onError(RongIMClient.ErrorCode errorCode) {
-                SLog.e(LogTag.IM, "clean history message, msg:" + errorCode.getMessage() + ", code:" + errorCode.getValue());
-                result.postValue(Resource.error(ErrorCode.IM_ERROR.getCode(), false));
-            }
-        });
-
-        return result;
-    }
 
     /**
      * 初始化会话相关
      */
     private void initConversation() {
-        // 启用会话界面新消息提示
-        RongIM.getInstance().enableNewComingMessageIcon(true);
-        // 启用会话界面未读信息提示
-        RongIM.getInstance().enableUnreadMessageIcon(true);
-
-        // 添加会话界面点击事件
-        RongIM.setConversationClickListener(new RongIM.ConversationClickListener() {
+        RongConfigCenter.conversationConfig().setConversationClickListener(new ConversationClickListener() {
             @Override
-            public boolean onUserPortraitClick(Context context, Conversation.ConversationType conversationType, UserInfo userInfo, String s) {
+            public boolean onUserPortraitClick(Context context, Conversation.ConversationType conversationType, UserInfo user, String targetId) {
                 if (conversationType != Conversation.ConversationType.CUSTOMER_SERVICE) {
                     Intent intent = new Intent(context, UserDetailActivity.class);
-                    intent.putExtra(IntentExtra.STR_TARGET_ID, userInfo.getUserId());
+                    intent.putExtra(IntentExtra.STR_TARGET_ID, user.getUserId());
                     if (conversationType == Conversation.ConversationType.GROUP) {
-                        Group groupInfo = RongUserInfoManager.getInstance().getGroupInfo(s);
+                        Group groupInfo = RongUserInfoManager.getInstance().getGroupInfo(targetId);
                         if (groupInfo != null) {
                             intent.putExtra(IntentExtra.GROUP_ID, groupInfo.getId());
                             intent.putExtra(IntentExtra.STR_GROUP_NAME, groupInfo.getName());
@@ -494,50 +337,42 @@ public class IMManager {
             }
 
             @Override
-            public boolean onUserPortraitLongClick(Context context, Conversation.ConversationType conversationType, UserInfo userInfo, String s) {
-                if (conversationType == Conversation.ConversationType.GROUP) {
-                    // 当在群组时长按用户在输入框中加入 @ 信息
-                    ThreadManager.getInstance().runOnWorkThread(() -> {
-                        // 获取该群成员的用户名并显示在 @ 中的信息
-                        UserInfo groupMemberInfo = imInfoProvider.getGroupMemberUserInfo(s, userInfo.getUserId());
-                        if (groupMemberInfo != null) {
-                            groupMemberInfo.setName("@" + groupMemberInfo.getName());
-                            ThreadManager.getInstance().runOnUIThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    RongMentionManager.getInstance().mentionMember(groupMemberInfo);
-                                    // 填充完用户@信息后弹出软键盘
-                                    if (context instanceof ConversationActivity) {
-                                        ((ConversationActivity) context).showSoftInput();
-                                    }
-                                }
-                            });
-                        }
-                    });
-                    return true;
-                }
+            public boolean onUserPortraitLongClick(Context context, Conversation.ConversationType conversationType, UserInfo user, String targetId) {
                 return false;
             }
 
             @Override
             public boolean onMessageClick(Context context, View view, Message message) {
-                if (message.getContent() instanceof ImageMessage) {
-                    Intent intent = new Intent(view.getContext(), SealPicturePagerActivity.class);
-                    intent.setPackage(view.getContext().getPackageName());
-                    intent.putExtra("message", message);
-                    view.getContext().startActivity(intent);
-                    return true;
-                }
-                return false;
-            }
-
-            @Override
-            public boolean onMessageLinkClick(Context context, String s, Message message) {
+                // todo 二维码相关功能
+//                if (message.getContent() instanceof ImageMessage) {
+//                    Intent intent = new Intent(view.getContext(), SealPicturePagerActivity.class);
+//                    intent.setPackage(view.getContext().getPackageName());
+//                    intent.putExtra("message", message);
+//                    view.getContext().startActivity(intent);
+//                    return true;
+//                }
                 return false;
             }
 
             @Override
             public boolean onMessageLongClick(Context context, View view, Message message) {
+                return false;
+            }
+
+            @Override
+            public boolean onMessageLinkClick(Context context, String link, Message message) {
+                return false;
+            }
+
+            @Override
+            public boolean onReadReceiptStateClick(Context context, Message message) {
+                if (message.getConversationType() == Conversation.ConversationType.GROUP) { //目前只适配了群组会话
+                    // 群组显示未读消息的人的信息
+                    Intent intent = new Intent(context, GroupReadReceiptDetailActivity.class);
+                    intent.putExtra(IntentExtra.PARCEL_MESSAGE, message);
+                    context.startActivity(intent);
+                    return true;
+                }
                 return false;
             }
         });
@@ -556,12 +391,38 @@ public class IMManager {
      * 初始化会话列表相关事件
      */
     private void initConversationList() {
-        // 设置会话列表行为监听
-        RongIM.setConversationListBehaviorListener(new RongIM.ConversationListBehaviorListener() {
+        Conversation.ConversationType[] supportedTypes = {Conversation.ConversationType.PRIVATE,
+                Conversation.ConversationType.GROUP, Conversation.ConversationType.SYSTEM,
+                Conversation.ConversationType.APP_PUBLIC_SERVICE, Conversation.ConversationType.PUBLIC_SERVICE,
+        };
+        RouteUtils.registerActivity(RouteUtils.RongActivityType.ConversationActivity, ConversationActivity.class);
+        RouteUtils.registerActivity(RouteUtils.RongActivityType.ForwardSelectConversationActivity, ForwardActivity.class);
+        RouteUtils.registerActivity(RouteUtils.RongActivityType.SubConversationListActivity, SubConversationListActivity.class);
+        RongConfigCenter.conversationListConfig().setDataProcessor(new DataProcessor<Conversation>() {
             @Override
-            public boolean onConversationPortraitClick(Context context, Conversation.ConversationType conversationType, String s) {
+            public Conversation.ConversationType[] supportedTypes() {
+                return supportedTypes;
+            }
+
+            @Override
+            public List<Conversation> filtered(List<Conversation> data) {
+                return data;
+            }
+
+            @Override
+            public boolean isGathered(Conversation.ConversationType type) {
+                if (type.equals(Conversation.ConversationType.SYSTEM)) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        });
+        RongConfigCenter.conversationListConfig().setBehaviorListener(new ConversationListBehaviorListener() {
+            @Override
+            public boolean onConversationPortraitClick(Context context, Conversation.ConversationType conversationType, String targetId) {
                 //如果是群通知，点击头像进入群通知页面
-                if (s.equals("__group_apply__")) {
+                if (targetId.equals("__group_apply__")) {
                     Intent noticeListIntent = new Intent(context, GroupNoticeListActivity.class);
                     context.startActivity(noticeListIntent);
                     return true;
@@ -570,49 +431,52 @@ public class IMManager {
             }
 
             @Override
-            public boolean onConversationPortraitLongClick(Context context, Conversation.ConversationType conversationType, String s) {
+            public boolean onConversationPortraitLongClick(Context context, Conversation.ConversationType conversationType, String targetId) {
                 return false;
             }
 
             @Override
-            public boolean onConversationLongClick(Context context, View view, UIConversation uiConversation) {
+            public boolean onConversationLongClick(Context context, View view, BaseUiConversation conversation) {
                 return false;
             }
 
             @Override
-            public boolean onConversationClick(Context context, View view, UIConversation uiConversation) {
+            public boolean onConversationClick(Context context, View view, BaseUiConversation conversation) {
                 /*
                  * 当点击会话列表中通知添加好友消息时，判断是否已成为好友
                  * 已成为好友时，跳转到私聊界面
                  * 非好友时跳转到新的朋友界面查看添加好友状态
                  */
-                MessageContent messageContent = uiConversation.getMessageContent();
-                if (messageContent instanceof ContactNotificationMessage) {
-                    ContactNotificationMessage contactNotificationMessage = (ContactNotificationMessage) messageContent;
-                    if (contactNotificationMessage.getOperation().equals("AcceptResponse")) {
-                        // 被加方同意请求后
-                        if (contactNotificationMessage.getExtra() != null) {
-                            ContactNotificationMessageData bean = null;
-                            try {
-                                Gson gson = new Gson();
-                                bean = gson.fromJson(contactNotificationMessage.getExtra(), ContactNotificationMessageData.class);
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                            RongIM.getInstance().startPrivateChat(context, uiConversation.getConversationSenderId(), bean.getSourceUserNickname());
-                        }
-                    } else {
-                        context.startActivity(new Intent(context, NewFriendListActivity.class));
-                    }
-                    return true;
-                } else if (messageContent instanceof GroupApplyMessage) {
-                    Intent noticeListIntent = new Intent(context, GroupNoticeListActivity.class);
-                    context.startActivity(noticeListIntent);
-                    return true;
-                }
+//                        MessageContent messageContent = conversation.mCore.getLatestMessage();
+//                        if (messageContent instanceof ContactNotificationMessage) {
+//                            ContactNotificationMessage contactNotificationMessage = (ContactNotificationMessage) messageContent;
+//                            if (contactNotificationMessage.getOperation().equals("AcceptResponse")) {
+//                                // 被加方同意请求后
+//                                if (contactNotificationMessage.getExtra() != null) {
+//                                    ContactNotificationMessageData bean = null;
+//                                    try {
+//                                        Gson gson = new Gson();
+//                                        bean = gson.fromJson(contactNotificationMessage.getExtra(), ContactNotificationMessageData.class);
+//                                    } catch (Exception e) {
+//                                        e.printStackTrace();
+//                                    }
+//                                    Bundle bundle = new Bundle();
+//                                    bundle.putString(RouteUtils.TITLE, bean.getSourceUserNickname());
+//                                    RouteUtils.routeToConversationActivity(context, conversation.mCore.getConversationType(), conversation.mCore.getTargetId(), bundle);
+//                                }
+//                            } else {
+//                                context.startActivity(new Intent(context, NewFriendListActivity.class));
+//                            }
+//                            return true;
+//                        } else if (messageContent instanceof GroupApplyMessage) {
+//                            Intent noticeListIntent = new Intent(context, GroupNoticeListActivity.class);
+//                            context.startActivity(noticeListIntent);
+//                            return true;
+//                        }
                 return false;
             }
         });
+        RongConfigCenter.gatheredConversationConfig().setConversationTitle(Conversation.ConversationType.SYSTEM, R.string.seal_conversation_title_system);
     }
 
     /**
@@ -622,17 +486,17 @@ public class IMManager {
      * @param userName
      * @param portraitUri
      */
-    public void updateUserInfoCache(String userId, String userName, Uri portraitUri) {
+    public void updateUserInfoCache(String userId, String userName, Uri portraitUri, String alias) {
 
         UserInfo oldUserInfo = RongUserInfoManager.getInstance().getUserInfo(userId);
         if (oldUserInfo == null
-                || (
-                !oldUserInfo.getName().equals(userName)
-                        || oldUserInfo.getPortraitUri() == null
-                        || !oldUserInfo.getPortraitUri().equals(portraitUri)
-        )) {
+                || (!oldUserInfo.getName().equals(userName)
+                || oldUserInfo.getPortraitUri() == null
+                || !oldUserInfo.getPortraitUri().equals(portraitUri))
+                || !TextUtils.equals(oldUserInfo.getAlias(), alias)) {
             UserInfo userInfo = new UserInfo(userId, userName, portraitUri);
-            RongIM.getInstance().refreshUserInfoCache(userInfo);
+            userInfo.setAlias(alias);
+            RongUserInfoManager.getInstance().refreshUserInfoCache(userInfo);
         }
     }
 
@@ -652,7 +516,7 @@ public class IMManager {
                         || !oldGroup.getPortraitUri().equals(portraitUri)
         )) {
             Group group = new Group(groupId, groupName, portraitUri);
-            RongIM.getInstance().refreshGroupInfoCache(group);
+            RongUserInfoManager.getInstance().refreshGroupInfoCache(group);
         }
     }
 
@@ -665,59 +529,14 @@ public class IMManager {
      */
     public void updateGroupMemberInfoCache(String groupId, String userId, String nickName) {
         GroupUserInfo oldGroupUserInfo = RongUserInfoManager.getInstance().getGroupUserInfo(groupId, userId);
-        if(oldGroupUserInfo == null
-            || (
-                    !oldGroupUserInfo.getNickname().equals(nickName)
-                )
-        ){
+        if (oldGroupUserInfo == null
+                || (
+                !oldGroupUserInfo.getNickname().equals(nickName)
+        )
+        ) {
             GroupUserInfo groupMemberInfo = new GroupUserInfo(groupId, userId, nickName);
-            RongIM.getInstance().refreshGroupUserInfoCache(groupMemberInfo);
+            RongUserInfoManager.getInstance().refreshGroupUserInfoCache(groupMemberInfo);
         }
-    }
-
-    /**
-     * 获取当前用户 id
-     *
-     * @return
-     */
-    public String getCurrentId() {
-        return RongIM.getInstance().getCurrentUserId();
-    }
-
-    /**
-     * 群发消息
-     *
-     * @param targetId
-     * @param conversationType
-     * @param message
-     * @return
-     */
-    public LiveData<Resource<Message>> sendToAll(String targetId, Conversation.ConversationType conversationType, String message) {
-        MutableLiveData<Resource<Message>> result = new MutableLiveData<>();
-
-        TextMessage textMessage = TextMessage.obtain(RongContext.getInstance().getString(R.string.profile_group_notice_prefix) + message);
-        MentionedInfo mentionedInfo = new MentionedInfo(MentionedInfo.MentionedType.ALL, null, null);
-        textMessage.setMentionedInfo(mentionedInfo);
-
-        RongIM.getInstance().sendMessage(Message.obtain(targetId, conversationType, textMessage), null, null, new IRongCallback.ISendMessageCallback() {
-            @Override
-            public void onAttached(Message message) {
-
-            }
-
-            @Override
-            public void onSuccess(Message message) {
-                result.postValue(Resource.success(message));
-            }
-
-            @Override
-            public void onError(Message message, RongIMClient.ErrorCode errorCode) {
-                SLog.e(LogTag.IM, "send to All error,msg:" + errorCode.getMessage() + ",code:" + errorCode.getValue());
-                result.postValue(Resource.error(ErrorCode.IM_ERROR.getCode(), message));
-            }
-        });
-
-        return result;
     }
 
     /**
@@ -727,24 +546,35 @@ public class IMManager {
      * @param conversationType
      */
     public void clearConversationAndMessage(String targetId, Conversation.ConversationType conversationType) {
-        RongIM.getInstance().getConversation(conversationType, targetId, new RongIMClient.ResultCallback<Conversation>() {
+        RongIMClient.getInstance().getConversation(conversationType, targetId, new RongIMClient.ResultCallback<Conversation>() {
             @Override
             public void onSuccess(Conversation conversation) {
-                RongIM.getInstance().clearMessages(conversationType, targetId, new RongIMClient.ResultCallback<Boolean>() {
+                IMCenter.getInstance().cleanHistoryMessages(conversationType, targetId, 0, false, new RongIMClient.OperationCallback() {
                     @Override
-                    public void onSuccess(Boolean aBoolean) {
-                        RongIM.getInstance().removeConversation(conversationType, targetId, null);
+                    public void onSuccess() {
+                        IMCenter.getInstance().removeConversation(conversationType, targetId, new RongIMClient.ResultCallback<Boolean>() {
+                            @Override
+                            public void onSuccess(Boolean aBoolean) {
+
+                            }
+
+                            @Override
+                            public void onError(RongIMClient.ErrorCode errorCode) {
+
+                            }
+                        });
                     }
 
                     @Override
-                    public void onError(RongIMClient.ErrorCode e) {
+                    public void onError(RongIMClient.ErrorCode errorCode) {
 
                     }
                 });
             }
 
             @Override
-            public void onError(RongIMClient.ErrorCode e) {
+            public void onError(RongIMClient.ErrorCode errorCode) {
+
             }
         });
     }
@@ -758,15 +588,96 @@ public class IMManager {
          * 根据需求配置各个平台的推送
          * 配置推送需要在初始化 融云 SDK 之前
          */
-        //PushConfig config = new PushConfig
-        //        .Builder()
-        //        .enableHWPush(true)        // 在 AndroidManifest.xml 中搜索 com.huawei.hms.client.appid 进行设置
-        //        .enableMiPush(BuildConfig.SEALTALK_MI_PUSH_APPID, BuildConfig.SEALTALK_MI_PUSH_APPKEY)
-        //        .enableMeiZuPush(BuildConfig.SEALTALK_MIZU_PUSH_APPID, BuildConfig.SEALTALK_MIZU_PUSH_APPKEY)
-        //        .enableVivoPush(true)     // 在 AndroidManifest.xml 中搜索 com.vivo.push.api_key 和 com.vivo.push.app_id 进行设置
-        //        .enableFCM(true)          // 在 google-services.json 文件中进行配置
-        //        .build();
-        //RongPushClient.setPushConfig(config);
+        PushConfig config = new PushConfig
+                .Builder()
+                .enableFCM(false)          // 在 google-services.json 文件中进行配置
+                .enableHWPush(true)        // 在 AndroidManifest.xml 中搜索 com.huawei.hms.client.appid 进行设置
+                .enableMiPush(BuildConfig.SEALTALK_MI_PUSH_APPID, BuildConfig.SEALTALK_MI_PUSH_APPKEY)
+                .enableMeiZuPush(BuildConfig.SEALTALK_MIZU_PUSH_APPID, BuildConfig.SEALTALK_MIZU_PUSH_APPKEY)
+                .enableVivoPush(true)     // 在 AndroidManifest.xml 中搜索 com.vivo.push.api_key 和 com.vivo.push.app_id 进行设置
+                .enableOppoPush(BuildConfig.SEALTALK_OPPO_PUSH_APPKEY, BuildConfig.SEALTALK_OPPO_PUSH_SECRET)
+                .build();
+        RongPushClient.setPushConfig(config);
+        RongPushClient.setPushEventListener(new PushEventListener() {
+            @Override
+            public boolean preNotificationMessageArrived(Context context, PushType pushType, PushNotificationMessage notificationMessage) {
+                RLog.d(TAG, "preNotificationMessageArrived");
+                return false;
+            }
+
+            @Override
+            public void afterNotificationMessageArrived(Context context, PushType pushType, PushNotificationMessage notificationMessage) {
+                RLog.d(TAG, "afterNotificationMessageArrived");
+            }
+
+            @Override
+            public boolean onNotificationMessageClicked(Context context, PushType pushType, PushNotificationMessage notificationMessage) {
+                RLog.d(TAG, "onNotificationMessageClicked");
+                if (!notificationMessage.getSourceType().equals(PushNotificationMessage.PushSourceType.FROM_ADMIN)) {
+                    String targetId = notificationMessage.getTargetId();
+                    //10000 为 Demo Server 加好友的 id，若 targetId 为 10000，则为加好友消息，默认跳转到 NewFriendListActivity
+                    if (targetId != null && targetId.equals("10000")) {
+                        Intent intentMain = new Intent(context, NewFriendListActivity.class);
+                        intentMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        Intent intentNewFriend = new Intent(context, MainActivity.class);
+                        intentNewFriend.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        Intent[] intents = new Intent[]{};
+                        intents[0] = intentMain;
+                        intents[1] = intentNewFriend;
+                        context.startActivities(intents);
+                        return true;
+                    } else {
+                        Intent intentMain = new Intent(context, MainActivity.class);
+                        intentMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        context.startActivity(intentMain);
+                    }
+                }
+                return false;
+            }
+
+            @Override
+            public void onThirdPartyPushState(PushType pushType, String action, long resultCode) {
+
+            }
+        });
+    }
+
+    /**
+     * IM 配置
+     */
+    private void initIMConfig() {
+        // 将私聊，群组加入消息已读回执
+        Conversation.ConversationType[] types = new Conversation.ConversationType[]{
+                Conversation.ConversationType.PRIVATE,
+                Conversation.ConversationType.GROUP,
+                Conversation.ConversationType.ENCRYPTED
+        };
+        RongConfigCenter.featureConfig().enableReadReceipt(types);
+
+        // 配置会话列表界面相关内容
+        initConversationList();
+        //配置会话界面
+        initConversation();
+
+        RongConfigCenter.featureConfig().enableDestruct(true);
+    }
+
+    private void initPhrase() {
+        if (appTask.isDebugMode()) {
+            List<String> phraseList = new ArrayList<>();
+            phraseList.add("1为了研究编译器的实现原理，我们需要使用 clang 命令。clang 命令可以将 Objetive-C 的源码改写成 C / C++ 语言的，借此可以研究 block 中各个特性的源码实现方式。该命令是为了研究编译器的实现原理，我们需要使用 clang ");
+            phraseList.add("clang 命令可以将 Objetive-C 的源码改写成 C / C++ 语言的，借此可以研究 block 中各个特性的源码实现方式。该命令是\",@\"2为了研究编译器的实现原理，我们需要使用 clang 命令");
+            phraseList.add("clang 命令可以将 Objetive-C 的源码改写成 C / C++ 语言的，借此可以研究 block 中各个特性的源码实现方式\", @\"33333333\", @\"4超瓷晶的最大优势就是缺点很少但硬度很高\", @\"5苹果iPhone 12采用了一种新的保护玻璃涂层，名叫超瓷晶（Ceramic Shield）。官方称新机的防摔能力增强4倍，光学性能更加出色，更加防刮。考虑到之前iPhone的玻璃保护做得并不算好，如果这次真如苹果所说那么好，进步还是很明显的");
+            phraseList.add("6超瓷晶技术由康宁开发，利用超高温结晶制造工艺，他们将微小陶瓷纳米晶嵌入玻璃基体。晶体的连锁结构有助于让裂缝偏转。");
+            phraseList.add("45263573475");
+            phraseList.add("随后，康宁再用离子交换技术强化玻璃，本质上就是扩大离子尺寸，让结构更牢固");
+            RongConfigCenter.featureConfig().enableQuickReply(new IQuickReplyProvider() {
+                @Override
+                public List<String> getPhraseList(Conversation.ConversationType type) {
+                    return phraseList;
+                }
+            });
+        }
     }
 
     /**
@@ -774,22 +685,19 @@ public class IMManager {
      */
     private void initMessageAndTemplate() {
         SLog.d("ss_register_message", "initMessageAndTemplate");
-        RongIM.registerMessageType(SealGroupNotificationMessage.class);
-        RongIM.registerMessageType(SealContactNotificationMessage.class);
-        RongIM.registerMessageTemplate(new ContactNotificationMessageProvider());
-        RongIM.registerMessageTemplate(new SealGroupNotificationMessageItemProvider());
-        RongIM.registerMessageTemplate(new RealTimeLocationMessageProvider());
-        RongIM.registerMessageType(SealGroupConNtfMessage.class);
-        RongIM.registerMessageTemplate(new SealGroupConNtfMessageProvider());
-        RongIM.registerMessageType(GroupApplyMessage.class);
-        RongIM.registerMessageType(GroupClearMessage.class);
-        RongIM.getInstance().registerConversationTemplate(new GroupApplyMessageProvider());
-        RongIM.registerMessageType(PokeMessage.class);
-        RongIM.registerMessageTemplate(new PokeMessageItemProvider());
-        //RongIM.registerMessageTemplate(new GroupApplyMessageProvider());
-
-        // 开启高清语音
-        RongIM.getInstance().setVoiceMessageType(RongIM.VoiceMessageType.HighQuality);
+        ArrayList<Class<? extends MessageContent>> myMessages = new ArrayList<>();
+        myMessages.add(SealGroupNotificationMessage.class);
+        myMessages.add(SealContactNotificationMessage.class);
+        myMessages.add(SealGroupConNtfMessage.class);
+        myMessages.add(GroupApplyMessage.class);
+        myMessages.add(GroupClearMessage.class);
+        myMessages.add(PokeMessage.class);
+        RongIMClient.registerMessageType(myMessages);
+        RongConfigCenter.conversationConfig().addMessageProvider(new ContactNotificationMessageProvider());
+        RongConfigCenter.conversationConfig().addMessageProvider(new PokeMessageItemProvider());
+        RongConfigCenter.conversationConfig().addMessageProvider(new SealGroupConNtfMessageProvider());
+        RongConfigCenter.conversationConfig().addMessageProvider(new GroupApplyMessageItemProvider());
+        RongConfigCenter.conversationConfig().replaceMessageProvider(GroupNotificationMessageItemProvider.class, new SealGroupNotificationMessageItemProvider());
     }
 
     /**
@@ -798,27 +706,7 @@ public class IMManager {
      * @param context
      */
     private void initExtensionModules(Context context) {
-        /**
-         * 因为 SealExtensionModule 继承与融云默认 DefaultExtensionModule，
-         * 需要先移除掉默认的扩展后再进行注册
-         * 继承并覆盖默认的扩展模块可在自己需要的时机控制各默认模块的展示与隐藏
-         */
-        List<IExtensionModule> moduleList = RongExtensionManager.getInstance().getExtensionModules();
-        IExtensionModule defaultModule = null;
-        if (moduleList != null) {
-            for (IExtensionModule module : moduleList) {
-                if (module instanceof DefaultExtensionModule) {
-                    defaultModule = module;
-                    break;
-                }
-            }
-            if (defaultModule != null) {
-                RongExtensionManager.getInstance().unregisterExtensionModule(defaultModule);
-            }
-        }
-
-        RongExtensionManager.getInstance().registerExtensionModule(new SealExtensionModule(context));
-
+        RongExtensionManager.getInstance().setExtensionConfig(new SealExtensionConfig());
         // 语音输入
         RongExtensionManager.getInstance().registerExtensionModule(new RecognizeExtensionModule());
 
@@ -826,7 +714,7 @@ public class IMManager {
         RongExtensionManager.getInstance().registerExtensionModule(createContactCardExtensionModule());
 
         // 小视频 为了调整位置将此注册放入 SealExtensionModule 中进行，无此需求可直接在此注册
-//        RongExtensionManager.getInstance().registerExtensionModule(new SightExtensionModule());
+        RongExtensionManager.getInstance().registerExtensionModule(new SightExtensionModule());
         // 戳一下
         RongExtensionManager.getInstance().registerExtensionModule(new PokeExtensionModule());
     }
@@ -834,14 +722,14 @@ public class IMManager {
     /**
      * 调用初始化 RongIM
      *
-     * @param context
+     * @param application
      */
-    private void initRongIM(Context context) {
+    private void initRongIM(Application application) {
         /*
          * 如果是连接到私有云需要在此配置服务器地址
          * 如果是公有云则不需要调用此方法
          */
-        //RongIM.setServerInfo(BuildConfig.SEALTALK_NAVI_SERVER, BuildConfig.SEALTALK_FILE_SERVER);
+        RongIMClient.getInstance().setServerInfo(BuildConfig.SEALTALK_NAVI_SERVER, BuildConfig.SEALTALK_FILE_SERVER);
 
         /*
          * 初始化 SDK，在整个应用程序全局，只需要调用一次。建议在 Application 继承类中调用。
@@ -853,7 +741,7 @@ public class IMManager {
         //RongIM.init(this);
 
         // 可在初始 SDK 时直接带入融云 IM 申请的APP KEY
-        RongIM.init(context, BuildConfig.SEALTALK_APP_KEY, true);
+        IMCenter.init(application, BuildConfig.SEALTALK_APP_KEY, true);
     }
 
     /**
@@ -890,7 +778,7 @@ public class IMManager {
              * @param contactInfoCallback
              */
             @Override
-            public void getContactAppointedInfoProvider(String userId, String name, String portrait, IContactCardInfoCallback contactInfoCallback) {
+            public void getContactAppointedInfoProvider(String userId, String name, String portrait, IContactCardInfoProvider.IContactCardInfoCallback contactInfoCallback) {
                 imInfoProvider.getContactUserInfo(userId, contactInfoCallback);
             }
         }, (view, content) -> {
@@ -903,23 +791,10 @@ public class IMManager {
     }
 
     /**
-     * 初始化已读回执类型
-     */
-    private void initReadReceiptConversation() {
-        // 将私聊，群组加入消息已读回执
-        Conversation.ConversationType[] types = new Conversation.ConversationType[]{
-                Conversation.ConversationType.PRIVATE,
-                Conversation.ConversationType.GROUP,
-                Conversation.ConversationType.ENCRYPTED
-        };
-        RongIM.getInstance().setReadReceiptConversationTypeList(types);
-    }
-
-    /**
      * 初始化连接状态监听
      */
     private void initConnectStateChangeListener() {
-        RongIM.setConnectionStatusListener(new RongIMClient.ConnectionStatusListener() {
+        IMCenter.getInstance().addConnectionStatusListener(new RongIMClient.ConnectionStatusListener() {
             @Override
             public void onChanged(ConnectionStatus connectionStatus) {
                 SLog.d(LogTag.IM, "ConnectionStatus onChanged = " + connectionStatus.getMessage());
@@ -933,13 +808,75 @@ public class IMManager {
         });
     }
 
+    private void initDebug() {
+        if (appTask.isDebugMode()) {
+            RongConfigCenter.featureConfig().enableQuickReply(type -> {
+                List<String> phraseList = new ArrayList<>();
+                phraseList.add("1为了研究编译器的实现原理，我们需要使用 clang 命令。clang 命令可以将 Objetive-C 的源码改写成 C / C++ 语言的，借此可以研究 block 中各个特性的源码实现方式。该命令是为了研究编译器的实现原理，我们需要使用 clang ");
+                phraseList.add("clang 命令可以将 Objetive-C 的源码改写成 C / C++ 语言的，借此可以研究 block 中各个特性的源码实现方式。该命令是\",@\"2为了研究编译器的实现原理，我们需要使用 clang 命令");
+                phraseList.add("clang 命令可以将 Objetive-C 的源码改写成 C / C++ 语言的，借此可以研究 block 中各个特性的源码实现方式\", @\"33333333\", @\"4超瓷晶的最大优势就是缺点很少但硬度很高\", @\"5苹果iPhone 12采用了一种新的保护玻璃涂层，名叫超瓷晶（Ceramic Shield）。官方称新机的防摔能力增强4倍，光学性能更加出色，更加防刮。考虑到之前iPhone的玻璃保护做得并不算好，如果这次真如苹果所说那么好，进步还是很明显的");
+                phraseList.add("6超瓷晶技术由康宁开发，利用超高温结晶制造工艺，他们将微小陶瓷纳米晶嵌入玻璃基体。晶体的连锁结构有助于让裂缝偏转。");
+                phraseList.add("45263573475");
+                phraseList.add("随后，康宁再用离子交换技术强化玻璃，本质上就是扩大离子尺寸，让结构更牢固");
+                return phraseList;
+            });
+            IMCenter.getInstance().setMessageInterceptor(new MessageInterceptor() {
+                @Override
+                public boolean interceptReceivedMessage(Message message, int left, boolean hasPackage, boolean offline) {
+                    return false;
+                }
+
+                @Override
+                public boolean interceptOnSendMessage(Message message) {
+                    // 推送配置测试相关
+                    SharedPreferences sharedPreferences = context.getSharedPreferences("push_config", MODE_PRIVATE);
+                    String id = sharedPreferences.getString("id", "");
+                    String title = sharedPreferences.getString("title", "");
+                    String content = sharedPreferences.getString("content", "");
+                    String data = sharedPreferences.getString("data", "");
+                    String hw = sharedPreferences.getString("hw", "");
+                    String hwImportance = sharedPreferences.getString("importance", "NORMAL");
+                    String mi = sharedPreferences.getString("mi", "");
+                    String oppo = sharedPreferences.getString("oppo", "");
+                    String threadId = sharedPreferences.getString("threadId", "");
+                    String apnsId = sharedPreferences.getString("apnsId", "");
+                    String category = sharedPreferences.getString("category", "");
+                    String richMediaUri = sharedPreferences.getString("richMediaUri", "");
+                    String fcm = sharedPreferences.getString("fcm", "");
+                    String imageUrl = sharedPreferences.getString("imageUrl", "");
+                    boolean vivo = sharedPreferences.getBoolean("vivo", false);
+                    boolean disableTitle = sharedPreferences.getBoolean("disableTitle", false);
+                    String templateId = sharedPreferences.getString("templateId", "");
+                    boolean forceDetail = sharedPreferences.getBoolean("forceDetail", false);
+                    MessagePushConfig messagePushConfig = new MessagePushConfig.Builder().setPushTitle(title)
+                            .setPushContent(content).setPushData(data).setForceShowDetailContent(forceDetail)
+                            .setDisablePushTitle(disableTitle)
+                            .setTemplateId(templateId)
+                            .setAndroidConfig(new AndroidConfig.Builder().setNotificationId(id).setChannelIdHW(hw).setChannelIdMi(mi).setChannelIdOPPO(oppo).setTypeVivo(vivo ? AndroidConfig.SYSTEM : AndroidConfig.OPERATE).setFcmCollapseKey(fcm).setFcmImageUrl(imageUrl).setImportanceHW(getImportance(hwImportance)).build())
+                            .setIOSConfig(new IOSConfig(threadId, apnsId, category, richMediaUri))
+                            .build();
+                    message.setMessagePushConfig(messagePushConfig);
+                    SharedPreferences sharedPreferencesPush = context.getSharedPreferences("MessageConfig", MODE_PRIVATE);
+                    boolean disableNotification = sharedPreferencesPush.getBoolean("disableNotification", false);
+                    message.setMessageConfig(new MessageConfig.Builder().setDisableNotification(disableNotification).build());
+                    return false;
+                }
+
+                @Override
+                public boolean interceptOnSentMessage(Message message) {
+                    return false;
+                }
+            });
+        }
+    }
+
     /**
      * 初始化消息监听
      */
     private void initOnReceiveMessage(Context context) {
-        RongIM.setOnReceiveMessageListener(new RongIMClient.OnReceiveMessageListener() {
+        IMCenter.getInstance().addOnReceiveMessageListener(new RongIMClient.OnReceiveMessageWrapperListener() {
             @Override
-            public boolean onReceived(Message message, int i) {
+            public boolean onReceived(Message message, int i, boolean hasPackage, boolean isOffline) {
                 messageRouter.postValue(message);
                 MessageContent messageContent = message.getContent();
                 String targetId = message.getTargetId();
@@ -952,14 +889,14 @@ public class IMManager {
                         String sourceUserId = contactNotificationMessage.getSourceUserId();
                         imInfoProvider.updateFriendInfo(sourceUserId);
                     }
+                    return true;
                 } else if (messageContent instanceof GroupNotificationMessage) {    // 群组通知消息
                     GroupNotificationMessage groupNotificationMessage = (GroupNotificationMessage) messageContent;
                     SLog.d(LogTag.IM, "onReceived GroupNotificationMessage:" + groupNotificationMessage.getMessage());
-
                     String groupID = targetId;
                     GroupNotificationMessageData data = null;
                     try {
-                        String currentID = RongIM.getInstance().getCurrentUserId();
+                        String currentID = RongIMClient.getInstance().getCurrentUserId();
                         try {
                             Gson gson = new Gson();
                             data = gson.fromJson(groupNotificationMessage.getData(), GroupNotificationMessageData.class);
@@ -1076,7 +1013,7 @@ public class IMManager {
                                 }
                             }
                         }
-                        return false;
+                        return true;
                     } else {
                         // 如果不接受戳一下消息则什么也不做
                         return true;
@@ -1085,12 +1022,11 @@ public class IMManager {
                     GroupClearMessage groupClearMessage = (GroupClearMessage) messageContent;
                     SLog.i("GroupClearMessage", groupClearMessage.toString() + "***" + message.getTargetId());
                     if (groupClearMessage.getClearTime() > 0) {
-                        cleanHistoryMessage(message.getConversationType(), message.getTargetId()
-                                , groupClearMessage.getClearTime(), true);
+                        IMCenter.getInstance().cleanHistoryMessages(message.getConversationType(), message.getTargetId(), groupClearMessage.getClearTime(), true, null);
                     }
                     return true;
                 }
-                return false;
+                return true;
             }
         });
     }
@@ -1102,12 +1038,12 @@ public class IMManager {
      * @param spanMinutes
      * @return
      */
-    public MutableLiveData<Resource<QuietHours>> setNotificationQuietHours(String startTime, int spanMinutes, boolean isCache) {
+    public MutableLiveData<Resource<QuietHours>> setNotificationQuietHours(final String startTime, final int spanMinutes, boolean isCache) {
         MutableLiveData<Resource<QuietHours>> result = new MutableLiveData<>();
         RongIMClient.getInstance().setNotificationQuietHours(startTime, spanMinutes, new RongIMClient.OperationCallback() {
             @Override
             public void onSuccess() {
-                MessageNotificationManager.getInstance().setNotificationQuietHours(startTime, spanMinutes);
+                RongNotificationManager.getInstance().setNotificationQuietHours(startTime, spanMinutes, null);
                 // 设置用户消息免打扰缓存状态
                 if (isCache) {
                     configCache.setNotifiDonotDistrabStatus(getCurrentId(), true);
@@ -1125,27 +1061,12 @@ public class IMManager {
     }
 
     /**
-     * 清理通知免打扰
+     * 获取当前用户 id
      *
      * @return
      */
-    public MutableLiveData<Resource<Boolean>> removeNotificationQuietHours() {
-        MutableLiveData<Resource<Boolean>> result = new MutableLiveData<>();
-        RongIM.getInstance().removeNotificationQuietHours(new RongIMClient.OperationCallback() {
-            @Override
-            public void onSuccess() {
-                // 设置用户消息免打扰缓存状态
-                configCache.setNotifiDonotDistrabStatus(getCurrentId(), false);
-                result.postValue(Resource.success(true));
-            }
-
-            @Override
-            public void onError(RongIMClient.ErrorCode errorCode) {
-                result.postValue(Resource.error(ErrorCode.IM_ERROR.getCode(), false));
-            }
-        });
-
-        return result;
+    public String getCurrentId() {
+        return RongIMClient.getInstance().getCurrentUserId();
     }
 
     /**
@@ -1155,7 +1076,7 @@ public class IMManager {
      */
     public MutableLiveData<Resource<QuietHours>> getNotificationQuietHours() {
         MutableLiveData<Resource<QuietHours>> result = new MutableLiveData<>();
-        RongIM.getInstance().getNotificationQuietHours(new RongIMClient.GetNotificationQuietHoursCallback() {
+        RongNotificationManager.getInstance().getNotificationQuietHours(new RongIMClient.GetNotificationQuietHoursCallback() {
             @Override
             public void onSuccess(String s, int i) {
                 QuietHours quietHours = new QuietHours();
@@ -1173,6 +1094,15 @@ public class IMManager {
     }
 
     /**
+     * 获取消息通知设置
+     *
+     * @return
+     */
+    public boolean getRemindStatus() {
+        return configCache.getNewMessageRemind(getCurrentId());
+    }
+
+    /**
      * 新消息通知设置
      *
      * @param status
@@ -1184,19 +1114,33 @@ public class IMManager {
                 removeNotificationQuietHours();
             }
         } else {
-            setNotificationQuietHours("00:00:00", 1439, false);
+            RongNotificationManager.getInstance().setNotificationQuietHours("00:00:00", 1439, null);
         }
         configCache.setNewMessageRemind(getCurrentId(), status);
     }
 
-
     /**
-     * 获取消息通知设置
+     * 清理通知免打扰
      *
      * @return
      */
-    public boolean getRemindStatus() {
-        return configCache.getNewMessageRemind(getCurrentId());
+    public MutableLiveData<Resource<Boolean>> removeNotificationQuietHours() {
+        MutableLiveData<Resource<Boolean>> result = new MutableLiveData<>();
+        RongNotificationManager.getInstance().removeNotificationQuietHours(new RongIMClient.OperationCallback() {
+            @Override
+            public void onSuccess() {
+                // 设置用户消息免打扰缓存状态
+                configCache.setNotifiDonotDistrabStatus(getCurrentId(), false);
+                result.postValue(Resource.success(true));
+            }
+
+            @Override
+            public void onError(RongIMClient.ErrorCode errorCode) {
+                result.postValue(Resource.error(ErrorCode.IM_ERROR.getCode(), false));
+            }
+        });
+
+        return result;
     }
 
     /**
@@ -1211,8 +1155,8 @@ public class IMManager {
     /**
      * 初始化聊天室监听
      */
-    private void initChatRoomActionListener() {
-        RongIMClient.setChatRoomActionListener(new RongIMClient.ChatRoomActionListener() {
+    public void initChatRoomActionListener() {
+        RongChatRoomClient.setChatRoomAdvancedActionListener(new RongChatRoomClient.ChatRoomAdvancedActionListener() {
             @Override
             public void onJoining(String roomId) {
                 chatRoomActionLiveData.postValue(ChatRoomAction.joining(roomId));
@@ -1224,13 +1168,23 @@ public class IMManager {
             }
 
             @Override
+            public void onReset(String roomId) {
+                chatRoomActionLiveData.postValue(ChatRoomAction.reset(roomId));
+            }
+
+            @Override
             public void onQuited(String roomId) {
                 chatRoomActionLiveData.postValue(ChatRoomAction.quited(roomId));
             }
 
             @Override
-            public void onError(String roomId, RongIMClient.ErrorCode errorCode) {
-                chatRoomActionLiveData.postValue(ChatRoomAction.error(roomId));
+            public void onDestroyed(String chatRoomId, IRongCoreEnum.ChatRoomDestroyType type) {
+                chatRoomActionLiveData.postValue(ChatRoomAction.destroyed(chatRoomId));
+            }
+
+            @Override
+            public void onError(String chatRoomId, IRongCoreEnum.CoreErrorCode code) {
+                chatRoomActionLiveData.postValue(ChatRoomAction.error(chatRoomId));
             }
         });
     }
@@ -1247,8 +1201,8 @@ public class IMManager {
     /**
      * 监听未读消息状态
      */
-    public void addUnReadMessageCountChangedObserver(IUnReadMessageObserver observer, Conversation.ConversationType[] conversationTypes) {
-        RongIM.getInstance().addUnReadMessageCountChangedObserver(observer, conversationTypes);
+    public void addUnReadMessageCountChangedObserver(UnReadMessageManager.IUnReadMessageObserver observer, Conversation.ConversationType[] conversationTypes) {
+        UnReadMessageManager.getInstance().addObserver(conversationTypes, observer);
     }
 
 
@@ -1257,8 +1211,8 @@ public class IMManager {
      *
      * @param observer
      */
-    public void removeUnReadMessageCountChangedObserver(IUnReadMessageObserver observer) {
-        RongIM.getInstance().removeUnReadMessageCountChangedObserver(observer);
+    public void removeUnReadMessageCountChangedObserver(UnReadMessageManager.IUnReadMessageObserver observer) {
+        UnReadMessageManager.getInstance().removeObserver(observer);
     }
 
     /**
@@ -1267,12 +1221,12 @@ public class IMManager {
      * @param conversationTypes 指定清理的会话类型
      */
     public void clearMessageUnreadStatus(Conversation.ConversationType[] conversationTypes) {
-        RongIM.getInstance().getConversationList(new RongIMClient.ResultCallback<List<Conversation>>() {
+        RongIMClient.getInstance().getConversationList(new RongIMClient.ResultCallback<List<Conversation>>() {
             @Override
             public void onSuccess(List<Conversation> conversations) {
                 if (conversations != null && conversations.size() > 0) {
                     for (Conversation c : conversations) {
-                        RongIM.getInstance().clearMessagesUnreadStatus(c.getConversationType(), c.getTargetId(), null);
+                        IMCenter.getInstance().clearMessagesUnreadStatus(c.getConversationType(), c.getTargetId(), null);
                         if (c.getConversationType() == Conversation.ConversationType.PRIVATE || c.getConversationType() == Conversation.ConversationType.ENCRYPTED) {
                             RongIMClient.getInstance().sendReadReceiptMessage(c.getConversationType(), c.getTargetId(), c.getSentTime(), new IRongCallback.ISendMessageCallback() {
 
@@ -1305,7 +1259,7 @@ public class IMManager {
     }
 
     private String getSavedReadReceiptTimeName(String targetId, Conversation.ConversationType conversationType) {
-        String savedId = DeviceUtils.ShortMD5(RongIM.getInstance().getCurrentUserId(), targetId, conversationType.getName());
+        String savedId = DeviceUtils.ShortMD5(RongIMClient.getInstance().getCurrentUserId(), targetId, conversationType.getName());
         return "ReadReceipt" + savedId + "Time";
     }
 
@@ -1335,63 +1289,6 @@ public class IMManager {
         return result;
     }
 
-    /**
-     * 获取群成员列表
-     *
-     * @param targetId
-     */
-    public LiveData<List<UserInfo>> getGroupMembers(String targetId) {
-        MutableLiveData<List<UserInfo>> result = new MutableLiveData<>();
-        RongIM.IGroupMembersProvider groupMembersProvider = RongMentionManager.getInstance().getGroupMembersProvider();
-        if (groupMembersProvider == null) {
-            result.postValue(null);
-        } else {
-            groupMembersProvider.getGroupMembers(targetId, new RongIM.IGroupMemberCallback() {
-                @Override
-                public void onGetGroupMembersResult(final List<UserInfo> members) {
-                    result.postValue(members);
-                }
-            });
-        }
-
-        return result;
-    }
-
-    /**
-     * 获取讨论组中的人员
-     *
-     * @param targetId
-     */
-    public LiveData<List<UserInfo>> getDiscussionMembers(String targetId) {
-        MutableLiveData<List<UserInfo>> result = new MutableLiveData<>();
-        RongIMClient.getInstance().getDiscussion(targetId, new RongIMClient.ResultCallback<Discussion>() {
-            @Override
-            public void onSuccess(Discussion discussion) {
-                List<String> memeberIds = discussion.getMemberIdList();
-                if (memeberIds == null || memeberIds.size() <= 0) {
-                    result.postValue(null);
-                    return;
-                }
-                List<UserInfo> userInfos = new ArrayList<>();
-                for (String id : memeberIds) {
-                    UserInfo userInfo = RongUserInfoManager.getInstance().getUserInfo(id);
-                    if (userInfo != null) {
-                        userInfos.add(userInfo);
-                    }
-                }
-                result.postValue(userInfos);
-
-            }
-
-            @Override
-            public void onError(RongIMClient.ErrorCode e) {
-                result.postValue(null);
-            }
-        });
-
-        return result;
-    }
-
     public MutableLiveData<Message> getMessageRouter() {
         return messageRouter;
     }
@@ -1401,7 +1298,7 @@ public class IMManager {
      * 退出
      */
     public void logout() {
-        RongIM.getInstance().logout();
+        IMCenter.getInstance().logout();
     }
 
     /**
@@ -1423,25 +1320,18 @@ public class IMManager {
      * 连接 IM 服务
      *
      * @param token
-     * @param timeOut 自动重连超时时间。
+     * @param timeOut  自动重连超时时间。
      * @param callback
      */
     public void connectIM(String token, int timeOut, ResultCallback<String> callback) {
         /*
          *  考虑到会有后台调用此方法，所以不采用 LiveData 做返回值
          */
-        RongIM.connect(token, timeOut, new RongIMClient.ConnectCallback() {
-            @Override
-            public void onDatabaseOpened(RongIMClient.DatabaseOpenStatus databaseOpenStatus) {
-                if (callback != null) {
-                    callback.onSuccess(RongIMClient.getInstance().getCurrentUserId());
-                }
-            }
-
+        IMCenter.getInstance().connect(token, timeOut, new RongIMClient.ConnectCallback() {
             @Override
             public void onSuccess(String s) {
                 // 连接 IM 成功后，初始化数据库
-                DbManager.getInstance(context).openDb(s);
+                DBManager.getInstance(context).openDb(s);
             }
 
             public void onError(RongIMClient.ConnectionErrorCode errorCode) {
@@ -1457,13 +1347,21 @@ public class IMManager {
                         public void onFail(int errorCode) {
                             callback.onFail(errorCode);
                         }
-                    });;
+                    });
+                    ;
                 } else {
                     if (callback != null) {
                         callback.onFail(ErrorCode.IM_ERROR.getCode());
                     } else {
                         // do nothing
                     }
+                }
+            }
+
+            @Override
+            public void onDatabaseOpened(RongIMClient.DatabaseOpenStatus databaseOpenStatus) {
+                if (callback != null) {
+                    callback.onSuccess(RongIMClient.getInstance().getCurrentUserId());
                 }
             }
         });
@@ -1489,7 +1387,7 @@ public class IMManager {
      * @return
      */
     public RongIMClient.ConnectionStatusListener.ConnectionStatus getConnectStatus() {
-        return RongIM.getInstance().getCurrentConnectionStatus();
+        return RongIMClient.getInstance().getCurrentConnectionStatus();
     }
 
     /**
@@ -1521,7 +1419,8 @@ public class IMManager {
      * @param origin
      */
     public void sendImageMessage(Conversation.ConversationType conversationType, String targetId, List<Uri> imageList, boolean origin) {
-        SendImageManager.getInstance().sendImages(conversationType, targetId, imageList, origin);
+        //Todo
+//        SendImageManager.getInstance().sendImages(conversationType, targetId, imageList, origin);
     }
 
     /**
@@ -1558,7 +1457,7 @@ public class IMManager {
     public void sendPokeMessageToPrivate(String targetId, String content, IRongCallback.ISendMessageCallback callback) {
         PokeMessage pokeMessage = PokeMessage.obtain(content);
         Message message = Message.obtain(targetId, Conversation.ConversationType.PRIVATE, pokeMessage);
-        RongIM.getInstance().sendMessage(message, null, null, callback);
+        IMCenter.getInstance().sendMessage(message, null, null, callback);
     }
 
     /**
@@ -1572,10 +1471,10 @@ public class IMManager {
     public void sendPokeMessageToGroup(String targetId, String content, String[] userIds, IRongCallback.ISendMessageCallback callback) {
         PokeMessage pokeMessage = PokeMessage.obtain(content);
         if (userIds != null && userIds.length > 0) {
-            RongIM.getInstance().sendDirectionalMessage(Conversation.ConversationType.GROUP, targetId, pokeMessage, userIds, null, null, callback);
+            IMCenter.getInstance().sendDirectionalMessage(Conversation.ConversationType.GROUP, targetId, pokeMessage, userIds, null, null, callback);
         } else {
             Message message = Message.obtain(targetId, Conversation.ConversationType.GROUP, pokeMessage);
-            RongIM.getInstance().sendMessage(message, null, null, callback);
+            IMCenter.getInstance().sendMessage(message, null, null, callback);
         }
     }
 
@@ -1666,6 +1565,16 @@ public class IMManager {
         return result;
     }
 
-}
+    public AndroidConfig.ImportanceHW getImportance(String hwImportance) {
+        if (!TextUtils.isEmpty(hwImportance) && TextUtils.equals(hwImportance, "LOW")) {
+            return AndroidConfig.ImportanceHW.LOW;
+        }
+        return AndroidConfig.ImportanceHW.NORMAL;
+    }
 
+    public AppTask getAppTask() {
+        return appTask;
+    }
+
+}
 

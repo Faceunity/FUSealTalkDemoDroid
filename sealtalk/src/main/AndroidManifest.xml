@@ -2,23 +2,26 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="cn.rongcloud.im">
 
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="MediaStore.Images.Media.INTERNAL_CONTENT_URI"/>
-    <uses-permission android:name="MediaStore.Images.Media.EXTERNAL_CONTENT_URI"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="MediaStore.Images.Media.INTERNAL_CONTENT_URI" />
+    <uses-permission android:name="MediaStore.Images.Media.EXTERNAL_CONTENT_URI" />
+    <!-- 发送位置消息，实时位置共享，如果您需要定位相关的功能，可以打开以下注释 -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <!-- targetSdkVersion为29时，如果需要后台定位权限，需要添加 ACCESS_BACKGROUND_LOCATION 权限-->
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
 
     <!-- ⼩米 配置开始 < -->
     <permission
-        android:name="cn.rongcloud.im.permission.MIPUSH_RECEIVE"
+        android:name="${applicationId}.permission.MIPUSH_RECEIVE"
         android:protectionLevel="signature" />
-    <uses-permission android:name="cn.rongcloud.im.permission.MIPUSH_RECEIVE" />
+    <uses-permission android:name="${applicationId}.permission.MIPUSH_RECEIVE" />
     <!-- ⼩米 配置结束 < -->
     <!-- GCM 配置开始 < -->
     <permission
-        android:name="cn.rongcloud.im.permission.C2D_MESSAGE"
+        android:name="${applicationId}.permission.C2D_MESSAGE"
         android:protectionLevel="signature" />
-    <uses-permission android:name="cn.rongcloud.im.permission.C2D_MESSAGE" />
+    <uses-permission android:name="${applicationId}.permission.C2D_MESSAGE" />
     <!-- GCM 配置结束 < -->
     <!-- 华为 配置开始 < -->
     <!--HMS-SDK引导升级HMS功能，访问OTA服务器需要网络权限-->
@@ -29,7 +32,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <!--检测wifi状态-->
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-    <!--为了获取用户手机的IMEI，用来唯一的标识用户。-->
+    <!--为了获取用户手机的IMEI，用来唯一的标识用户;发送位置及实时位置时需要此权限-->
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
     <!--如果是安卓8.0，应用编译配置的targetSdkVersion>=26，请务必添加以下权限 -->
@@ -40,9 +43,9 @@
     <!-- 兼容 flyme5.0 以下版本，魅族内部集成 pushSDK 必填，不然无法收到 消息-->
     <uses-permission android:name="com.meizu.flyme.push.permission.RECEIVE" />
     <permission
-        android:name="cn.rongcloud.im.push.permission.MESSAGE"
+        android:name="${applicationId}.push.permission.MESSAGE"
         android:protectionLevel="signature" />
-    <uses-permission android:name="cn.rongcloud.im.push.permission.MESSAGE" />
+    <uses-permission android:name="${applicationId}.push.permission.MESSAGE" />
     <!-- 兼容 flyme3.0 配置权限-->
     <uses-permission android:name="com.meizu.c2dm.permission.RECEIVE" />
     <!-- MeiZu 配置结束 < -->
@@ -52,6 +55,7 @@
     <!-- OPPO 配置结束-->
 
     <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <!--为了获取用户手机的IMEI，用来唯一的标识用户;发送位置消息，实时位置共享需要此权限-->
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
     <uses-permission android:name="android.permission.VIBRATE" />
@@ -62,12 +66,13 @@
         android:allowBackup="true"
         android:icon="@drawable/seal_app_logo"
         android:label="@string/app_name"
+        android:requestLegacyExternalStorage="true"
         android:networkSecurityConfig="@xml/network_security_config"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
         <activity
-            android:name="NeedFaceUnityAcct"
+            android:name=".ui.activity.NeedFaceUnityAcct"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -96,8 +101,12 @@
                 <category android:name="android.intent.category.DEFAULT" />
 
                 <data
-                    android:host="cn.rongcloud.im"
+                    android:host="${applicationId}"
                     android:pathPrefix="/conversationlist"
+                    android:scheme="rong" />
+                <data
+                    android:host="${applicationId}"
+                    android:pathPrefix="/conversation"
                     android:scheme="rong" />
             </intent-filter>
         </activity>
@@ -109,44 +118,30 @@
         <activity
             android:name=".ui.activity.SelectCountryActivity"
             android:screenOrientation="portrait" />
+
         <activity
             android:name=".ui.activity.MainActivity"
+            android:exported="true"
             android:launchMode="singleTask"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait">
+        <intent-filter>
+            <action android:name="cn.rongcloud.im.ui.activity.MainActivity" />
+            <category android:name="android.intent.category.DEFAULT" />
+        </intent-filter>
+        </activity>
+
         <activity
             android:name=".ui.activity.ConversationActivity"
             android:launchMode="singleTop"
             android:screenOrientation="portrait"
-            android:windowSoftInputMode="stateHidden|adjustResize">
-
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-
-                <data
-                    android:host="cn.rongcloud.im"
-                    android:pathPrefix="/conversation/"
-                    android:scheme="rong" />
-            </intent-filter>
-
-        </activity>
+            android:windowSoftInputMode="stateHidden|adjustResize"></activity>
 
         <!--聚合会话列表-->
         <activity
             android:name=".ui.activity.SubConversationListActivity"
             android:launchMode="singleTask"
             android:screenOrientation="portrait"
-            android:windowSoftInputMode="stateHidden|adjustResize">
-
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <data
-                    android:host="cn.rongcloud.im"
-                    android:path="/subconversationlist"
-                    android:scheme="rong" />
-            </intent-filter>
-        </activity>
+            android:windowSoftInputMode="stateHidden|adjustResize"></activity>
         <!--聚合会话列表-->
         <activity
             android:name=".ui.activity.NewFriendListActivity"
@@ -181,7 +176,7 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <data
-                    android:host="cn.rongcloud.im"
+                    android:host="${applicationId}"
                     android:pathPrefix="/publicServiceProfile"
                     android:scheme="rong" />
             </intent-filter>
@@ -190,7 +185,7 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <data
-                    android:host="cn.rongcloud.im"
+                    android:host="${applicationId}"
                     android:pathPrefix="/publicServiceInfo"
                     android:scheme="rong" />
             </intent-filter>
@@ -204,6 +199,10 @@
             android:screenOrientation="portrait" />
         <activity
             android:name=".ui.activity.AboutSealTalkActivity"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".ui.activity.SealTalkDebugTestActivity"
             android:screenOrientation="portrait" />
 
         <activity
@@ -308,10 +307,10 @@
             android:screenOrientation="portrait"
             android:theme="@style/TranslucentNoTitleActivity" />
 
-        <activity
-            android:name=".ui.activity.SealPicturePagerActivity"
-            android:screenOrientation="portrait"
-            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" />
+        <!--        <activity-->
+        <!--            android:name=".ui.activity.SealPicturePagerActivity"-->
+        <!--            android:screenOrientation="portrait"-->
+        <!--            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" />-->
         <activity
             android:name=".ui.activity.JoinGroupActivity"
             android:screenOrientation="portrait" />
@@ -379,23 +378,9 @@
             android:value="CHANNAL" />
 
         <!-- 高德地图-->
-        <!--
         <meta-data
             android:name="com.amap.api.v2.apikey"
-            android:value="替换你申请的高德地图 ApiKey" />
-        -->
-
-        <!--
-        <meta-data
-            android:name="UMENG_APPKEY"
-            android:value="替换您申请的 UMeng AppKey" />
-        -->
-
-        <!--
-        <meta-data
-            android:name="UMENG_CHANNEL"
-            android:value="替换您申请的 UMeng Channel" />
-        -->
+            android:value="e09af6a2b26c02086e9216bd07c960ae" />
 
         <!-- push start-->
         <receiver
@@ -462,21 +447,21 @@
         <!-- 小米 配置结束 < -->
 
         <!-- [START firebase_service] -->
-        <!--
         <service
             android:name="io.rong.push.platform.google.RongFirebaseMessagingService"
+            android:exported="false"
             android:stopWithTask="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
+
         <meta-data
             android:name="firebase_messaging_auto_init_enabled"
             android:value="false" />
         <meta-data
             android:name="firebase_analytics_collection_enabled"
             android:value="false" />
-         -->
         <!-- [END firebase_service] -->
 
         <!-- MeiZu 配置开始 < -->
@@ -493,7 +478,7 @@
                 <action android:name="com.meizu.c2dm.intent.REGISTRATION" />
                 <action android:name="com.meizu.c2dm.intent.RECEIVE" />
 
-                <category android:name="cn.rongcloud.im" />
+                <category android:name="${applicationId}" />
             </intent-filter>
         </receiver>
         <!-- MeiZu 配置结束 < -->
@@ -514,23 +499,21 @@
             android:screenOrientation="portrait" />
 
         <!-- 微信 接收微信的请求及返回值 -->
-        <activity android:name=".wxapi.WXEntryActivity"
-            android:label="@string/app_name"
-            android:theme="@android:style/Theme.Translucent.NoTitleBar"
+        <activity
+            android:name=".wxapi.WXEntryActivity"
             android:exported="true"
-            android:taskAffinity="net.sourceforge.simcpux"
+            android:label="@string/app_name"
             android:launchMode="singleTask"
-            />
+            android:taskAffinity="net.sourceforge.simcpux"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
 
         <!--推送配置项-->
-        <!--
         <meta-data
             android:name="com.vivo.push.api_key"
-            android:value="您申请的 vivo 推送 ApiKey" />
+            android:value="9379dbec440afd82e6d8fd903204c9a7" />
         <meta-data
             android:name="com.vivo.push.app_id"
-            android:value="您申请的 vivo 推送 AppId" />
-         -->
+            android:value="103912318" />
 
         <!-- push 应用定义消息 receiver 声明 -->
         <receiver android:name="io.rong.push.platform.vivo.VivoPushMessageReceiver">
@@ -553,7 +536,7 @@
 
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="cn.rongcloud.im.FileProvider"
+            android:authorities="${applicationId}.FileProvider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data
@@ -561,10 +544,65 @@
                 android:resource="@xml/rc_file_path" />
         </provider>
 
-        <service android:name="io.rong.push.platform.hms.HMSPushService" android:exported="false">
+        <service
+            android:name="io.rong.push.platform.hms.HMSPushService"
+            android:exported="false">
             <intent-filter>
-                <action android:name="com.huawei.push.action.MESSAGING_EVENT" /> </intent-filter>
+                <action android:name="com.huawei.push.action.MESSAGING_EVENT" />
+            </intent-filter>
         </service>
+
+
+        <activity
+            android:name=".ui.test.PushConfigActivity"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".ui.test.DiscussionActivity"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".ui.test.ChatRoomStatusActivity"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".ui.test.ChatRoomStatusDeatilActivity"
+            android:screenOrientation="portrait" />
+
+        <!--消息扩展-->
+        <activity
+            android:name=".ui.test.MsgExpansionConversationListActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.test.MessageExpansionDetailActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.test.TagTestActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.test.ShortageConversationListActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.test.ShortageDetailActivity"
+            android:screenOrientation="portrait" />
+        <activity android:name=".ui.test.GRRSenderTestActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".ui.test.GRRConversationListTestActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".ui.test.GRRReceiverTestActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".ui.test.GRRDetailTestActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".ui.test.ChatRoomListenerTestActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".ui.test.ChatRoomTestActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".ui.test.DeviceInfoActivity"
+            android:screenOrientation="portrait" />
+        <activity android:name=".ui.CommonConversationTestActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".ui.test.CommonConversationListTestActivity"
+            android:screenOrientation="portrait"/>
     </application>
 
 </manifest>

@@ -1,13 +1,20 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 28
-    buildToolsVersion = '28.0.3'
+    compileSdkVersion 29
+
+    android {
+        lintOptions {
+            abortOnError false
+        }
+    }
+
+
     defaultConfig {
-        minSdkVersion 16
-        targetSdkVersion 28
-        versionCode 1
-        versionName "1.0"
+       minSdkVersion 19
+        targetSdkVersion 19
+        versionCode 20210811
+        versionName "5.1.4"
     }
     buildTypes {
         release {
@@ -15,11 +22,14 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    android {
+        lintOptions {
+            abortOnError false
+        }
+    }
 }
 
 dependencies {
     api fileTree(dir: 'libs', include: ['*.jar'])
-    api 'cn.rongcloud.sdk:im_lib:4.0.3.14' // 即时通讯基础能力库
-    api 'cn.rongcloud.sdk:im_kit:4.0.3.14' // 即时通讯 UI 基础组件
-    implementation 'androidx.fragment:fragment:1.2.2'
+    api 'cn.rongcloud.sdk:im_kit:5.1.4'
 }

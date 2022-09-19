@@ -16,9 +16,14 @@ import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SectionIndexer;
 import android.widget.TextView;
+
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.bitmap.CircleCrop;
+import com.bumptech.glide.request.RequestOptions;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,10 +34,11 @@ import java.util.List;
 import io.rong.contactcard.ContactCardContext;
 import io.rong.contactcard.IContactCardInfoProvider;
 import io.rong.contactcard.R;
-import io.rong.imkit.RongBaseNoActionbarActivity;
-import io.rong.imkit.mention.SideBar;
-import io.rong.imkit.tools.CharacterParser;
-import io.rong.imkit.widget.AsyncImageView;
+
+import io.rong.imkit.activity.RongBaseNoActionbarActivity;
+import io.rong.imkit.userinfo.RongUserInfoManager;
+import io.rong.imkit.utils.CharacterParser;
+import io.rong.imkit.widget.SideBar;
 import io.rong.imlib.RongIMClient;
 import io.rong.imlib.model.Conversation;
 import io.rong.imlib.model.UserInfo;
@@ -216,7 +222,7 @@ public class ContactListActivity extends RongBaseNoActionbarActivity {
                 viewHolder = new ViewHolder();
                 convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.rc_list_item_contact_card, null);
                 viewHolder.name = (TextView) convertView.findViewById(R.id.rc_user_name);
-                viewHolder.portrait = (AsyncImageView) convertView.findViewById(R.id.rc_user_portrait);
+                viewHolder.portrait = (ImageView) convertView.findViewById(R.id.rc_user_portrait);
                 viewHolder.letter = (TextView) convertView.findViewById(R.id.letter);
                 convertView.setTag(viewHolder);
             } else {
@@ -224,8 +230,8 @@ public class ContactListActivity extends RongBaseNoActionbarActivity {
             }
             UserInfo userInfo = mList.get(position).userInfo;
             if (userInfo != null) {
-                viewHolder.name.setText(userInfo.getName());
-                viewHolder.portrait.setAvatar(userInfo.getPortraitUri());
+                viewHolder.name.setText(RongUserInfoManager.getInstance().getUserDisplayName(userInfo));
+                Glide.with(convertView).load(userInfo.getPortraitUri()).apply(RequestOptions.bitmapTransform(new CircleCrop())).into(viewHolder.portrait);
             }
 
             //根据position获取分类的首字母的Char ascii值
@@ -266,7 +272,7 @@ public class ContactListActivity extends RongBaseNoActionbarActivity {
     }
 
     private static class ViewHolder {
-        AsyncImageView portrait;
+        ImageView portrait;
         TextView name;
         TextView letter;
     }

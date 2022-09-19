@@ -2,13 +2,13 @@ apply plugin: 'com.android.application'
 //apply plugin: 'com.google.gms.google-services'
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 30
     defaultConfig {
         applicationId "cn.rongcloud.im"
         minSdkVersion 19
-        targetSdkVersion 28
-        versionCode 2020062411
-        versionName "4.0.0.1"
+        targetSdkVersion 30
+        versionCode 20210127
+        versionName "5.1.4"
         ndk {
             abiFilters "armeabi-v7a", 'x86'
         }
@@ -24,6 +24,10 @@ android {
         buildConfigField "String", "SEALTALK_MI_PUSH_APPKEY", "${SEALTALK_MI_PUSH_APPKEY}"
         buildConfigField "String", "SEALTALK_MIZU_PUSH_APPID", "${SEALTALK_MIZU_PUSH_APPID}"
         buildConfigField "String", "SEALTALK_MIZU_PUSH_APPKEY", "${SEALTALK_MIZU_PUSH_APPKEY}"
+        buildConfigField "String", "SEALTALK_OPPO_PUSH_APPKEY", "${SEALTALK_OPPO_PUSH_APPKEY}"
+        buildConfigField "String", "SEALTALK_OPPO_PUSH_SECRET", "${SEALTALK_OPPO_PUSH_SECRET}"
+        buildConfigField "String", "SEALTALK_UMENG_APPKEY", "${SEALTALK_UMENG_APPKEY}"
+        buildConfigField "String", "SEALTALK_UMENG_CHANNEL", "${SEALTALK_UMENG_CHANNEL}"
         manifestPlaceholders = [SEALTALK_HW_PUSH_APPID: SEALTALK_HW_PUSH_APPID.replaceAll('"', '')]
     }
 
@@ -41,37 +45,25 @@ android {
         sourceCompatibility = '1.8'
         targetCompatibility = '1.8'
     }
-    buildToolsVersion = '28.0.3'
+    packagingOptions {
+        exclude 'assets/ap1.data'
+    }
+    buildToolsVersion = '30.0.2'
 
     sourceSets {
         main {
             jniLibs.srcDirs = ['libs']
         }
     }
-    applicationVariants.all { variant ->
-        variant.mergeAssetsProvider.configure {
-            doLast {
-                delete(fileTree(dir: outputDir,
-                        includes: ['model/ai_bgseg_green.bundle',
-                                   'model/ai_face_processor_lite.bundle',
-                                   'model/ai_hairseg.bundle',
-                                   'model/ai_hand_processor.bundle',
-                                   'model/ai_human_processor_mb_fast.bundle',
-                                   'graphics/controller_cpp.bundle',
-                                   'graphics/fuzzytoonfilter.bundle',
-                                   'graphics/tongue.bundle',
-                                   'graphics/fxaa.bundle']))
-            }
-        }
+    lintOptions {
+        checkReleaseBuilds false
+        abortOnError false
     }
 }
 
-
 dependencies {
     implementation fileTree(include: ['*.jar', '*.aar'], dir: 'libs')
-    implementation 'com.huawei.hms:push:4.0.2.300'
-    implementation 'androidx.appcompat:appcompat:1.1.0-beta01'
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.0-beta1'
+//    implementation 'com.huawei.hms:push:4.0.2.300'
     implementation 'androidx.multidex:multidex:2.0.1'
     implementation 'com.google.android.material:material:1.1.0-alpha07'
     implementation 'androidx.lifecycle:lifecycle-livedata:2.2.0-alpha01'
@@ -79,15 +71,15 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0-alpha01'
     implementation 'androidx.room:room-runtime:2.1.0-rc01'
     implementation 'androidx.exifinterface:exifinterface:1.1.0-beta01'
+    implementation 'com.nostra13.universalimageloader:universal-image-loader:1.9.5'
+    implementation files('libs/MiPush_SDK_Client_3_8_2.jar')
     annotationProcessor 'androidx.room:room-compiler:2.1.0-rc01'
-    //debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.0-beta-2'
     implementation 'androidx.exifinterface:exifinterface:1.1.0-beta01'
     api "com.google.zxing:core:3.3.2"
     api 'com.squareup.retrofit2:retrofit:2.5.0'
     api 'com.squareup.retrofit2:converter-gson:2.5.0'
     implementation 'androidx.annotation:annotation:1.1.0'
-    //api 'com.google.firebase:firebase-messaging:17.6.0'
-
+    implementation 'com.huawei.hms:push:4.0.2.300'
     api 'com.meizu.flyme.internet:push-internal:3.6.+@aar'
     api 'com.google.code.gson:gson:2.8.1'
     api 'com.googlecode.mp4parser:isoparser:1.0.6'
@@ -95,15 +87,19 @@ dependencies {
     implementation 'com.tencent.bugly:crashreport:3.0.1'
     implementation 'com.tencent.bugly:nativecrashreport:3.7.1'
     implementation 'com.tencent.mm.opensdk:wechat-sdk-android-with-mta:+'
+    api 'cn.rongcloud.sdk:im_kit:5.1.4'
+    //im_kit必须依赖im_lib，所以需要加入对应依赖
+    api 'cn.rongcloud.sdk:im_lib:5.1.4'
+    api 'cn.rongcloud.sdk:rcsticker:5.1.4'
+    api 'cn.rongcloud.sdk:sight:5.1.1.1'
+    api 'cn.rongcloud.sdk:call_lib:5.1.2'
+//    api 'cn.rongcloud.sdk:call_kit:5.1.2'
 
-    api 'cn.rongcloud.sdk:im_lib:4.0.3.14' // 即时通讯基础能力库
-    api 'cn.rongcloud.sdk:im_kit:4.0.3.14' // 即时通讯 UI 基础组件
-
-    api 'cn.rongcloud.sdk:rcsticker:4.0.3.13'
-    api 'cn.rongcloud.sdk:sight:4.0.3.13'
-
-    api project(path: ':CallKit')
+    api project(path: ':callkit')
     api project(path: ':contactcard')
     api project(path: ':recognizer')
     api project(path: ':pushpermission')
+
+    implementation 'com.umeng.umsdk:common:9.3.8'
+    implementation 'com.umeng.umsdk:asms:1.2.2'
 }

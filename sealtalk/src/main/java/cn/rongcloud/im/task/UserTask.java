@@ -16,7 +16,7 @@ import java.util.List;
 
 import cn.rongcloud.im.common.ErrorCode;
 import cn.rongcloud.im.common.ResultCallback;
-import cn.rongcloud.im.db.DbManager;
+import cn.rongcloud.im.db.DBManager;
 import cn.rongcloud.im.db.dao.FriendDao;
 import cn.rongcloud.im.db.dao.GroupDao;
 import cn.rongcloud.im.db.dao.UserDao;
@@ -59,7 +59,7 @@ public class UserTask {
     private FileManager fileManager;
     private UserService userService;
     private Context context;
-    private DbManager dbManager;
+    private DBManager dbManager;
     private IMManager imManager;
     //存储当前最新一次登录的用户信息
     private UserCache userCache;
@@ -69,7 +69,7 @@ public class UserTask {
     public UserTask(Context context) {
         this.context = context.getApplicationContext();
         userService = HttpClientManager.getInstance(context).getClient().createService(UserService.class);
-        dbManager = DbManager.getInstance(context.getApplicationContext());
+        dbManager = DBManager.getInstance(context.getApplicationContext());
         fileManager = new FileManager(context.getApplicationContext());
         userCache = new UserCache(context.getApplicationContext());
         countryCache = new CountryCache(context.getApplicationContext());
@@ -183,9 +183,7 @@ public class UserTask {
                 if (userDao != null) {
                     alias = userDao.getUserByIdSync(userInfo.getId()).getAlias();
                 }
-                //有备注名的时，使用备注名
-                String name = TextUtils.isEmpty(alias) ? userInfo.getName() : alias;
-                IMManager.getInstance().updateUserInfoCache(userInfo.getId(), name, Uri.parse(userInfo.getPortraitUri()));
+                IMManager.getInstance().updateUserInfoCache(userInfo.getId(), userInfo.getName(), Uri.parse(userInfo.getPortraitUri()), alias);
             }
 
             @NonNull
@@ -610,10 +608,11 @@ public class UserTask {
             if (portraitUrl == null) {
                 portraitUrl = userInfo == null ? "" : userInfo.getPortraitUri();
             }
+
             int i = userDao.updateNameAndPortrait(userId, nickName, CharacterParser.getInstance().getSpelling(nickName), portraitUrl);
             SLog.d("ss_update", "i=" + i);
 
-            IMManager.getInstance().updateUserInfoCache(userId, nickName, Uri.parse(portraitUrl));
+            IMManager.getInstance().updateUserInfoCache(userId, nickName, Uri.parse(portraitUrl), userInfo == null ? "" : userInfo.getAlias());
         }
     }
 
@@ -959,4 +958,64 @@ public class UserTask {
             }
         }.asLiveData();
     }
+
+    /**
+     * 用户注册登录
+     *
+     * @param region 国家区号
+     * @param phone  手机号码
+     * @param code   密码
+     */
+    public LiveData<Resource<String>> registerAndLogin(String region, String phone, String code) {
+        MediatorLiveData<Resource<String>> result = new MediatorLiveData<>();
+        result.setValue(Resource.loading(null));
+        LiveData<Resource<LoginResult>> login = new NetworkOnlyResource<LoginResult, Result<LoginResult>>() {
+            @NonNull
+            @Override
+            protected LiveData<Result<LoginResult>> createCall() {
+                HashMap<String, Object> paramsMap = new HashMap<>();
+                paramsMap.put("region", region);
+                paramsMap.put("phone", phone);
+                paramsMap.put("code", code);
+                RequestBody body = RetrofitUtil.createJsonRequest(paramsMap);
+                return userService.registerAndLogin(body);
+            }
+        }.asLiveData();
+        result.addSource(login, loginResultResource -> {
+            if (loginResultResource.status == Status.SUCCESS) {
+                result.removeSource(login);
+                LoginResult loginResult = loginResultResource.data;
+                if (loginResult != null) {
+                    imManager.connectIM(loginResult.token, true, new ResultCallback<String>() {
+                        @Override
+                        public void onSuccess(String s) {
+                            result.postValue(Resource.success(s));
+                            // 存储当前登录成功的用户信息
+                            UserCacheInfo info = new UserCacheInfo(s, loginResult.token, phone, region, countryCache.getCountryInfoByRegion(region));
+                            userCache.saveUserCache(info);
+                        }
+
+                        @Override
+                        public void onFail(int errorCode) {
+                            result.postValue(Resource.error(errorCode, null));
+                        }
+                    });
+                } else {
+                    if (loginResultResource.code == ErrorCode.LOGIN_VERIFY_CODE_FAILED.getCode()) {
+                        result.setValue(Resource.error(ErrorCode.LOGIN_VERIFY_CODE_FAILED.getCode(), null));
+                    } else if (loginResultResource.code == ErrorCode.LOGIN_VERIFY_CODE_EXPIRED.getCode()) {
+                        result.setValue(Resource.error(ErrorCode.LOGIN_VERIFY_CODE_EXPIRED.getCode(), null));
+                    } else {
+                        result.setValue(Resource.error(ErrorCode.API_ERR_OTHER.getCode(), null));
+                    }
+                }
+            } else if (loginResultResource.status == Status.ERROR) {
+                result.setValue(Resource.error(loginResultResource.code, null));
+            } else {
+                // do nothing
+            }
+        });
+        return result;
+    }
+
 }

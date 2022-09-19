@@ -1,7 +1,14 @@
 package cn.rongcloud.im.ui.activity;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.text.Html;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.TextPaint;
+import android.text.method.LinkMovementMethod;
+import android.text.style.ClickableSpan;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -16,13 +23,18 @@ import androidx.lifecycle.ViewModelProviders;
 
 import cn.rongcloud.im.R;
 import cn.rongcloud.im.common.IntentExtra;
+import cn.rongcloud.im.model.Resource;
+import cn.rongcloud.im.model.VersionInfo;
 import cn.rongcloud.im.ui.BaseActivity;
 import cn.rongcloud.im.ui.dialog.CommonDialog;
 import cn.rongcloud.im.ui.fragment.LoginFindPasswordFragment;
 import cn.rongcloud.im.ui.fragment.LoginFragment;
 import cn.rongcloud.im.ui.fragment.LoginRegisterFragment;
+import cn.rongcloud.im.utils.StatusBarUtil;
+import cn.rongcloud.im.utils.ToastUtils;
 import cn.rongcloud.im.viewmodel.AppViewModel;
-import io.rong.imkit.utilities.LangUtils;
+import cn.rongcloud.im.viewmodel.UserInfoViewModel;
+import io.rong.imkit.utils.language.LangUtils;
 
 /**
  * 登录界面
@@ -44,20 +56,37 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
     private TextView toLogin;
     private AppViewModel appViewModel;
     private int currentFragmentIndex = FRAGMENT_LOGIN;// 当前选择 Fragment 下标
+    private TextView registrationTerms;
+    private TextView mSealTalkVersion;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        initStatusBar();
         setContentView(R.layout.login_activity_login);
-
         // 复原上次选的 Fragment
         if (savedInstanceState != null) {
             currentFragmentIndex = savedInstanceState.getInt(BUNDLE_LAST_SELECTED_FRAGMENT, FRAGMENT_LOGIN);
         }
-
         initView();
         initViewModel();
+    }
+
+    private void initStatusBar() {
+        //这里注意下 因为在评论区发现有网友调用setRootViewFitsSystemWindows 里面 winContent.getChildCount()=0 导致代码无法继续
+        //是因为你需要在setContentView之后才可以调用 setRootViewFitsSystemWindows
+        //当FitsSystemWindows设置 true 时，会在屏幕最上方预留出状态栏高度的 padding
+        StatusBarUtil.setRootViewFitsSystemWindows(this, true);
+        //设置状态栏透明
+        StatusBarUtil.setTranslucentStatus(this);
+        //一般的手机的状态栏文字和图标都是白色的, 可如果你的应用也是纯白色的, 或导致状态栏文字看不清
+        //所以如果你是这种情况,请使用以下代码, 设置状态使用深色文字图标风格, 否则你可以选择性注释掉这个if内容
+        if (!StatusBarUtil.setStatusBarDarkTheme(this, false)) {
+            //如果不支持设置深色风格 为了兼容总不能让状态栏白白的看不清, 于是设置一个状态栏颜色为半透明,
+            //这样半透明+白=灰, 状态栏的文字能看得清
+            StatusBarUtil.setStatusBarColor(this, 0x000000);
+        }
     }
 
     /**
@@ -71,6 +100,8 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
         registerRight = findViewById(R.id.tv_register_right);
         findPassword = findViewById(R.id.tv_find_passsword);
         toLogin = findViewById(R.id.tv_login);
+        mSealTalkVersion = findViewById(R.id.tv_seal_talk_version);
+        initRegistrationTerms();
 
         changLang.setOnClickListener(this);
         registerLeft.setOnClickListener(this);
@@ -91,26 +122,60 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
         }
     }
 
+    private void initRegistrationTerms() {
+        registrationTerms = findViewById(R.id.tv_registration_terms);
+        registrationTerms.setText(Html.fromHtml("<font color='#5C6970'>" + getString(R.string.seal_talk_login_bottom_registration_text_front) + "</font>" + "<br>" + "<font color='#5C6970'>" + getString(R.string.seal_talk_login_bottom_registration_text_behand) + "</font>"));
+
+        String text = registrationTerms.getText().toString();
+        int index = text.indexOf("\"");
+        if (index == -1) {
+            index = text.indexOf("⟪");
+        }
+        if (index == -1) {
+            return;
+        }
+        SpannableString str = new SpannableString(registrationTerms.getText());
+        str.setSpan(new NoRefCopySpan() {
+            @Override
+            public void onClick(@NonNull View widget) {
+                Intent intent = new Intent(LoginActivity.this, WebViewActivity.class);
+                intent.putExtra(WebViewActivity.PARAMS_TITLE, getString(R.string.seal_talk_registration_title));
+                intent.putExtra(WebViewActivity.PARAMS_URL, "file:///android_asset/agreement_zh.html");
+                startActivity(intent);
+            }
+
+            @Override
+            public void updateDrawState(@NonNull TextPaint ds) {
+                super.updateDrawState(ds);
+                ds.setUnderlineText(false);
+
+            }
+        }, index, str.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+        registrationTerms.setText(str);
+        registrationTerms.setMovementMethod(LinkMovementMethod.getInstance());//不设置 没有点击事件
+        registrationTerms.setHighlightColor(Color.TRANSPARENT); //设置点击后的颜色为透明
+    }
 
     private void controlBottomView(int index) {
         switch (index) {
             case FRAGMENT_REGISTER:
-                registerLeft.setVisibility(View.GONE);
-                registerRight.setVisibility(View.GONE);
-                findPassword.setVisibility(View.VISIBLE);
-                toLogin.setVisibility(View.VISIBLE);
+//                registerLeft.setVisibility(View.GONE);
+//                registerRight.setVisibility(View.GONE);
+//                findPassword.setVisibility(View.VISIBLE);
+//                toLogin.setVisibility(View.VISIBLE);
                 break;
             case FRAGMENT_FIND_PASSWORD:
-                registerLeft.setVisibility(View.VISIBLE);
-                registerRight.setVisibility(View.GONE);
-                findPassword.setVisibility(View.GONE);
-                toLogin.setVisibility(View.VISIBLE);
+//                registerLeft.setVisibility(View.VISIBLE);
+//                registerRight.setVisibility(View.GONE);
+//                findPassword.setVisibility(View.GONE);
+//                toLogin.setVisibility(View.VISIBLE);
                 break;
             case FRAGMENT_LOGIN:
-                registerLeft.setVisibility(View.GONE);
-                registerRight.setVisibility(View.VISIBLE);
-                findPassword.setVisibility(View.VISIBLE);
-                toLogin.setVisibility(View.GONE);
+//                registerLeft.setVisibility(View.GONE);
+//                registerRight.setVisibility(View.VISIBLE);
+//                findPassword.setVisibility(View.VISIBLE);
+//                toLogin.setVisibility(View.GONE);
                 break;
         }
 
@@ -191,6 +256,16 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
                 } else {
                     changLang.setText(R.string.lang_en);
                 }
+            }
+        });
+
+        AppViewModel appViewModel = ViewModelProviders.of(this).get(AppViewModel.class);
+
+        // sealtalk 版本
+        appViewModel.getSealTalkVersion().observe(this, new Observer<String>() {
+            @Override
+            public void onChanged(String version) {
+                mSealTalkVersion.setText(getString(R.string.seal_talk_version_text, version));
             }
         });
     }
@@ -284,5 +359,19 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
     @Override
     public boolean isObserveLogout() {
         return false;
+    }
+
+    public static class NoRefCopySpan extends ClickableSpan {
+
+        @Override
+        public void onClick(@NonNull View widget) {
+
+        }
+
+        @Override
+        public void updateDrawState(TextPaint ds) {
+            super.updateDrawState(ds);
+        }
+
     }
 }

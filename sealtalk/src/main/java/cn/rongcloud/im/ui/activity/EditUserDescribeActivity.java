@@ -28,12 +28,13 @@ import cn.rongcloud.im.model.Resource;
 import cn.rongcloud.im.model.Status;
 import cn.rongcloud.im.ui.dialog.CommonDialog;
 import cn.rongcloud.im.ui.dialog.SelectPictureBottomDialog;
+import cn.rongcloud.im.utils.AsyncImageView;
 import cn.rongcloud.im.utils.ImageLoaderUtils;
 import cn.rongcloud.im.utils.PhotoUtils;
 import cn.rongcloud.im.utils.ToastUtils;
 import cn.rongcloud.im.utils.log.SLog;
 import cn.rongcloud.im.viewmodel.EditUserDescribeViewModel;
-import io.rong.imkit.widget.AsyncImageView;
+
 
 public class EditUserDescribeActivity extends TitleBaseActivity implements View.OnClickListener {
 
@@ -65,6 +66,7 @@ public class EditUserDescribeActivity extends TitleBaseActivity implements View.
 
     private void initView() {
         getTitleBar().setTitle(getString(R.string.profile_set_display_name));
+        getTitleBar().getBtnRight().setVisibility(View.GONE);
         getTitleBar().setOnBtnRightClickListener(getString(R.string.seal_describe_more_btn_complete), new View.OnClickListener() {
             @Override
             public void onClick(View v) {
