@@ -3,7 +3,6 @@ package cn.rongcloud.im.utils;
 import android.content.Context;
 import android.os.Vibrator;
 
-import io.rong.imkit.RongContext;
 
 /**
  *  手机震动相关工具
@@ -16,7 +15,7 @@ public class VibratorUtils {
      * @param repeat 循环次数
      */
     public static void startVibrator(Context context, long[] pattern, int repeat) {
-        Vibrator vibrator = (Vibrator) RongContext.getInstance().getSystemService(Context.VIBRATOR_SERVICE);
+        Vibrator vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
         vibrator.cancel();
         vibrator.vibrate(pattern, repeat);
     }
@@ -27,7 +26,7 @@ public class VibratorUtils {
      * @param context
      */
     public static void cancelVibrator(Context context) {
-        Vibrator vibrator = (Vibrator) RongContext.getInstance().getSystemService(Context.VIBRATOR_SERVICE);
+        Vibrator vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
         vibrator.cancel();
     }
 }

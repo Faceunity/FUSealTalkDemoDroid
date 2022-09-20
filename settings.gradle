@@ -1,1 +1,1 @@
-include ':sealtalk', ':contactcard', ':recognizer', ':pushpermission', ':faceunity', ':CallKit'
+include ':sealtalk', ':contactcard', ':recognizer', ':pushpermission',":callkit", ":faceunity"

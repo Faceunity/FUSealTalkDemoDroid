@@ -5,22 +5,41 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.ImageView;
 
+import androidx.annotation.DrawableRes;
+import androidx.annotation.NonNull;
 import androidx.multidex.MultiDexApplication;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.bitmap.CircleCrop;
+import com.bumptech.glide.request.RequestOptions;
 import com.facebook.stetho.Stetho;
-import com.tencent.bugly.crashreport.CrashReport;
+import com.faceunity.FUConfig;
+import com.faceunity.nama.utils.FuDeviceUtils;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
+import com.umeng.commonsdk.UMConfigure;
 
 import cn.rongcloud.im.common.ErrorCode;
 import cn.rongcloud.im.contact.PhoneContactManager;
 import cn.rongcloud.im.im.IMManager;
 import cn.rongcloud.im.ui.activity.MainActivity;
+import cn.rongcloud.im.ui.activity.SplashActivity;
 import cn.rongcloud.im.utils.SearchUtils;
 import cn.rongcloud.im.wx.WXManager;
-import io.rong.imkit.RongConfigurationManager;
+import io.rong.callkit.RongCallKit;
+import io.rong.imkit.GlideKitImageEngine;
+import io.rong.imkit.IMCenter;
+import io.rong.imkit.RongIM;
+import io.rong.imkit.config.RongConfigCenter;
+import io.rong.imkit.utils.language.LangUtils;
 import io.rong.imlib.ipc.RongExceptionHandler;
+import io.rong.imlib.model.Conversation;
+import io.rong.imlib.model.Message;
 
-import static io.rong.imkit.utils.SystemUtils.getCurProcessName;
+import static io.rong.common.SystemUtils.getCurrentProcessName;
+
 
 public class SealApp extends MultiDexApplication {
     private static SealApp appInstance;
@@ -32,9 +51,13 @@ public class SealApp extends MultiDexApplication {
     private Intent nextOnForegroundIntent;
     private boolean isMainActivityIsCreated;
 
+    public static SealApp getApplication() {
+        return appInstance;
+    }
+
     @Override
     protected void attachBaseContext(Context base) {
-        Context context = RongConfigurationManager.getInstance().getConfigurationContext(base);
+        Context context = LangUtils.getConfigurationContext(base);
         super.attachBaseContext(context);
     }
 
@@ -44,15 +67,18 @@ public class SealApp extends MultiDexApplication {
 
         appInstance = this;
 
+        FUConfig.DEVICE_LEVEL = FuDeviceUtils.judgeDeviceLevel(this);
+
         // 初始化 bugly BUG 统计
         //CrashReport.initCrashReport(getApplicationContext());
-
+        //BlockCanary.install(this, new AppBlockCanaryContext()).start();
         ErrorCode.init(this);
-
+        ImageLoaderConfiguration imageLoaderConfiguration = ImageLoaderConfiguration.createDefault(this);
+        ImageLoader.getInstance().init(imageLoaderConfiguration);
         /*
          * 以上部分在所有进程中会执行
          */
-        if (!getApplicationInfo().packageName.equals(getCurProcessName(getApplicationContext()))) {
+        if (!getApplicationInfo().packageName.equals(getCurrentProcessName(getApplicationContext()))) {
             return;
         }
 
@@ -64,6 +90,46 @@ public class SealApp extends MultiDexApplication {
          */
         // 初始化融云IM SDK，初始化 SDK 仅需要在主进程中初始化一次
         IMManager.getInstance().init(this);
+        RongConfigCenter.featureConfig().setKitImageEngine(new GlideKitImageEngine() {
+            @Override
+            public void loadConversationListPortrait(@NonNull Context context, @NonNull String url, @NonNull ImageView imageView, Conversation conversation) {
+                @DrawableRes int resourceId = io.rong.imkit.R.drawable.rc_default_portrait;
+                switch (conversation.getConversationType()) {
+                    case GROUP:
+                        resourceId = io.rong.imkit.R.drawable.rc_default_group_portrait;
+                        break;
+                    case CUSTOMER_SERVICE:
+                        resourceId = io.rong.imkit.R.drawable.rc_cs_default_portrait;
+                        break;
+                    case CHATROOM:
+                        resourceId = io.rong.imkit.R.drawable.rc_default_chatroom_portrait;
+                        break;
+
+                }
+                Glide.with(imageView).load(url)
+                        .placeholder(resourceId)
+                        .error(resourceId)
+                        .apply(RequestOptions.bitmapTransform(new CircleCrop()))
+                        .into(imageView);
+            }
+
+            @Override
+            public void loadConversationPortrait(@NonNull Context context, @NonNull String url, @NonNull ImageView imageView, Message message) {
+                @DrawableRes int resourceId = io.rong.imkit.R.drawable.rc_default_portrait;
+                switch (message.getConversationType()) {
+                    case CUSTOMER_SERVICE:
+                        if (Message.MessageDirection.RECEIVE == message.getMessageDirection())
+                            resourceId = io.rong.imkit.R.drawable.rc_cs_default_portrait;
+                        break;
+                }
+                Glide.with(imageView).load(url)
+                        .placeholder(resourceId)
+                        .error(resourceId)
+                        .apply(RequestOptions.bitmapTransform(new CircleCrop()))
+                        .into(imageView);
+            }
+        });
+        RongIM.getInstance().setVoiceMessageType(IMCenter.VoiceMessageType.HighQuality);
         Stetho.initializeWithDefaults(this);
 
         SearchUtils.init(this);
@@ -77,10 +143,32 @@ public class SealApp extends MultiDexApplication {
 
         // 监听 App 前后台变化
         observeAppInBackground();
+
+        RongCallKit.setMainPageActivityClass(new String[]{MainActivity.class.getName(), SplashActivity.class.getName()});
+
+        //UMeng初始化
+        UMConfigure.init(this, BuildConfig.SEALTALK_UMENG_APPKEY, null, UMConfigure.DEVICE_TYPE_PHONE, null);
     }
 
-    public static SealApp getApplication() {
-        return appInstance;
+    /**
+     * 检查是否正确的配置 SealTalk 中的一些必要环境。
+     */
+    private void checkSealConfig() {
+        if (!BuildConfig.SEALTALK_SERVER.startsWith("http")) {
+            Log.e("SealTalk 集成错误", "\n" +
+                    "您需要确认是否将 sealtalk 目录下 gradle.properties " +
+                    "文件中的 SEALTALK_SERVER 参数修改为了您所部署的 SealTalk 服务器。\n" +
+                    "同时，建议您阅读下 README.MD 中的关于【运行 SealTalk-Android】部分，以便您能正常运行。");
+            throw new IllegalArgumentException("需要运行 SealTalk 您先要正确的指定您的 SealTalk 服务器。");
+        }
+
+        if (BuildConfig.SEALTALK_APP_KEY.contains("AppKey")) {
+            Log.e("SealTalk 集成错误", "\n" +
+                    "您需要确认是否将 sealtalk 目录下 gradle.properties " +
+                    "文件中的 SEALTALK_APP_KEY 参数修改为了您在融云所申请的 AppKey。\n" +
+                    "同时，建议您阅读下 README.MD 中的关于【运行 SealTalk-Android】部分，以便您能正常运行。");
+            throw new IllegalArgumentException("需要运行 SealTalk 您需要指定您所申请融云的 Appkey。");
+        }
     }
 
     /**
@@ -90,7 +178,7 @@ public class SealApp extends MultiDexApplication {
         registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks() {
             @Override
             public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
-                if(activity instanceof MainActivity){
+                if (activity instanceof MainActivity) {
                     isMainActivityIsCreated = true;
                 }
             }
@@ -134,7 +222,7 @@ public class SealApp extends MultiDexApplication {
 
             @Override
             public void onActivityDestroyed(Activity activity) {
-                if(activity instanceof MainActivity){
+                if (activity instanceof MainActivity) {
                     isMainActivityIsCreated = false;
                 }
             }
@@ -179,31 +267,11 @@ public class SealApp extends MultiDexApplication {
 
     /**
      * 判断是否进入到了主界面
+     *
      * @return
      */
-    public boolean isMainActivityCreated(){
+    public boolean isMainActivityCreated() {
         return isMainActivityIsCreated;
-    }
-
-    /**
-     * 检查是否正确的配置 SealTalk 中的一些必要环境。
-     */
-    private void checkSealConfig(){
-        if(!BuildConfig.SEALTALK_SERVER.startsWith("http")){
-            Log.e("SealTalk 集成错误", "\n" +
-                    "您需要确认是否将 sealtalk 目录下 gradle.properties " +
-                    "文件中的 SEALTALK_SERVER 参数修改为了您所部署的 SealTalk 服务器。\n" +
-                    "同时，建议您阅读下 README.MD 中的关于【运行 SealTalk-Android】部分，以便您能正常运行。");
-            throw new IllegalArgumentException("需要运行 SealTalk 您先要正确的指定您的 SealTalk 服务器。");
-        }
-
-        if(BuildConfig.SEALTALK_APP_KEY.contains("AppKey")){
-            Log.e("SealTalk 集成错误", "\n" +
-                    "您需要确认是否将 sealtalk 目录下 gradle.properties " +
-                    "文件中的 SEALTALK_APP_KEY 参数修改为了您在融云所申请的 AppKey。\n" +
-                    "同时，建议您阅读下 README.MD 中的关于【运行 SealTalk-Android】部分，以便您能正常运行。");
-            throw new IllegalArgumentException("需要运行 SealTalk 您需要指定您所申请融云的 Appkey。");
-        }
     }
 
 }

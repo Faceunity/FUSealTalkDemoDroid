@@ -3,9 +3,9 @@ package io.rong.callkit.profile;
 import android.os.Build;
 import android.os.Debug;
 
-import java.lang.reflect.Field;
-
 import androidx.annotation.RequiresApi;
+
+import java.lang.reflect.Field;
 
 /**
  * 内存使用率获取工具类

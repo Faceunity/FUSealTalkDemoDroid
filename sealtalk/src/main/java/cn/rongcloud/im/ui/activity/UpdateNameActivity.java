@@ -36,7 +36,7 @@ public class UpdateNameActivity extends TitleBaseActivity {
     private void initView() {
 
         getTitleBar().setTitle(R.string.seal_update_name);
-        getTitleBar().setOnBtnRightClickListener(getString(R.string.seal_update_name_save_update),new View.OnClickListener() {
+        getTitleBar().setOnBtnRightClickListener(getString(R.string.seal_update_name_save_update), new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String newName = updateNameCet.getText().toString().trim();
@@ -63,9 +63,12 @@ public class UpdateNameActivity extends TitleBaseActivity {
             @Override
             public void onChanged(Resource<UserInfo> resource) {
                 if (resource.data != null) {
-                    String name = TextUtils.isEmpty(resource.data.getName())? "" : resource.data.getName();
+                    String name = TextUtils.isEmpty(resource.data.getName()) ? "" : resource.data.getName();
                     updateNameCet.setText(name);
-                    updateNameCet.setSelection(name.length());
+                    int length = name.length();
+                    if (length <= 32) {
+                        updateNameCet.setSelection(length);
+                    }
                 }
             }
         });
@@ -86,6 +89,7 @@ public class UpdateNameActivity extends TitleBaseActivity {
 
     /**
      * 更新name
+     *
      * @param newName
      */
     private void updateName(String newName) {

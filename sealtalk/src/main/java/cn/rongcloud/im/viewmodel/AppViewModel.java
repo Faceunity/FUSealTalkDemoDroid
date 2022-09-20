@@ -20,7 +20,8 @@ import cn.rongcloud.im.task.AppTask;
 import cn.rongcloud.im.utils.SingleSourceLiveData;
 import cn.rongcloud.im.utils.SingleSourceMapLiveData;
 import cn.rongcloud.im.utils.log.SLog;
-import io.rong.imkit.utilities.LangUtils;
+import io.rong.imkit.utils.language.LangUtils;
+
 
 public class AppViewModel extends AndroidViewModel {
     private final AppTask appTask;
@@ -111,7 +112,7 @@ public class AppViewModel extends AndroidViewModel {
      *
      * @return
      */
-    public LiveData<Resource<List<ChatRoomResult>>> getChatRoonList() {
+    public LiveData<Resource<List<ChatRoomResult>>> getChatRoomList() {
         return chatRoomResultList;
     }
 

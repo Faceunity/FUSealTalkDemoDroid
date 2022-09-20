@@ -27,8 +27,8 @@ import cn.rongcloud.im.ui.fragment.SearchFriendResultFragment;
 import cn.rongcloud.im.ui.interfaces.OnSearchFriendClickListener;
 import cn.rongcloud.im.ui.interfaces.OnSearchFriendItemClickListener;
 import cn.rongcloud.im.viewmodel.SearchFriendNetViewModel;
-import io.rong.imkit.RongIM;
-import io.rong.imkit.userInfoCache.RongUserInfoManager;
+import io.rong.imkit.userinfo.RongUserInfoManager;
+import io.rong.imlib.RongIMClient;
 import io.rong.imlib.model.UserInfo;
 
 public class SearchFriendActivity extends TitleBaseActivity implements OnSearchFriendClickListener,
@@ -57,13 +57,14 @@ public class SearchFriendActivity extends TitleBaseActivity implements OnSearchF
         viewModel.getSearchFriend().observe(this, new Observer<Resource<SearchFriendInfo>>() {
             @Override
             public void onChanged(Resource<SearchFriendInfo> searchFriendInfoResource) {
-                if (searchFriendInfoResource.status == Status.SUCCESS) {
+                if (searchFriendInfoResource.status == Status.SUCCESS && searchFriendInfoResource.data != null) {
                     SearchFriendInfo friendInfo = searchFriendInfoResource.data;
                     searchFriendResultFragment = new SearchFriendResultFragment();
                     searchFriendResultFragment.setData(SearchFriendActivity.this, searchFriendInfoResource.data);
                     pushFragment(searchFriendResultFragment);
                     viewModel.isFriend(friendInfo.getId());
-                } else if (searchFriendInfoResource.status == Status.ERROR) {
+                } else if (searchFriendInfoResource.status == Status.ERROR
+                        || searchFriendInfoResource.data == null) {
                     Toast.makeText(SearchFriendActivity.this, R.string.seal_account_not_exist, Toast.LENGTH_SHORT).show();
                 }
             }
@@ -105,7 +106,7 @@ public class SearchFriendActivity extends TitleBaseActivity implements OnSearchF
 
     @Override
     public void onSearchClick(String region, String searchContent) {
-        if(TextUtils.isDigitsOnly(searchContent)){
+        if (TextUtils.isDigitsOnly(searchContent)) {
             viewModel.searchFriendFromServer(null, region, searchContent);
         } else {
             viewModel.searchFriendFromServer(searchContent, null, null);
@@ -114,7 +115,7 @@ public class SearchFriendActivity extends TitleBaseActivity implements OnSearchF
 
     @Override
     public void onSearchFriendItemClick(SearchFriendInfo searchFriendInfo) {
-        if (isFriend || searchFriendInfo.getId().equals(RongIM.getInstance().getCurrentUserId())) {
+        if (isFriend || searchFriendInfo.getId().equals(RongIMClient.getInstance().getCurrentUserId())) {
             toDetailActivity(searchFriendInfo.getId());
         } else {
             showAddFriendDialog(searchFriendInfo.getId());

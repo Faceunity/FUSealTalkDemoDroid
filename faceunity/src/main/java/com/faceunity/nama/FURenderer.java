@@ -2,7 +2,6 @@ package com.faceunity.nama;
 
 import android.content.Context;
 import android.hardware.Camera;
-import android.util.Log;
 
 import com.faceunity.core.callback.OperateCallback;
 import com.faceunity.core.entity.FURenderInputData;
@@ -10,6 +9,7 @@ import com.faceunity.core.entity.FURenderOutputData;
 import com.faceunity.core.enumeration.CameraFacingEnum;
 import com.faceunity.core.enumeration.FUAIProcessorEnum;
 import com.faceunity.core.enumeration.FUAITypeEnum;
+import com.faceunity.core.enumeration.FUTransformMatrixEnum;
 import com.faceunity.core.faceunity.FURenderConfig;
 import com.faceunity.core.faceunity.FURenderKit;
 import com.faceunity.core.faceunity.FURenderManager;
@@ -122,6 +122,11 @@ public class FURenderer extends IFURenderer {
         mFURendererListener.onPrepare();
     }
 
+    /** 渲染矩阵  */
+    float[] TEXTURE_MATRIX = {
+        1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+                0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f
+    };
 
     /**
      * 双输入接口，输入 buffer 和 texture，必须在具有 GL 环境的线程调用
@@ -265,10 +270,18 @@ public class FURenderer extends IFURenderer {
 
     @Override
     public void setInputOrientation(int inputOrientation) {
-        if (cameraOrientationMap.containsKey(inputOrientation)) {
-            setCameraFacing(cameraOrientationMap.get(inputOrientation));
-        }
         super.setInputOrientation(inputOrientation);
+        if (inputOrientation == 270) {
+            setCameraFacing(CameraFacingEnum.CAMERA_FRONT);
+            setInputBufferMatrix(FUTransformMatrixEnum.CCROT90_FLIPHORIZONTAL);
+            setInputTextureMatrix(FUTransformMatrixEnum.CCROT90_FLIPHORIZONTAL);
+            setOutputMatrix(FUTransformMatrixEnum.CCROT270);
+        }else if (inputOrientation == 90) {
+            setCameraFacing(CameraFacingEnum.CAMERA_BACK);
+            setInputBufferMatrix(FUTransformMatrixEnum.CCROT90);
+            setInputTextureMatrix(FUTransformMatrixEnum.CCROT90);
+            setOutputMatrix(FUTransformMatrixEnum.CCROT90_FLIPHORIZONTAL);
+        }
     }
 
     /**

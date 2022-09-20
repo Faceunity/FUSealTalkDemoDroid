@@ -18,7 +18,7 @@ import java.util.List;
 
 import cn.rongcloud.im.common.ThreadManager;
 import cn.rongcloud.im.contact.PhoneContactManager;
-import cn.rongcloud.im.db.DbManager;
+import cn.rongcloud.im.db.DBManager;
 import cn.rongcloud.im.db.dao.FriendDao;
 import cn.rongcloud.im.db.dao.GroupMemberDao;
 import cn.rongcloud.im.db.dao.UserDao;
@@ -47,6 +47,7 @@ import cn.rongcloud.im.utils.NetworkOnlyResource;
 import cn.rongcloud.im.utils.RongGenerate;
 import cn.rongcloud.im.utils.SearchUtils;
 import cn.rongcloud.im.utils.log.SLog;
+import io.rong.imkit.userinfo.RongUserInfoManager;
 import io.rong.imlib.model.Conversation;
 import okhttp3.RequestBody;
 
@@ -54,13 +55,13 @@ public class FriendTask {
     private static final String TAG = "FriendTask";
     private Context context;
     private FriendService friendService;
-    private DbManager dbManager;
+    private DBManager dbManager;
     private FileManager fileManager;
 
     public FriendTask(Context context) {
         this.context = context.getApplicationContext();
         friendService = HttpClientManager.getInstance(this.context).getClient().createService(FriendService.class);
-        dbManager = DbManager.getInstance(this.context);
+        dbManager = DBManager.getInstance(this.context);
         fileManager = new FileManager(context);
     }
 
@@ -116,11 +117,7 @@ public class FriendTask {
                     friendInfoList.add(friendInfo);
 
                     // 更新 IMKit 显示缓存
-                    String name = userInfo.getAlias();
-                    if (TextUtils.isEmpty(name)) {
-                        name = userInfo.getName();
-                    }
-                    IMManager.getInstance().updateUserInfoCache(userInfo.getId(), name, Uri.parse(userInfo.getPortraitUri()));
+                    IMManager.getInstance().updateUserInfoCache(userInfo.getId(), userInfo.getName(), Uri.parse(userInfo.getPortraitUri()), userInfo.getAlias());
                 }
 
                 UserDao userDao = dbManager.getUserDao();
@@ -209,11 +206,7 @@ public class FriendTask {
                 friendDao.insertFriendShip(friendInfo);
 
                 // 更新 IMKit 显示缓存
-                String name = userInfo.getAlias();
-                if (TextUtils.isEmpty(name)) {
-                    name = userInfo.getName();
-                }
-                IMManager.getInstance().updateUserInfoCache(userInfo.getId(), name, Uri.parse(userInfo.getPortraitUri()));
+                IMManager.getInstance().updateUserInfoCache(userInfo.getId(), userInfo.getName(), Uri.parse(userInfo.getPortraitUri()), userInfo.getAlias());
             }
 
             @NonNull
@@ -238,7 +231,10 @@ public class FriendTask {
     }
 
     public FriendShipInfo getFriendShipInfoFromDBSync(String userId) {
-        return dbManager.getFriendDao().getFriendInfoSync(userId);
+        if (dbManager.getFriendDao() != null) {
+            return dbManager.getFriendDao().getFriendInfoSync(userId);
+        }
+        return null;
     }
 
     public List<FriendShipInfo> getFriendShipInfoListFromDBSync(String[] userIds) {
@@ -290,6 +286,9 @@ public class FriendTask {
     }
 
     public LiveData<List<FriendShipInfo>> searchFriendsFromDB(String match) {
+        if (dbManager == null || dbManager.getFriendDao() == null) {
+            return new MediatorLiveData<>();
+        }
         return dbManager.getFriendDao().searchFriendShip(match);
     }
 
@@ -315,7 +314,7 @@ public class FriendTask {
                     if (TextUtils.isEmpty(name)) {
                         name = userInfo.getName();
                     }
-                    IMManager.getInstance().updateUserInfoCache(userInfo.getId(), name, Uri.parse(userInfo.getPortraitUri()));
+                    IMManager.getInstance().updateUserInfoCache(userInfo.getId(), userInfo.getName(), Uri.parse(userInfo.getPortraitUri()), userInfo.getAlias());
                     // 需要获取此用户所在自己的哪些群组， 然后遍历修改其群组的个人信息。
                     // 用于当有备注的好友在群组时， 显示备注名称
                     GroupMemberDao groupMemberDao = dbManager.getGroupMemberDao();
@@ -556,11 +555,7 @@ public class FriendTask {
 
                     userDao.insertUser(userInfo);
                     // 更新 IMKit 显示缓存
-                    String name = userInfo.getAlias();
-                    if (TextUtils.isEmpty(name)) {
-                        name = userInfo.getName();
-                    }
-                    IMManager.getInstance().updateUserInfoCache(userInfo.getId(), name, Uri.parse(userInfo.getPortraitUri()));
+                    IMManager.getInstance().updateUserInfoCache(userInfo.getId(), userInfo.getName(), Uri.parse(userInfo.getPortraitUri()), userInfo.getAlias());
 
                     // 添加通讯录信息
                     PhoneContactInfoEntity phoneContactInfoEntity = new PhoneContactInfoEntity();
@@ -744,12 +739,12 @@ public class FriendTask {
             userDao.updateAlias(friendId, displayName, aliasSpelling);
 
             UserInfo userInfo = userDao.getUserByIdSync(friendId);
-            // 更新 IMKit 显示缓存
             String name = userInfo.getAlias();
             if (TextUtils.isEmpty(name)) {
                 name = userInfo.getName();
             }
-            IMManager.getInstance().updateUserInfoCache(userInfo.getId(), name, Uri.parse(userInfo.getPortraitUri()));
+            // 更新 IMKit 显示缓存
+            IMManager.getInstance().updateUserInfoCache(userInfo.getId(), name, Uri.parse(userInfo.getPortraitUri()), userInfo.getAlias());
             // 需要获取此用户所在自己的哪些群组， 然后遍历修改其群组的个人信息。
             // 用于当有备注的好友在群组时， 显示备注名称
             GroupMemberDao groupMemberDao = dbManager.getGroupMemberDao();

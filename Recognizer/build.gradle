@@ -1,14 +1,13 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 28
-    buildToolsVersion = '28.0.3'
+    compileSdkVersion 29
 
     defaultConfig {
-        minSdkVersion 16
-        targetSdkVersion 28
-        versionCode 1
-        versionName "1.0"
+        minSdkVersion 19
+        targetSdkVersion 29
+        versionCode 20210811
+        versionName "5.1.4"
     }
     buildTypes {
         release {
@@ -34,7 +33,7 @@ android {
 
 dependencies {
     api fileTree(include: ['*.jar'], dir: 'libs')
-    api 'cn.rongcloud.sdk:im_lib:4.0.3.14' // 即时通讯基础能力库
-    api 'cn.rongcloud.sdk:im_kit:4.0.3.14' // 即时通讯 UI 基础组件
+    api 'cn.rongcloud.sdk:im_kit:5.1.4'
     api 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation files('libs/Msc.jar')
 }

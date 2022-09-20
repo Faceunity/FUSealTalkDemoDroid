@@ -19,7 +19,6 @@ import java.io.File;
 import java.util.List;
 
 import cn.rongcloud.im.R;
-import io.rong.imkit.RongContext;
 
 
 /**
@@ -174,7 +173,7 @@ public class PhotoUtils {
      */
     private Uri buildUri(Activity activity) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            Uri uri = FileProvider.getUriForFile(RongContext.getInstance(),
+            Uri uri = FileProvider.getUriForFile(activity,
                     activity.getPackageName()
                             + activity.getResources().getString(R.string.rc_authorities_fileprovider)
                     , new File(Environment.getExternalStorageDirectory().getPath() + File.separator + CROP_FILE_NAME));
