@@ -8,10 +8,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-
 import cn.rongcloud.im.R;
 
 public class TagTestInputDialog extends Dialog {
@@ -30,7 +30,7 @@ public class TagTestInputDialog extends Dialog {
     public static int TYPE_GET_CONVERSATION_FOR_TAG = 0x1462;
     public static int TYPE_GET_UNREAD_FOR_TAG = 0x1463;
     public static int TYPE_SET_TOP = 0x1465;
-
+    public static int TYPE_CLEAR_CONVERSATION = 0x1466;
 
     private TextView mTvSure;
     private TextView mTvCancel;
@@ -42,10 +42,12 @@ public class TagTestInputDialog extends Dialog {
     private EditText etTagName;
     private EditText etType;
     private EditText etTargetId;
+    private CheckBox cbRemoveMessage;
     private LinearLayout llTagId;
     private LinearLayout llTagName;
     private LinearLayout llType;
     private LinearLayout llTargetId;
+    private LinearLayout llRemoveMessage;
 
     public EditText getEtTagId() {
         return etTagId;
@@ -95,7 +97,6 @@ public class TagTestInputDialog extends Dialog {
         initView(context);
     }
 
-
     public TextView getSureView() {
         return mTvSure;
     }
@@ -132,7 +133,8 @@ public class TagTestInputDialog extends Dialog {
             mLayoutParams.height = android.view.ViewGroup.LayoutParams.MATCH_PARENT;
             mLayoutParams.gravity = Gravity.CENTER;
         }
-        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_tag_test_input, null);
+        View dialogView =
+                LayoutInflater.from(getContext()).inflate(R.layout.dialog_tag_test_input, null);
         mTvSure = dialogView.findViewById(R.id.tv_sure);
         mTvCancel = dialogView.findViewById(R.id.tv_cancle);
         mTVAdd = dialogView.findViewById(R.id.add_item);
@@ -147,7 +149,8 @@ public class TagTestInputDialog extends Dialog {
         llTagName = dialogView.findViewById(R.id.ll_tag_name);
         llType = dialogView.findViewById(R.id.ll_tag_type);
         llTargetId = dialogView.findViewById(R.id.ll_tag_target_id);
-
+        llRemoveMessage = dialogView.findViewById(R.id.ll_remove_message);
+        cbRemoveMessage = dialogView.findViewById(R.id.cb_delete);
         mTvType.setText("会话类型");
         mTvTargetId.setText("target id");
         mTvTagName.setText("name");
@@ -192,21 +195,31 @@ public class TagTestInputDialog extends Dialog {
             mTvType.setText("时间戳");
             mTvTargetId.setText("count");
             mTVAdd.setVisibility(View.GONE);
-        } else if(mType == TYPE_GET_UNREAD_FOR_TAG) {
+        } else if (mType == TYPE_GET_UNREAD_FOR_TAG) {
             llTagId.setVisibility(View.VISIBLE);
             llTagName.setVisibility(View.GONE);
             llType.setVisibility(View.GONE);
             llTargetId.setVisibility(View.VISIBLE);
             mTvTargetId.setText("true/false");
             mTVAdd.setVisibility(View.GONE);
-        } else if(mType == TYPE_SET_TOP) {
+        } else if (mType == TYPE_SET_TOP) {
             llTagId.setVisibility(View.VISIBLE);
             llTagName.setVisibility(View.VISIBLE);
             llType.setVisibility(View.VISIBLE);
             llTargetId.setVisibility(View.VISIBLE);
             mTvTagName.setText("isTop(true/false)");
             mTVAdd.setVisibility(View.GONE);
+        } else if (mType == TYPE_CLEAR_CONVERSATION) {
+            llTagName.setVisibility(View.GONE);
+            llType.setVisibility(View.GONE);
+            llTargetId.setVisibility(View.GONE);
+            mTVAdd.setVisibility(View.GONE);
+            llRemoveMessage.setVisibility(View.VISIBLE);
         }
         setContentView(dialogView);
+    }
+
+    public CheckBox getCbRemoveMessage() {
+        return cbRemoveMessage;
     }
 }

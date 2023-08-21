@@ -1,9 +1,6 @@
 package cn.rongcloud.im.net.service;
 
 import androidx.lifecycle.LiveData;
-
-import java.util.List;
-
 import cn.rongcloud.im.db.model.FriendBlackInfo;
 import cn.rongcloud.im.db.model.UserInfo;
 import cn.rongcloud.im.model.ContactGroupResult;
@@ -12,15 +9,18 @@ import cn.rongcloud.im.model.LoginResult;
 import cn.rongcloud.im.model.RegionResult;
 import cn.rongcloud.im.model.RegisterResult;
 import cn.rongcloud.im.model.Result;
+import cn.rongcloud.im.model.TranslationTokenResult;
 import cn.rongcloud.im.model.UploadTokenResult;
 import cn.rongcloud.im.model.VerifyResult;
 import cn.rongcloud.im.net.SealTalkUrl;
+import java.util.List;
 import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.Path;
+import retrofit2.http.Query;
 
 public interface UserService {
     @POST(SealTalkUrl.LOGIN)
@@ -67,7 +67,6 @@ public interface UserService {
 
     @POST(SealTalkUrl.CHANGE_PASSWORD)
     LiveData<Result> changePassword(@Body RequestBody body);
-
 
     /**
      * 获取黑名单信息
@@ -122,4 +121,7 @@ public interface UserService {
 
     @POST(SealTalkUrl.REGISTER_AND_LOGIN)
     LiveData<Result<LoginResult>> registerAndLogin(@Body RequestBody body);
+
+    @GET(SealTalkUrl.TRANSLATION_JWT_TOKEN)
+    LiveData<TranslationTokenResult> getTranslationToken(@Query("userId") String userId);
 }

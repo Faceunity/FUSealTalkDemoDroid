@@ -1,15 +1,17 @@
 package io.rong.callkit;
 
+import static io.rong.callkit.BaseCallActivity.REQUEST_CODE_ADD_MEMBER;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-
 import io.rong.callkit.util.CallKitUtils;
+import io.rong.callkit.util.RongCallPermissionUtil;
+import io.rong.callkit.util.permission.PermissionType;
 import io.rong.calllib.RongCallClient;
 import io.rong.calllib.RongCallCommon;
 import io.rong.calllib.RongCallSession;
@@ -17,10 +19,8 @@ import io.rong.common.RLog;
 import io.rong.imkit.conversation.extension.RongExtension;
 import io.rong.imkit.conversation.extension.component.plugin.IPluginModule;
 import io.rong.imkit.conversation.extension.component.plugin.IPluginRequestPermissionResultCallback;
-import io.rong.imkit.utils.PermissionCheckUtil;
 import io.rong.imlib.IRongCoreCallback;
 import io.rong.imlib.IRongCoreEnum;
-import io.rong.imlib.RongCoreClient;
 import io.rong.imlib.RongIMClient;
 import io.rong.imlib.discussion.base.RongDiscussionClient;
 import io.rong.imlib.discussion.model.Discussion;
@@ -53,8 +53,13 @@ public class VideoPlugin implements IPluginModule, IPluginRequestPermissionResul
         conversationType = extension.getConversationType();
         targetId = extension.getTargetId();
 
-        String[] permissions = CallKitUtils.getCallpermissions();
-        if (PermissionCheckUtil.checkPermissions(currentFragment.getActivity(), permissions)) {
+        PermissionType[] audioCallPermissions =
+                RongCallPermissionUtil.getVideoCallPermissions(context);
+        String[] permissions = new String[audioCallPermissions.length];
+        for (int i = 0; i < audioCallPermissions.length; i++) {
+            permissions[i] = audioCallPermissions[i].getPermissionName();
+        }
+        if (RongCallPermissionUtil.checkPermissions(currentFragment.getActivity(), permissions)) {
             startVideoActivity(extension);
         } else {
             extension.requestPermissionForPluginResult(
@@ -142,6 +147,15 @@ public class VideoPlugin implements IPluginModule, IPluginRequestPermissionResul
             return;
         }
 
+        if (requestCode == REQUEST_CODE_ADD_MEMBER) {
+            if (resultCode == Activity.RESULT_OK) {
+                if (data.getBooleanExtra("remote_hangup", false)) {
+                    RLog.d(TAG, "Remote exit, end the call.");
+                    return;
+                }
+            }
+        }
+
         Intent intent = new Intent(RongVoIPIntent.RONG_INTENT_ACTION_VOIP_MULTIVIDEO);
         ArrayList<String> userIds = data.getStringArrayListExtra("invited");
         ArrayList<String> observerIds = data.getStringArrayListExtra("observers");
@@ -164,10 +178,11 @@ public class VideoPlugin implements IPluginModule, IPluginRequestPermissionResul
             @NonNull String[] permissions,
             @NonNull int[] grantResults) {
         Context context = fragment.getContext();
-        if (PermissionCheckUtil.checkPermissions(context, permissions)) {
+        if (RongCallPermissionUtil.checkPermissions(context, permissions)) {
             startVideoActivity(extension);
         } else {
-            PermissionCheckUtil.showRequestPermissionFailedAlter(context, permissions, grantResults);
+            RongCallPermissionUtil.showRequestPermissionFailedAlter(
+                    context, permissions, grantResults);
         }
         return true;
     }

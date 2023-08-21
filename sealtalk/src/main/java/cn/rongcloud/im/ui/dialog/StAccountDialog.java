@@ -12,18 +12,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
-
 import cn.rongcloud.im.R;
 
-/**
- * 通用对话框
- */
+/** 通用对话框 */
 public class StAccountDialog extends DialogFragment {
 
     private static class ControllerParams {
@@ -43,15 +38,18 @@ public class StAccountDialog extends DialogFragment {
     @Override
     public void onStart() {
         super.onStart();
-        //透明化背景
+        // 透明化背景
         Window window = getDialog().getWindow();
-        //背景色
+        // 背景色
         window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
     }
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(
+            @NonNull LayoutInflater inflater,
+            @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
 
         View view = getDialogView();
         if (view == null) {
@@ -60,44 +58,45 @@ public class StAccountDialog extends DialogFragment {
         Button negative = view.findViewById(R.id.dialog_btn_negative);
         Button positive = view.findViewById(R.id.dialog_btn_positive);
         View btnSeparate = view.findViewById(R.id.dialog_v_btn_separate);
-        RelativeLayout contentContainer = view.findViewById(R.id.dialog_content_container);
         TextView content = view.findViewById(R.id.dialog_tv_content);
         TextView title = view.findViewById(R.id.dialog_tv_title);
-        negative.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dismiss();
-                if (onNegativeClick()) {
-                    return ;
-                }
-                if (params.listener != null) {
-                    params.listener.onNegativeClick(v, getNegativeDatas());
-                }
-            }
-        });
-        positive.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dismiss();
-                if (onPositiveClick()) {
-                    return ;
-                }
-                if (params.listener != null) {
-                    params.listener.onPositiveClick(v, getPositiveDatas());
-                }
-            }
-        });
+        negative.setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        dismiss();
+                        if (onNegativeClick()) {
+                            return;
+                        }
+                        if (params.listener != null) {
+                            params.listener.onNegativeClick(v, getNegativeDatas());
+                        }
+                    }
+                });
+        positive.setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        dismiss();
+                        if (onPositiveClick()) {
+                            return;
+                        }
+                        if (params.listener != null) {
+                            params.listener.onPositiveClick(v, getPositiveDatas());
+                        }
+                    }
+                });
 
         if (params != null) {
-            if (!TextUtils.isEmpty(params.contentMessage)){
+            if (!TextUtils.isEmpty(params.contentMessage)) {
                 content.setText(Html.fromHtml(params.contentMessage.toString()));
             }
 
-            if (!TextUtils.isEmpty(params.titleMessage)){
+            if (!TextUtils.isEmpty(params.titleMessage)) {
                 title.setText(Html.fromHtml(params.titleMessage.toString()));
             }
 
-            if (params.contentSpanna!=null&&params.contentSpanna.length()>0){
+            if (params.contentSpanna != null && params.contentSpanna.length() > 0) {
                 content.setText(params.contentSpanna);
             }
 
@@ -109,7 +108,7 @@ public class StAccountDialog extends DialogFragment {
                 negative.setText(params.negativeText);
             }
 
-            if(params.isOnlyConfirm){
+            if (params.isOnlyConfirm) {
                 negative.setVisibility(View.GONE);
                 btnSeparate.setVisibility(View.GONE);
                 positive.setBackgroundResource(R.drawable.common_dialog_single_positive_seletor);
@@ -119,26 +118,25 @@ public class StAccountDialog extends DialogFragment {
         }
 
         Dialog dialog = getDialog();
-        if(dialog != null){
+        if (dialog != null) {
             dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         }
 
         return view;
-
     }
 
     /**
      * 此方法只提供给布局改变， 但是控件id 不变的自定义 dialog 使用
+     *
      * @return
      */
-    protected  View getDialogView() {
+    protected View getDialogView() {
         return null;
     }
 
-
     /**
-     * 通过复写此方法， 在子类中，可重新创建设置
-     * 新的内容布局
+     * 通过复写此方法， 在子类中，可重新创建设置 新的内容布局
+     *
      * @return
      */
     protected View onCreateContentView() {
@@ -147,6 +145,7 @@ public class StAccountDialog extends DialogFragment {
 
     /**
      * 复写此方法， 并可在此方法中设置，回调监听确定按钮所需的数据
+     *
      * @return
      */
     protected Bundle getPositiveDatas() {
@@ -155,6 +154,7 @@ public class StAccountDialog extends DialogFragment {
 
     /**
      * 复写此方法， 并可在此方法中设置，回调监听取消按钮所需的数据
+     *
      * @return
      */
     protected Bundle getNegativeDatas() {
@@ -163,6 +163,7 @@ public class StAccountDialog extends DialogFragment {
 
     /**
      * 集成的子类假如想在内部处理 Positive 点击监听， 可复写此方法。 返回 true 则可拦截，不会走外部设置的点击监听
+     *
      * @return true 拦截监听， false 不拦截
      */
     protected boolean onPositiveClick() {
@@ -170,13 +171,13 @@ public class StAccountDialog extends DialogFragment {
     }
 
     /**
-     *  集成的子类假如想在内部处理 Negative 点击监听， 可复写此方法。 返回 true 则可拦截，不会走外部设置的点击监听
+     * 集成的子类假如想在内部处理 Negative 点击监听， 可复写此方法。 返回 true 则可拦截，不会走外部设置的点击监听
+     *
      * @return
      */
     protected boolean onNegativeClick() {
         return false;
     }
-
 
     private void setParams(ControllerParams params) {
         this.params = params;
@@ -184,24 +185,21 @@ public class StAccountDialog extends DialogFragment {
 
     public Bundle getExpandParams() {
         if (params == null) {
-            return  null;
+            return null;
         }
         return params.expandParams;
     }
 
-
     public interface OnDialogButtonClickListener {
         void onPositiveClick(View v, Bundle bundle);
+
         void onNegativeClick(View v, Bundle bundle);
     }
 
-
-    /**
-     * 集成 CommonDialog 的子类， 需要继承此类， 并要复写
-     * getCurrentDialog 方法，返回子类的dialog 对象
-     */
+    /** 集成 CommonDialog 的子类， 需要继承此类， 并要复写 getCurrentDialog 方法，返回子类的dialog 对象 */
     public static class Builder {
-        private ControllerParams params ;
+        private ControllerParams params;
+
         public Builder() {
             params = new ControllerParams();
         }
@@ -216,7 +214,7 @@ public class StAccountDialog extends DialogFragment {
             return this;
         }
 
-        public Builder setTitleMessage(CharSequence title){
+        public Builder setTitleMessage(CharSequence title) {
             params.titleMessage = title;
             return this;
         }
@@ -232,20 +230,17 @@ public class StAccountDialog extends DialogFragment {
             return this;
         }
 
-
-
         public Builder setDialogButtonClickListener(OnDialogButtonClickListener listener) {
             params.listener = listener;
             return this;
         }
-
 
         public Builder setExpandParams(Bundle expandParams) {
             params.expandParams = expandParams;
             return this;
         }
 
-        public Builder setIsOnlyConfirm(boolean isOnlyConfirm){
+        public Builder setIsOnlyConfirm(boolean isOnlyConfirm) {
             params.isOnlyConfirm = isOnlyConfirm;
             return this;
         }
@@ -255,7 +250,6 @@ public class StAccountDialog extends DialogFragment {
             dialog.setParams(params);
             return dialog;
         }
-
 
         protected StAccountDialog getCurrentDialog() {
             return new StAccountDialog();

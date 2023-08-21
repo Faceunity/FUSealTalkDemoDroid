@@ -1,6 +1,5 @@
 package io.rong.callkit;
 
-import android.app.Activity;
 import android.content.Context;
 
 import androidx.appcompat.app.AppCompatActivity;

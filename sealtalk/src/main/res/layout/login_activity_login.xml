@@ -27,9 +27,9 @@
 
         <ImageView
             android:id="@+id/de_login_logo"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/seal_ic_logo" />
+            android:layout_width="130dp"
+            android:layout_height="130dp"
+            android:src="@drawable/seal_app_logo" />
 
         <TextView
             android:id="@+id/del_login_logo_text"
@@ -38,9 +38,9 @@
             android:layout_marginTop="9dp"
             android:includeFontPadding="false"
             android:text="@string/seal_login_text_title"
-            android:visibility="gone"
             android:textColor="@color/color_black_text"
-            android:textSize="19sp" />
+            android:textSize="19sp"
+            android:visibility="gone" />
     </LinearLayout>
 
 
@@ -85,14 +85,29 @@
         android:gravity="center_horizontal"
         android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/tv_registration_terms"
+        <LinearLayout
             android:layout_width="wrap_content"
-            android:gravity="center_horizontal"
             android:layout_height="wrap_content"
-            android:textColor="#484848"
-            android:textSize="@dimen/seal_login_rongcloud_text_size" />
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
+            <CheckBox
+                android:id="@+id/cb_registration_terms"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:background="@null"
+                android:button="@drawable/seal_checkbox_selector"/>
+
+            <TextView
+                android:id="@+id/tv_registration_terms"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:textColor="#484848"
+                android:textSize="@dimen/seal_login_rongcloud_text_size" />
+
+        </LinearLayout>
         <TextView
             android:id="@+id/tv_seal_talk_version"
             android:layout_width="wrap_content"
@@ -113,7 +128,8 @@
         android:padding="@dimen/seal_login_buttom_padding"
         android:text="@string/seal_login_text_new_user"
         android:textColor="@color/seal_login_text_button_color"
-        android:textSize="@dimen/seal_login_text_button_text_size" />
+        android:textSize="@dimen/seal_login_text_button_text_size"
+        android:visibility="gone" />
 
     <!--    SealTalk V5.1.1-->
 
@@ -140,6 +156,17 @@
         android:layout_marginTop="20dp"
         android:padding="@dimen/seal_login_text_change_lang_padding"
         android:text="@string/lang_en"
+        android:textColor="@color/white"
+        android:textSize="@dimen/seal_login_text_change_lang_text_size" />
+
+    <TextView
+        android:id="@+id/tv_proxy_setting"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:padding="20dp"
+        android:text="代理"
+        android:visibility="gone"
         android:textColor="@color/white"
         android:textSize="@dimen/seal_login_text_change_lang_text_size" />
 

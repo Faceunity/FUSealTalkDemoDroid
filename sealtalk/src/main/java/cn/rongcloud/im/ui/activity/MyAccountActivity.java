@@ -5,11 +5,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
-
 import androidx.annotation.Nullable;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
-
 import cn.rongcloud.im.R;
 import cn.rongcloud.im.db.model.UserInfo;
 import cn.rongcloud.im.model.Resource;
@@ -19,12 +17,11 @@ import cn.rongcloud.im.ui.dialog.SelectPictureBottomDialog;
 import cn.rongcloud.im.ui.view.SettingItemView;
 import cn.rongcloud.im.ui.view.UserInfoItemView;
 import cn.rongcloud.im.utils.ImageLoaderUtils;
-import cn.rongcloud.im.viewmodel.UserInfoViewModel;
 import cn.rongcloud.im.utils.log.SLog;
+import cn.rongcloud.im.viewmodel.UserInfoViewModel;
+import java.lang.ref.WeakReference;
 
-/**
- * 我的账号
- */
+/** 我的账号 */
 public class MyAccountActivity extends TitleBaseActivity implements View.OnClickListener {
     private UserInfoItemView userInfoUiv;
     private SettingItemView nicknameSiv;
@@ -43,10 +40,7 @@ public class MyAccountActivity extends TitleBaseActivity implements View.OnClick
         initViewModel();
     }
 
-
-    /**
-     * 初始化布局
-     */
+    /** 初始化布局 */
     private void initView() {
         getTitleBar().setTitle(R.string.seal_mine_my_account);
 
@@ -61,55 +55,67 @@ public class MyAccountActivity extends TitleBaseActivity implements View.OnClick
         genderSiv.setOnClickListener(this);
     }
 
-
-    /**
-     * 初始化 viewmodel
-     */
+    /** 初始化 viewmodel */
     private void initViewModel() {
         userInfoViewModel = ViewModelProviders.of(this).get(UserInfoViewModel.class);
         // 用户信息
-        userInfoViewModel.getUserInfo().observe(this, new Observer<Resource<UserInfo>>() {
-            @Override
-            public void onChanged(Resource<UserInfo> resource) {
-                SLog.d("ss_update", "userInfo == " + resource.data);
-                if (resource.data != null) {
-                    // 减少图片加载次数，改为失败（获取上一次数据库中数据）或成功时加载图片
-                    if (resource.status == Status.SUCCESS || resource.status == Status.ERROR) {
-                        ImageLoaderUtils.displayUserPortraitImage(resource.data.getPortraitUri(), userInfoUiv.getHeaderImageView());
-                    }
-                    nicknameSiv.setValue(resource.data.getName());
-                    String phoneNumber = TextUtils.isEmpty(resource.data.getPhoneNumber()) ? "" : resource.data.getPhoneNumber();
-                    phonenumberSiv.setValue(phoneNumber);
-                    isCanSetStAccount = TextUtils.isEmpty(resource.data.getStAccount());
-                    if (!isCanSetStAccount) {
-                        sAccountSiv.setValue(resource.data.getStAccount());
-                    } else {
-                        sAccountSiv.setValue(getString(R.string.seal_mine_my_account_notset));
-                    }
-                    String gender = resource.data.getGender();
-                    if (TextUtils.isEmpty(gender) || gender.equals("male")) {
-                        gender = getString(R.string.seal_gender_man);
-                    } else if (gender.equals("female")) {
-                        gender = getString(R.string.seal_gender_female);
-                    }
-                    genderSiv.setValue(gender);
-                }
-            }
-        });
+        userInfoViewModel
+                .getUserInfo()
+                .observe(
+                        this,
+                        new Observer<Resource<UserInfo>>() {
+                            @Override
+                            public void onChanged(Resource<UserInfo> resource) {
+                                SLog.d("ss_update", "userInfo == " + resource.data);
+                                if (resource.data != null) {
+                                    // 减少图片加载次数，改为失败（获取上一次数据库中数据）或成功时加载图片
+                                    if (resource.status == Status.SUCCESS
+                                            || resource.status == Status.ERROR) {
+                                        ImageLoaderUtils.displayUserPortraitImage(
+                                                resource.data.getPortraitUri(),
+                                                userInfoUiv.getHeaderImageView());
+                                    }
+                                    nicknameSiv.setValue(resource.data.getName());
+                                    String phoneNumber =
+                                            TextUtils.isEmpty(resource.data.getPhoneNumber())
+                                                    ? ""
+                                                    : resource.data.getPhoneNumber();
+                                    phonenumberSiv.setValue(phoneNumber);
+                                    isCanSetStAccount =
+                                            TextUtils.isEmpty(resource.data.getStAccount());
+                                    if (!isCanSetStAccount) {
+                                        sAccountSiv.setValue(resource.data.getStAccount());
+                                    } else {
+                                        sAccountSiv.setValue(
+                                                getString(R.string.seal_mine_my_account_notset));
+                                    }
+                                    String gender = resource.data.getGender();
+                                    if (TextUtils.isEmpty(gender) || gender.equals("male")) {
+                                        gender = getString(R.string.seal_gender_man);
+                                    } else if (gender.equals("female")) {
+                                        gender = getString(R.string.seal_gender_female);
+                                    }
+                                    genderSiv.setValue(gender);
+                                }
+                            }
+                        });
 
         // 头像上传结果
-        userInfoViewModel.getUploadPortraitResult().observe(this, new Observer<Resource<Result>>() {
-            @Override
-            public void onChanged(Resource<Result> resource) {
-                if (resource.status == Status.SUCCESS) {
-                    showToast(R.string.profile_update_portrait_success);
-                } else if (resource.status == Status.ERROR) {
-                    showToast(R.string.profile_upload_portrait_failed);
-                }
-            }
-        });
+        userInfoViewModel
+                .getUploadPortraitResult()
+                .observe(
+                        this,
+                        new Observer<Resource<Result>>() {
+                            @Override
+                            public void onChanged(Resource<Result> resource) {
+                                if (resource.status == Status.SUCCESS) {
+                                    showToast(R.string.profile_update_portrait_success);
+                                } else if (resource.status == Status.ERROR) {
+                                    showToast(R.string.profile_upload_portrait_failed);
+                                }
+                            }
+                        });
     }
-
 
     @Override
     public void onClick(View v) {
@@ -128,42 +134,48 @@ public class MyAccountActivity extends TitleBaseActivity implements View.OnClick
                 }
                 break;
             case R.id.siv_gender:
-                Intent intentGender = new Intent(this,UpdateGenderActivity.class);
+                Intent intentGender = new Intent(this, UpdateGenderActivity.class);
                 startActivity(intentGender);
                 break;
             default:
-                //DO nothing
+                // DO nothing
                 break;
         }
     }
 
-    /**
-     * 选择图片的 dialog
-     */
+    /** 选择图片的 dialog */
     private void showSelectPictureDialog() {
         SelectPictureBottomDialog.Builder builder = new SelectPictureBottomDialog.Builder();
-        builder.setOnSelectPictureListener(new SelectPictureBottomDialog.OnSelectPictureListener() {
-            @Override
-            public void onSelectPicture(Uri uri) {
-                //上传图片
-                uploadPortrait(uri);
-            }
-        });
+        builder.setOnSelectPictureListener(new MySelectPictureBottomDialog(MyAccountActivity.this));
         SelectPictureBottomDialog dialog = builder.build();
         dialog.show(getSupportFragmentManager(), "select_picture_dialog");
     }
 
+    public class MySelectPictureBottomDialog
+            implements SelectPictureBottomDialog.OnSelectPictureListener {
+        WeakReference<MyAccountActivity> weakActivity;
+
+        public MySelectPictureBottomDialog(MyAccountActivity activity) {
+            weakActivity = new WeakReference<>(activity);
+        }
+
+        @Override
+        public void onSelectPicture(Uri uri) {
+            if (weakActivity.get() != null) {
+                // 上传图片
+                uploadPortrait(uri, weakActivity.get());
+            }
+        }
+    }
 
     /**
      * 上传头像
      *
      * @param uri
      */
-    private void uploadPortrait(Uri uri) {
-        if (userInfoViewModel != null) {
-            userInfoViewModel.uploadPortrait(uri);
+    private void uploadPortrait(Uri uri, MyAccountActivity accountActivity) {
+        if (accountActivity.userInfoViewModel != null) {
+            accountActivity.userInfoViewModel.uploadPortrait(uri);
         }
     }
-
-
 }

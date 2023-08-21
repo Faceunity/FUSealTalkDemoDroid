@@ -12,11 +12,9 @@ import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.CircleCrop;
 import com.bumptech.glide.request.RequestOptions;
-
 import io.rong.callkit.util.ICallScrollView;
 import io.rong.imlib.model.UserInfo;
 import java.util.ArrayList;
@@ -138,11 +136,12 @@ public class CallUserGridView extends HorizontalScrollView implements ICallScrol
         }
 
         if (userInfo != null) {
-            Glide.with(this)
-                    .load(userInfo.getPortraitUri())
-                    .placeholder(R.drawable.rc_default_portrait)
-                    .apply(RequestOptions.bitmapTransform(new CircleCrop()))
-                    .into(imageView);
+            RongCallKit.getKitImageEngine()
+                    .loadPortrait(
+                            this.getContext(),
+                            userInfo.getPortraitUri(),
+                            R.drawable.rc_default_portrait,
+                            imageView);
             name.setText(userInfo.getName() == null ? userInfo.getUserId() : userInfo.getName());
         } else {
             name.setText(childId);
@@ -211,8 +210,7 @@ public class CallUserGridView extends HorizontalScrollView implements ICallScrol
             LinearLayout container = (LinearLayout) linearLayout.getChildAt(i);
             LinearLayout child = (LinearLayout) container.findViewWithTag(childId);
             if (child != null) {
-                ImageView imageView =
-                        (ImageView) child.findViewById(R.id.rc_user_portrait);
+                ImageView imageView = (ImageView) child.findViewById(R.id.rc_user_portrait);
                 Glide.with(this)
                         .load(userInfo.getPortraitUri())
                         .placeholder(R.drawable.rc_default_portrait)

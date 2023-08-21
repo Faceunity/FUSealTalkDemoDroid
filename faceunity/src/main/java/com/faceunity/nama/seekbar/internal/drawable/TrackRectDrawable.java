@@ -3,6 +3,7 @@ package com.faceunity.nama.seekbar.internal.drawable;
 import android.content.res.ColorStateList;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+
 import androidx.annotation.NonNull;
 
 

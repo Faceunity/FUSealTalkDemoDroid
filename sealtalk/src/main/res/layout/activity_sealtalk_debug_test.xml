@@ -34,7 +34,6 @@
                 android:layout_height="@dimen/seal_mine_about_height"
                 app:item_content="@string/seal_mine_about_push_config"
                 app:item_divider="true" />
-
             <cn.rongcloud.im.ui.view.SettingItemView
                 android:id="@+id/siv_discussion"
                 android:layout_width="match_parent"
@@ -57,6 +56,20 @@
                 app:item_divider="true" />
 
             <cn.rongcloud.im.ui.view.SettingItemView
+                android:id="@+id/siv_ultra_group"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/seal_mine_about_height"
+                app:item_content="超级群"
+                app:item_divider="true" />
+
+            <cn.rongcloud.im.ui.view.SettingItemView
+                android:id="@+id/siv_ultra_group_unread_mention_msg_digests"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/seal_mine_about_height"
+                app:item_content="超级群未读消息摘要"
+                app:item_divider="true" />
+
+            <cn.rongcloud.im.ui.view.SettingItemView
                 android:id="@+id/siv_tag"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/seal_mine_about_height"
@@ -64,10 +77,46 @@
                 app:item_divider="true" />
 
             <cn.rongcloud.im.ui.view.SettingItemView
+                android:id="@+id/siv_delivery"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/seal_mine_about_height"
+                app:item_content="消息送达"
+                app:item_divider="true" />
+
+            <cn.rongcloud.im.ui.view.SettingItemView
                 android:id="@+id/siv_shortage"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/seal_mine_about_height"
                 app:item_content="消息断档"
+                app:item_divider="true" />
+
+            <cn.rongcloud.im.ui.view.SettingItemView
+                android:id="@+id/siv_shortage_dialog"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/seal_mine_about_height"
+                app:item_content="消息断档弹窗"
+                app:item_divider="true" />
+
+            <cn.rongcloud.im.ui.view.SettingItemView
+                android:id="@+id/siv_delete_remote_dialog"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/seal_mine_about_height"
+                app:item_content="是否删除远端消息"
+                app:item_divider="true" />
+
+            <cn.rongcloud.im.ui.view.SettingItemView
+                android:id="@+id/siv_sound_dialog"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/seal_mine_about_height"
+                app:item_content="是否响铃"
+                app:item_divider="true" />
+
+
+            <cn.rongcloud.im.ui.view.SettingItemView
+                android:id="@+id/siv_vibrate_dialog"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/seal_mine_about_height"
+                app:item_content="是否震动"
                 app:item_divider="true" />
 
             <cn.rongcloud.im.ui.view.SettingItemView
@@ -90,6 +139,35 @@
                 android:layout_height="@dimen/seal_mine_about_height"
                 app:item_content="发送消息敏感词监听"
                 app:item_divider="true" />
+
+            <cn.rongcloud.im.ui.view.SettingItemView
+                android:id="@+id/siv_permission_listener"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/seal_mine_about_height"
+                app:item_content="权限申请监听"
+                app:item_divider="true"
+                app:item_switch="true" />
+            <cn.rongcloud.im.ui.view.SettingItemView
+                android:id="@+id/siv_ultra_debug"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/seal_mine_about_height"
+                app:item_content="超级群Debug开关"
+                app:item_divider="true"
+                app:item_switch="true" />
+            <cn.rongcloud.im.ui.view.SettingItemView
+                android:id="@+id/siv_create_notification_channel"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/seal_mine_about_height"
+                app:item_content="创建通知通道"
+                app:item_divider="true"
+                />
+            <cn.rongcloud.im.ui.view.SettingItemView
+                android:id="@+id/siv_bind_chat_rtc_room"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/seal_mine_about_height"
+                app:item_content="绑RTCRoom"
+                app:item_divider="true"
+                />
         </LinearLayout>
     </ScrollView>
 </FrameLayout>

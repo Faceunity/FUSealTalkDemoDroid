@@ -82,12 +82,12 @@ public class RongPushPremissionsCheckHelper {
      * 1.内部首先会检查权限的状态， 当权限是开启状态， 则会直接通过 {@link ResultCallback#onAreadlyOpened(String)}
      * 返回结果； 如果没有开启或当前权限没有进行检查适配， 则会继续进行判断。2. 然后会检测是否配置了相关的跳转， 如果没有配置，
      * 则会通过 {@link ResultCallback#onFailed(String, ResultCallback.FailedType)} 返回结果，FailedType 值为
-     * {@link io.rong.pushperm.ResultCallback.FailedType#NO_SUPPORT} ; 3. 接下来会调用 {@link ResultCallback#onBeforeShowDialog(String)}
+     * {@link ResultCallback.FailedType#NO_SUPPORT} ; 3. 接下来会调用 {@link ResultCallback#onBeforeShowDialog(String)}
      * ，开发着可在dialog 显示之前进行拦截，如果{@link ResultCallback#onBeforeShowDialog(String)} 返回true 即可拦截，并通过
      * {@link ResultCallback#onFailed(String, ResultCallback.FailedType)} 返回结果，FailedType 值为
-     * {@link io.rong.pushperm.ResultCallback.FailedType#INTERCEPT} 不会显示提示窗口。所以用户可在 {@link ResultCallback#onBeforeShowDialog(String)}
+     * {@link ResultCallback.FailedType#INTERCEPT} 不会显示提示窗口。所以用户可在 {@link ResultCallback#onBeforeShowDialog(String)}
      * 方法中添加自己的判断规则。4. 前面条件都通过之后则会显示 dialog 提示。假如点击了取消会通过 {@link ResultCallback#onFailed(String, ResultCallback.FailedType)}
-     * 返回结果，FailedType 值为 {@link io.rong.pushperm.ResultCallback.FailedType#CANNEL} ，点击确定则会跳转到设置界面， 并会回调
+     * 返回结果，FailedType 值为 {@link ResultCallback.FailedType#CANNEL} ，点击确定则会跳转到设置界面， 并会回调
      * {@link ResultCallback#onGoToSetting(String)}
      *
      * @param activity
@@ -107,12 +107,12 @@ public class RongPushPremissionsCheckHelper {
      * 1.内部首先会检查权限的状态， 当权限是开启状态， 则会直接通过 {@link ResultCallback#onAreadlyOpened(String)}
      * 返回结果； 如果没有开启或当前权限没有进行检查适配， 则会继续进行判断。2. 然后会检测是否配置了相关的跳转， 如果没有配置，
      * 则会通过 {@link ResultCallback#onFailed(String, ResultCallback.FailedType)} 返回结果，FailedType 值为
-     * {@link io.rong.pushperm.ResultCallback.FailedType#NO_SUPPORT} ; 3. 接下来会调用 {@link ResultCallback#onBeforeShowDialog(String)}
+     * {@link ResultCallback.FailedType#NO_SUPPORT} ; 3. 接下来会调用 {@link ResultCallback#onBeforeShowDialog(String)}
      * ，开发着可在dialog 显示之前进行拦截，如果{@link ResultCallback#onBeforeShowDialog(String)} 返回true 即可拦截，并通过
      * {@link ResultCallback#onFailed(String, ResultCallback.FailedType)} 返回结果，FailedType 值为
-     * {@link io.rong.pushperm.ResultCallback.FailedType#INTERCEPT} 不会显示提示窗口。所以用户可在 {@link ResultCallback#onBeforeShowDialog(String)}
+     * {@link ResultCallback.FailedType#INTERCEPT} 不会显示提示窗口。所以用户可在 {@link ResultCallback#onBeforeShowDialog(String)}
      * 方法中添加自己的判断规则。4. 前面条件都通过之后则会显示 dialog 提示。假如点击了取消会通过 {@link ResultCallback#onFailed(String, ResultCallback.FailedType)}
-     * 返回结果，FailedType 值为 {@link io.rong.pushperm.ResultCallback.FailedType#CANNEL} ，点击确定则会跳转到设置界面， 并会回调
+     * 返回结果，FailedType 值为 {@link ResultCallback.FailedType#CANNEL} ，点击确定则会跳转到设置界面， 并会回调
      * {@link ResultCallback#onGoToSetting(String)}
      *
      * @param activity

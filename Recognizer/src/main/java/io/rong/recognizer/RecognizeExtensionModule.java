@@ -1,40 +1,35 @@
 package io.rong.recognizer;
 
-
 import android.content.Context;
-
 import androidx.fragment.app.Fragment;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import io.rong.imkit.conversation.extension.IExtensionModule;
 import io.rong.imkit.conversation.extension.RongExtension;
 import io.rong.imkit.conversation.extension.component.emoticon.IEmoticonTab;
 import io.rong.imkit.conversation.extension.component.plugin.IPluginModule;
 import io.rong.imlib.model.Conversation;
 import io.rong.imlib.model.Message;
-
+import java.util.ArrayList;
+import java.util.List;
 
 public class RecognizeExtensionModule implements IExtensionModule {
     @Override
     public void onInit(Context context, String appKey) {
-
+        // default implementation ignored
     }
 
     @Override
     public void onAttachedToExtension(Fragment fragment, RongExtension extension) {
-
+        // default implementation ignored
     }
 
     @Override
     public void onDetachedFromExtension() {
-
+        // default implementation ignored
     }
 
     @Override
     public void onReceivedMessage(Message message) {
-
+        // default implementation ignored
     }
 
     @Override
@@ -52,6 +47,6 @@ public class RecognizeExtensionModule implements IExtensionModule {
 
     @Override
     public void onDisconnect() {
-
+        // default implementation ignored
     }
 }
