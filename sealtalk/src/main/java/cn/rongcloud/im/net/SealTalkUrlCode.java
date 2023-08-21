@@ -1,8 +1,6 @@
 package cn.rongcloud.im.net;
 
-/**
- * API 接口的代码，用于区分错误码
- */
+/** API 接口的代码，用于区分错误码 */
 public class SealTalkUrlCode {
     public static final int API_CODE_PREFIX = 100000;
 
@@ -109,4 +107,10 @@ public class SealTalkUrlCode {
     public static final int GROUP_COPY = 51 * API_CODE_PREFIX;
 
     public static final int REGISTER_AND_LOGIN = 52 * API_CODE_PREFIX;
+
+    public static final int TRANSLATION_JWT_TOKEN = 53 * API_CODE_PREFIX;
+
+    public static final int ULTRA_GROUP_CREATE = 53 * API_CODE_PREFIX;
+
+    public static final int ULTRA_CHANNEL_CREATE = 54 * API_CODE_PREFIX;
 }

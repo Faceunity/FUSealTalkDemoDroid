@@ -63,7 +63,7 @@ public class PermissionCheck {
      */
     private static boolean isNotificationEnabled(Context context) {
 
-        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.KITKAT) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
             return false;
         }
         NotificationManagerCompat manager = NotificationManagerCompat.from(context);

@@ -1,10 +1,6 @@
 package com.faceunity.nama.control;
 
 import android.content.Context;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.widget.SwitchCompat;
-import androidx.recyclerview.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,12 +8,18 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.widget.SwitchCompat;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.faceunity.core.utils.DecimalUtils;
 import com.faceunity.nama.R;
 import com.faceunity.nama.base.BaseDelegate;
 import com.faceunity.nama.base.BaseListAdapter;
 import com.faceunity.nama.base.BaseViewHolder;
 import com.faceunity.nama.entity.BodyBeautyBean;
+import com.faceunity.nama.entity.FaceBeautyBean;
 import com.faceunity.nama.entity.ModelAttributeData;
 import com.faceunity.nama.infe.AbstractBodyBeautyDataFactory;
 import com.faceunity.nama.seekbar.DiscreteSeekBar;
@@ -42,7 +44,7 @@ public class BodyBeautyControlView extends BaseControlView {
     private HashMap<String, ModelAttributeData> mModelAttributeRange;
     private ArrayList<BodyBeautyBean> mBodyBeautyBeans;
     private BaseListAdapter<BodyBeautyBean> mBodyAdapter;
-    private int mBodyIndex = 0;
+    private int mBodyIndex = -1;
 
 
     public BodyBeautyControlView(@NonNull Context context) {
@@ -73,14 +75,24 @@ public class BodyBeautyControlView extends BaseControlView {
         mBodyBeautyBeans = mDataFactory.getBodyBeautyParam();
         mBodyAdapter.setData(mBodyBeautyBeans);
         mModelAttributeRange = mDataFactory.getModelAttributeRange();
-        BodyBeautyBean data = mBodyBeautyBeans.get(mBodyIndex);
-        double value = mDataFactory.getParamIntensity(data.getKey());
-        double stand = mModelAttributeRange.get(data.getKey()).getStandV();
-        double maxRange = mModelAttributeRange.get(data.getKey()).getMaxRange();
-        seekToSeekBar(value, stand, maxRange);
+        if (mBodyIndex > 0) {
+            BodyBeautyBean data = mBodyBeautyBeans.get(mBodyIndex);
+            double value = mDataFactory.getParamIntensity(data.getKey());
+            double stand = mModelAttributeRange.get(data.getKey()).getStandV();
+            double maxRange = mModelAttributeRange.get(data.getKey()).getMaxRange();
+            seekToSeekBar(value, stand, maxRange);
+        } else {
+            discreteSeekBar.setVisibility(INVISIBLE);
+        }
         setRecoverEnable(checkParamsChanged());
     }
 
+    public void updateOnSelected() {
+        if (switchCompat != null) {
+            boolean enabled = mDataFactory == null || mDataFactory.isBodyBeautyEnabled();
+            switchCompat.setChecked(enabled);
+        }
+    }
 
     private void initView() {
         recyclerView = findViewById(R.id.recycler_view);
@@ -191,11 +203,13 @@ public class BodyBeautyControlView extends BaseControlView {
             double intensity = mModelAttributeRange.get(bean.getKey()).getDefaultV();
             mDataFactory.updateParamIntensity(bean.getKey(), intensity);
         }
-        BodyBeautyBean data = mBodyBeautyBeans.get(mBodyIndex);
-        double value = mDataFactory.getParamIntensity(data.getKey());
-        double stand = mModelAttributeRange.get(data.getKey()).getStandV();
-        double maxRange = mModelAttributeRange.get(data.getKey()).getMaxRange();
-        seekToSeekBar(value, stand, maxRange);
+        if (clampIndex(mBodyBeautyBeans, mBodyIndex)) {
+            BodyBeautyBean data = mBodyBeautyBeans.get(mBodyIndex);
+            double value = mDataFactory.getParamIntensity(data.getKey());
+            double stand = mModelAttributeRange.get(data.getKey()).getStandV();
+            double maxRange = mModelAttributeRange.get(data.getKey()).getMaxRange();
+            seekToSeekBar(value, stand, maxRange);
+        }
         mBodyAdapter.notifyDataSetChanged();
         setRecoverEnable(false);
     }
@@ -206,17 +220,24 @@ public class BodyBeautyControlView extends BaseControlView {
      * @return Boolean
      */
     private boolean checkParamsChanged() {
-        BodyBeautyBean bean = mBodyBeautyBeans.get(mBodyIndex);
-        double value = mDataFactory.getParamIntensity(bean.getKey());
-        double defaultV = mModelAttributeRange.get(bean.getKey()).getDefaultV();
-        if (!DecimalUtils.doubleEquals(value, defaultV)) {
-            return true;
-        }
-        for (BodyBeautyBean beautyBean : mBodyBeautyBeans) {
-            value = mDataFactory.getParamIntensity(beautyBean.getKey());
-            defaultV = mModelAttributeRange.get(beautyBean.getKey()).getDefaultV();
-            if (!DecimalUtils.doubleEquals(value, defaultV)) {
-                return true;
+        if (mBodyBeautyBeans.size() > mBodyIndex && mBodyBeautyBeans.size() > 0) {
+            double value;
+            double defaultV;
+            if (mBodyIndex >= 0) {
+                BodyBeautyBean bean = mBodyBeautyBeans.get(mBodyIndex);
+                value = mDataFactory.getParamIntensity(bean.getKey());
+                defaultV = mModelAttributeRange.get(bean.getKey()).getDefaultV();
+                if (!DecimalUtils.doubleEquals(value, defaultV)) {
+                    return true;
+                }
+            }
+
+            for (BodyBeautyBean beautyBean : mBodyBeautyBeans) {
+                value = mDataFactory.getParamIntensity(beautyBean.getKey());
+                defaultV = mModelAttributeRange.get(beautyBean.getKey()).getDefaultV();
+                if (!DecimalUtils.doubleEquals(value, defaultV)) {
+                    return true;
+                }
             }
         }
         return false;
@@ -236,5 +257,11 @@ public class BodyBeautyControlView extends BaseControlView {
             recoverTextView.setAlpha(0.6f);
         }
         recoverLayout.setEnabled(enable);
+    }
+
+    private boolean clampIndex(ArrayList<BodyBeautyBean> bodyBeans, int index) {
+        if (bodyBeans.size() == 0) return false;
+        if (index < 0) return false;
+        return index < bodyBeans.size();
     }
 }

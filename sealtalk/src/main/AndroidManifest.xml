@@ -2,21 +2,39 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="cn.rongcloud.im">
 
+    <!--用于进行网络定位-->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <!--用于访问GPS定位-->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <!--用于获取运营商信息，用于支持提供运营商信息相关的接口-->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <!--用于访问wifi网络信息，wifi信息会用于进行网络定位-->
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <!--用于获取wifi的获取权限，wifi信息会用来进行网络定位-->
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
+    <!--用于申请调用A-GPS模块-->
+    <uses-permission android:name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS"/>
+    <!--如果设置了target >= 28 如果需要启动后台定位则必须声明这个权限-->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <!--如果您的应用需要后台定位权限，且有可能运行在Android Q设备上,并且设置了target>28，必须增加这个权限声明-->
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
+
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="MediaStore.Images.Media.INTERNAL_CONTENT_URI" />
-    <uses-permission android:name="MediaStore.Images.Media.EXTERNAL_CONTENT_URI" />
-    <!-- 发送位置消息，实时位置共享，如果您需要定位相关的功能，可以打开以下注释 -->
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <!-- targetSdkVersion为29时，如果需要后台定位权限，需要添加 ACCESS_BACKGROUND_LOCATION 权限-->
-    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <!-- ⼩米 配置开始 < -->
-    <permission
-        android:name="${applicationId}.permission.MIPUSH_RECEIVE"
-        android:protectionLevel="signature" />
-    <uses-permission android:name="${applicationId}.permission.MIPUSH_RECEIVE" />
-    <!-- ⼩米 配置结束 < -->
     <!-- GCM 配置开始 < -->
     <permission
         android:name="${applicationId}.permission.C2D_MESSAGE"
@@ -52,25 +70,33 @@
 
     <!-- OPPPO 权限配置-->
     <uses-permission android:name="com.coloros.mcs.permission.SEND_MCS_MESSAGE" />
+    <uses-permission android:name="com.coloros.mcs.permission.RECIEVE_MCS_MESSAGE"/>
+    <uses-permission android:name="com.heytap.mcs.permission.RECIEVE_MCS_MESSAGE"/>
     <!-- OPPO 配置结束-->
 
-    <uses-permission android:name="android.permission.READ_CONTACTS" />
-    <!--为了获取用户手机的IMEI，用来唯一的标识用户;发送位置消息，实时位置共享需要此权限-->
+    <!-- 数美 权限配置-->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <!-- 数美 配置结束-->
+
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
 
     <uses-permission android:name="android.permission.VIBRATE" />
-
 
     <application
         android:name=".SealApp"
         android:allowBackup="true"
         android:icon="@drawable/seal_app_logo"
         android:label="@string/app_name"
-        android:requestLegacyExternalStorage="true"
         android:networkSecurityConfig="@xml/network_security_config"
         android:supportsRtl="true"
+        android:resizeableActivity="false"
         android:theme="@style/AppTheme">
-
         <activity
             android:name=".ui.activity.NeedFaceUnityAcct"
             android:screenOrientation="portrait">
@@ -84,6 +110,7 @@
             android:name=".ui.activity.SplashActivity"
             android:screenOrientation="portrait"
             android:theme="@style/SplashTheme"
+            android:exported="true"
             android:windowSoftInputMode="stateHidden">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -99,7 +126,6 @@
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
-
                 <data
                     android:host="${applicationId}"
                     android:pathPrefix="/conversationlist"
@@ -108,15 +134,23 @@
                     android:host="${applicationId}"
                     android:pathPrefix="/conversation"
                     android:scheme="rong" />
+                <data
+                    android:host="${applicationId}"
+                    android:pathPrefix="/push_message"
+                    android:scheme="rong" />
             </intent-filter>
         </activity>
 
         <activity
             android:name=".ui.activity.LoginActivity"
             android:screenOrientation="portrait"
+            android:launchMode="singleTop"
             android:theme="@style/AppTheme.NoActionBar"></activity>
         <activity
             android:name=".ui.activity.SelectCountryActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.activity.SelectDataCenterActivity"
             android:screenOrientation="portrait" />
 
         <activity
@@ -155,6 +189,9 @@
             android:name=".ui.activity.SealSearchActivity"
             android:screenOrientation="portrait" />
         <activity
+            android:name=".ui.activity.SealSearchUltraGroupActivity"
+            android:screenOrientation="portrait" />
+        <activity
             android:name=".ui.activity.SearchFriendActivity"
             android:screenOrientation="portrait" />
         <activity
@@ -171,6 +208,7 @@
             android:screenOrientation="portrait" />
         <activity
             android:name=".ui.activity.PublicServiceInfoActivity"
+            android:exported="true"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -211,6 +249,10 @@
 
         <activity
             android:name=".ui.activity.PrivateChatSettingActivity"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".ui.activity.SystemSettingActivity"
             android:screenOrientation="portrait" />
 
         <activity
@@ -371,6 +413,17 @@
             android:name=".ui.activity.MultiDeleteFriendsActivity"
             android:screenOrientation="portrait" />
 
+        <activity android:name=".ui.activity.TranslationSettingActivity"
+            android:screenOrientation="portrait"/>
+
+        <activity android:name=".ui.activity.TranslationLanguageListActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".ui.test.BindChatRTCRoomActivity"
+            android:screenOrientation="portrait"/>
+
+        <activity android:name=".ui.activity.ProxySettingActivity"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:screenOrientation="portrait"/>
 
         <!-- 请将CHANNAL改为app的发布渠道 < -->
         <meta-data
@@ -380,7 +433,7 @@
         <!-- 高德地图-->
         <meta-data
             android:name="com.amap.api.v2.apikey"
-            android:value="e09af6a2b26c02086e9216bd07c960ae" />
+            android:value="8e15626795f67908934f4779299eb841" />
 
         <!-- push start-->
         <receiver
@@ -397,24 +450,8 @@
         <!--第三方的推送 权限 广播 和服务-->
 
         <!-- 小米 配置开始 < -->
-        <service
-            android:name="com.xiaomi.push.service.XMPushService"
-            android:enabled="true" />
-        <service
-            android:name="com.xiaomi.mipush.sdk.PushMessageHandler"
-            android:enabled="true"
-            android:exported="true" />
-        <service
-            android:name="com.xiaomi.mipush.sdk.MessageHandleService"
-            android:enabled="true" />
         <!--注：此service必须在2.2.5版本以后（包括2.2.5版本）加入-->
 
-        <service
-            android:name="com.xiaomi.push.service.XMJobService"
-            android:enabled="true"
-            android:exported="false"
-            android:permission="android.permission.BIND_JOB_SERVICE" />
-        <!--注：此service必须在3.0.1版本以后（包括3.0.1版本）加入-->
 
         <receiver
             android:name="com.xiaomi.push.service.receivers.NetworkStatusReceiver"
@@ -424,13 +461,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </receiver>
-        <receiver
-            android:name="com.xiaomi.push.service.receivers.PingReceiver"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="com.xiaomi.push.PING_TIMER" />
-            </intent-filter>
-        </receiver>
+
         <receiver
             android:name="io.rong.push.platform.mi.MiMessageReceiver"
             android:exported="true">
@@ -465,7 +496,8 @@
         <!-- [END firebase_service] -->
 
         <!-- MeiZu 配置开始 < -->
-        <receiver android:name="io.rong.push.platform.meizu.MeiZuReceiver">
+        <receiver android:name="io.rong.push.platform.meizu.MeiZuReceiver"
+            android:exported="true">
             <intent-filter>
                 <!-- 接收 push 消息 -->
                 <action android:name="com.meizu.flyme.push.intent.MESSAGE" />
@@ -487,6 +519,7 @@
         <!-- vivo 推送配置 开始 -->
         <service
             android:name="com.vivo.push.sdk.service.CommandClientService"
+            android:permission="com.push.permission.UPSTAGESERVICE"
             android:exported="true" />
 
         <activity
@@ -507,6 +540,22 @@
             android:taskAffinity="net.sourceforge.simcpux"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
 
+        <activity
+            android:name="io.rong.sight.player.SightPlayerActivity"
+            android:hardwareAccelerated="true"
+            android:screenOrientation="portrait"
+            android:exported="true"
+            android:supportsRtl="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data
+                    android:host="${applicationId}"
+                    android:pathPrefix="/sight/player"
+                    android:scheme="rong" />
+            </intent-filter>
+        </activity>
+
         <!--推送配置项-->
         <meta-data
             android:name="com.vivo.push.api_key"
@@ -516,7 +565,8 @@
             android:value="103912318" />
 
         <!-- push 应用定义消息 receiver 声明 -->
-        <receiver android:name="io.rong.push.platform.vivo.VivoPushMessageReceiver">
+        <receiver android:name="io.rong.push.platform.vivo.VivoPushMessageReceiver"
+            android:exported="false">
             <intent-filter>
                 <!-- 接收 push 消息 -->
                 <action android:name="com.vivo.pushclient.action.RECEIVE" />
@@ -552,6 +602,43 @@
             </intent-filter>
         </service>
 
+        <!--超级群-->
+
+        <activity
+            android:name=".ui.activity.UltraGroupConversationListActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.activity.UltraGroupUnreadMentionDigestsActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.activity.UltraGroupConversationListPickerActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.activity.UltraConversationActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.activity.UltraGroupChannelMemberSetting"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.activity.UltraGroupChannelAddMemberActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.activity.UltraGroupSettingActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.activity.UltraSettingActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.activity.SelectUltraCreateGroupActivity"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".ui.activity.CreateUltraGroupActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.activity.CreateChannelActivity"
+            android:screenOrientation="portrait" />
+
 
         <activity
             android:name=".ui.test.PushConfigActivity"
@@ -576,6 +663,13 @@
         <activity
             android:name=".ui.test.MessageExpansionDetailActivity"
             android:screenOrientation="portrait" />
+        <!--消息送达-->
+        <activity
+            android:name=".ui.test.MsgDeliveryConversationListActivity"
+            android:screenOrientation="portrait" />
+        <activity
+          android:name=".ui.test.MsgDeliveryTestActivity"
+          android:screenOrientation="portrait" />
         <activity
             android:name=".ui.test.TagTestActivity"
             android:screenOrientation="portrait" />
@@ -603,6 +697,86 @@
             android:screenOrientation="portrait"/>
         <activity android:name=".ui.test.CommonConversationListTestActivity"
             android:screenOrientation="portrait"/>
+        <activity android:name=".ui.activity.UserGroupListActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".ui.activity.UserGroupEditMemberActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".ui.activity.UserGroupEditActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".ui.activity.UserGroupChannelListActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".ui.activity.UserGroupBindChannelActivity"
+            android:screenOrientation="portrait"/>
+        <!-- oppo 推送-->
+        <service
+            android:name="com.heytap.msp.push.service.CompatibleDataMessageCallbackService"
+            android:exported="true"
+            android:permission="com.coloros.mcs.permission.SEND_MCS_MESSAGE" >
+            <intent-filter>
+                <action android:name="com.coloros.mcs.action.RECEIVE_MCS_MESSAGE" />
+            </intent-filter>
+        </service>
+        <service
+            android:name="com.heytap.msp.push.service.DataMessageCallbackService"
+            android:exported="true"
+            android:permission="com.heytap.mcs.permission.SEND_PUSH_MESSAGE" >
+            <intent-filter>
+                <action android:name="com.heytap.mcs.action.RECEIVE_MCS_MESSAGE" />
+                <action android:name="com.heytap.msp.push.RECEIVE_MCS_MESSAGE" />
+            </intent-filter>
+        </service>
+        <!-- oppo 推送 end-->
+
+        <service
+            android:name="com.heytap.msp.push.service.CompatibleDataMessageCallbackService"
+            android:exported="true"
+            android:permission="com.coloros.mcs.permission.SEND_MCS_MESSAGE" >
+            <intent-filter>
+                <action android:name="com.coloros.mcs.action.RECEIVE_MCS_MESSAGE" />
+            </intent-filter>
+        </service>
+        <service
+            android:name="com.heytap.msp.push.service.DataMessageCallbackService"
+            android:exported="true"
+            android:permission="com.heytap.mcs.permission.SEND_PUSH_MESSAGE" >
+            <intent-filter>
+                <action android:name="com.heytap.mcs.action.RECEIVE_MCS_MESSAGE" />
+                <action android:name="com.heytap.msp.push.RECEIVE_MCS_MESSAGE" />
+            </intent-filter>
+        </service>
+
+        <receiver
+            android:name="com.huawei.hms.support.api.push.PushMsgReceiver"
+            android:directBootAware="true"
+            android:exported="true"
+            android:permission="${applicationId}.permission.PROCESS_PUSH_MSG" >
+            <intent-filter>
+
+                <!-- Mandatory, be used to receive notification bar message click event. -->
+                <action android:name="com.huawei.intent.action.PUSH_DELAY_NOTIFY" />
+                <!-- Optional, compatible with old huawei phones. -->
+                <action android:name="com.huawei.intent.action.PUSH" />
+            </intent-filter>
+        </receiver>
+        <receiver
+            android:name="com.huawei.hms.support.api.push.PushReceiver"
+            android:directBootAware="true"
+            android:exported="true"
+            android:permission="${applicationId}.permission.PROCESS_PUSH_MSG" >
+            <intent-filter>
+
+                <!-- Mandatory, be used to receive tokens. -->
+                <action android:name="com.huawei.android.push.intent.REGISTRATION" />
+                <!-- Mandatory, be used to receive messages. -->
+                <action android:name="com.huawei.android.push.intent.RECEIVE" />
+            </intent-filter>
+        </receiver>
+        <!-- sealtalk 渠道区分 -->
+        <meta-data
+            android:name="CHANNEL"
+            android:value="none" />
+
+        <!-- end -->
     </application>
 
 </manifest>

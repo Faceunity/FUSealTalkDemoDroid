@@ -2,7 +2,6 @@ package com.faceunity.nama.control;
 
 import android.animation.ValueAnimator;
 import android.content.Context;
-
 import android.util.AttributeSet;
 import android.widget.FrameLayout;
 

@@ -8,3 +8,4 @@
 .externalNativeBuild
 gradlew.bat
 **/build/
+*.hprof

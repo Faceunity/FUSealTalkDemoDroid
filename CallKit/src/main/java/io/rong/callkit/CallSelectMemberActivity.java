@@ -26,17 +26,13 @@ import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.resource.bitmap.CenterCrop;
-import com.bumptech.glide.load.resource.bitmap.CircleCrop;
-import com.bumptech.glide.request.RequestOptions;
-
 import io.rong.callkit.util.CallKitSearchBarListener;
 import io.rong.callkit.util.CallKitSearchBarView;
 import io.rong.callkit.util.CallKitUtils;
 import io.rong.callkit.util.CallSelectMemberSerializable;
+import io.rong.calllib.RongCallClient;
 import io.rong.calllib.RongCallCommon;
+import io.rong.calllib.RongCallSession;
 import io.rong.common.RLog;
 import io.rong.imkit.feature.mention.RongMentionManager;
 import io.rong.imkit.userinfo.RongUserInfoManager;
@@ -48,7 +44,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class CallSelectMemberActivity extends BaseNoActionBarActivity implements RongUserInfoManager.UserDataObserver {
+public class CallSelectMemberActivity extends BaseNoActionBarActivity
+        implements RongUserInfoManager.UserDataObserver {
     private static final String TAG = "CallSelectMemberActivity";
     public static final String DISCONNECT_ACTION = "call_disconnect";
     ArrayList<String> selectedMember;
@@ -71,6 +68,7 @@ public class CallSelectMemberActivity extends BaseNoActionBarActivity implements
     private ArrayList<String> allObserver = null; // 保存当前通话中从多人音/视频传递过来的观察者列表
 
     private String groupId;
+    private String callId;
     private RelativeLayout rlSearchTop;
     private RelativeLayout rlActionBar;
     private ImageView ivBack;
@@ -145,16 +143,17 @@ public class CallSelectMemberActivity extends BaseNoActionBarActivity implements
     private static final String CALLSELECTMEMBERSERIALIZABLE_KEY =
             "CALLSELECTMEMBERSERIALIZABLEKEY";
 
-    private BroadcastReceiver disconnectBroadcastReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (TextUtils.equals(intent.getAction(), DISCONNECT_ACTION)) {
-                if (!isFinishing()) {
-                    setActivityResult(true);
+    private BroadcastReceiver disconnectBroadcastReceiver =
+            new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    if (TextUtils.equals(intent.getAction(), DISCONNECT_ACTION)) {
+                        if (!isFinishing()) {
+                            setActivityResult(true);
+                        }
+                    }
                 }
-            }
-        }
-    };
+            };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -179,6 +178,7 @@ public class CallSelectMemberActivity extends BaseNoActionBarActivity implements
         conversationType = Conversation.ConversationType.setValue(conType);
         invitedMembers = intent.getStringArrayListExtra("invitedMembers");
         groupId = intent.getStringExtra("groupId");
+        callId = intent.getStringExtra("callId");
         allObserver = intent.getStringArrayListExtra("allObserver");
 
         ArrayList<String> list = intent.getStringArrayListExtra("allMembers");
@@ -343,7 +343,8 @@ public class CallSelectMemberActivity extends BaseNoActionBarActivity implements
                             startSearchMember(content);
                         } else {
                             Toast.makeText(
-                                            CallSelectMemberActivity.this, getString(R.string.rc_voip_search_no_member),
+                                            CallSelectMemberActivity.this,
+                                            getString(R.string.rc_voip_search_no_member),
                                             Toast.LENGTH_SHORT)
                                     .show();
                         }
@@ -413,6 +414,11 @@ public class CallSelectMemberActivity extends BaseNoActionBarActivity implements
     @Override
     public void onUserUpdate(UserInfo userInfo) {
         if (mList != null && userInfo != null) {
+            if (userInfo.getUserId() == null
+                    || !userInfoIndex.containsKey(userInfo.getUserId())
+                    || userInfoIndex.get(userInfo.getUserId()) == null) {
+                return;
+            }
             synchronized (listLock) {
                 int index = userInfoIndex.get(userInfo.getUserId());
                 if (index >= 0 && index < userInfoArrayList.size()) {
@@ -432,14 +438,10 @@ public class CallSelectMemberActivity extends BaseNoActionBarActivity implements
     }
 
     @Override
-    public void onGroupUpdate(Group group) {
-
-    }
+    public void onGroupUpdate(Group group) {}
 
     @Override
-    public void onGroupUserInfoUpdate(GroupUserInfo groupUserInfo) {
-
-    }
+    public void onGroupUserInfoUpdate(GroupUserInfo groupUserInfo) {}
 
     class ListAdapter extends BaseAdapter {
         List<UserInfo> mallMembers;
@@ -491,10 +493,16 @@ public class CallSelectMemberActivity extends BaseNoActionBarActivity implements
                 holder.checkbox.setClickable(false);
                 holder.checkbox.setEnabled(true);
                 holder.name.setText("");
-                Glide.with(holder.portrait)
-                        .load(R.drawable.rc_default_portrait)
-                        .apply(RequestOptions.bitmapTransform(new CenterCrop()))
-                        .into(holder.portrait);
+                RongCallKit.getKitImageEngine()
+                        .loadPortrait(
+                                getApplicationContext(),
+                                null,
+                                R.drawable.rc_default_portrait,
+                                holder.portrait);
+                //                Glide.with(holder.portrait)
+                //                        .load(R.drawable.rc_default_portrait)
+                //                        .apply(RequestOptions.bitmapTransform(new CenterCrop()))
+                //                        .into(holder.portrait);
                 holder.checkbox.setTag("");
                 return convertView;
             }
@@ -531,11 +539,12 @@ public class CallSelectMemberActivity extends BaseNoActionBarActivity implements
             } else {
                 holder.name.setText(displayName);
             }
-            Glide.with(holder.portrait)
-                    .load(mUserInfo.getPortraitUri())
-                    .placeholder(R.drawable.rc_default_portrait)
-                    .apply(RequestOptions.bitmapTransform(new CircleCrop()))
-                    .into(holder.portrait);
+            RongCallKit.getKitImageEngine()
+                    .loadPortrait(
+                            getBaseContext(),
+                            mUserInfo.getPortraitUri(),
+                            R.drawable.rc_default_portrait,
+                            holder.portrait);
             return convertView;
         }
     }
@@ -546,8 +555,23 @@ public class CallSelectMemberActivity extends BaseNoActionBarActivity implements
      * @param val 是否是远端挂断，如果是则关闭该页面
      */
     private void setActivityResult(boolean val) {
+        RongCallSession profile = RongCallClient.getInstance().getCallSession();
+        if (profile != null) {
+            // callid由多聊页面传入，如果先启动群组选择人员页面再启动多聊页面，不允许启动多聊页面
+            if (null != profile.getCallId() && (!profile.getCallId().equals(callId))) {
+                String msg =
+                        profile.getMediaType() == RongCallCommon.CallMediaType.AUDIO
+                                ? getString(io.rong.callkit.R.string.rc_voip_call_audio_start_fail)
+                                : getString(io.rong.callkit.R.string.rc_voip_call_video_start_fail);
+                Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+                return;
+            }
+        }
+
+        CallKitUtils.closeKeyBoard(CallSelectMemberActivity.this, null);
         Intent intent = new Intent();
         intent.putExtra("remote_hangup", val);
+        intent.setPackage(getPackageName());
         intent.putStringArrayListExtra("invited", selectedMember);
         intent.putStringArrayListExtra("observers", observerMember);
         setResult(RESULT_OK, intent);

@@ -5,7 +5,6 @@ import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
-
 import android.text.util.Linkify;
 import android.util.SparseArray;
 import android.view.View;

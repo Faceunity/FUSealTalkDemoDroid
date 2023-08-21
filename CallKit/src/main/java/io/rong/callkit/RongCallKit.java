@@ -1,16 +1,14 @@
 package io.rong.callkit;
 
-import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.widget.Toast;
-import io.rong.callkit.util.CallKitBuildVar;
+import io.rong.callkit.util.RongCallPermissionUtil;
 import io.rong.calllib.RongCallClient;
 import io.rong.calllib.RongCallCommon;
 import io.rong.calllib.RongCallMissedListener;
 import io.rong.calllib.RongCallSession;
-import io.rong.imkit.utils.PermissionCheckUtil;
 import io.rong.imlib.RongIMClient;
 import io.rong.imlib.model.Conversation;
 import java.util.ArrayList;
@@ -29,6 +27,7 @@ public class RongCallKit {
     private static GroupMembersProvider mGroupMembersProvider;
 
     private static RongCallCustomerHandlerListener customerHandlerListener;
+    private static GlideCallKitImageEngine kitImageEngine = new GlideCallKitImageEngine();
 
     /**
      * 发起单人通话。
@@ -38,23 +37,41 @@ public class RongCallKit {
      * @param mediaType 会话媒体类型
      */
     public static void startSingleCall(Context context, String targetId, CallMediaType mediaType) {
-        if (checkEnvironment(context, mediaType)) {
-            String action;
-            if (mediaType.equals(CallMediaType.CALL_MEDIA_TYPE_AUDIO)) {
-                action = RongVoIPIntent.RONG_INTENT_ACTION_VOIP_SINGLEAUDIO;
-            } else {
-                action = RongVoIPIntent.RONG_INTENT_ACTION_VOIP_SINGLEVIDEO;
-            }
-            Intent intent = new Intent(action);
-            intent.putExtra(
-                    "conversationType",
-                    Conversation.ConversationType.PRIVATE.getName().toLowerCase());
-            intent.putExtra("targetId", targetId);
-            intent.putExtra("callAction", RongCallAction.ACTION_OUTGOING_CALL.getName());
-            intent.setPackage(context.getPackageName());
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            context.startActivity(intent);
+        startSingleCallInternal(context, targetId, mediaType, RongCallCommon.RoomType.NORMAL);
+    }
+
+    /**
+     * 发起单人跨APP通话。
+     *
+     * @param context 上下文
+     * @param targetId 目标会话 id ，单人通话为对方 UserId
+     * @param mediaType 会话媒体类型
+     */
+    public static void startSingleCrossCall(
+            Context context, String targetId, CallMediaType mediaType) {
+        startSingleCallInternal(context, targetId, mediaType, RongCallCommon.RoomType.CROSS);
+    }
+
+    private static void startSingleCallInternal(
+            Context context,
+            String targetId,
+            CallMediaType mediaType,
+            RongCallCommon.RoomType roomType) {
+        String action;
+        if (mediaType.equals(CallMediaType.CALL_MEDIA_TYPE_AUDIO)) {
+            action = RongVoIPIntent.RONG_INTENT_ACTION_VOIP_SINGLEAUDIO;
+        } else {
+            action = RongVoIPIntent.RONG_INTENT_ACTION_VOIP_SINGLEVIDEO;
         }
+        Intent intent = new Intent(action);
+        intent.putExtra(
+                "conversationType", Conversation.ConversationType.PRIVATE.getName().toLowerCase());
+        intent.putExtra("targetId", targetId);
+        intent.putExtra("roomType", roomType);
+        intent.putExtra("callAction", RongCallAction.ACTION_OUTGOING_CALL.getName());
+        intent.setPackage(context.getPackageName());
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(intent);
     }
 
     /**
@@ -197,14 +214,13 @@ public class RongCallKit {
      */
     private static boolean checkEnvironment(Context context, CallMediaType mediaType) {
         if (context instanceof Activity) {
-            String[] permissions;
-            if (mediaType.equals(CallMediaType.CALL_MEDIA_TYPE_AUDIO)) {
-                permissions = new String[] {Manifest.permission.RECORD_AUDIO};
-            } else {
-                permissions =
-                        new String[] {Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO};
-            }
-            if (!PermissionCheckUtil.requestPermissions((Activity) context, permissions)) {
+            boolean result =
+                    RongCallPermissionUtil.checkPermissionByType(
+                            context,
+                            mediaType == CallMediaType.CALL_MEDIA_TYPE_AUDIO
+                                    ? RongCallCommon.CallMediaType.AUDIO
+                                    : RongCallCommon.CallMediaType.VIDEO);
+            if (!result) {
                 return false;
             }
         }
@@ -317,14 +333,15 @@ public class RongCallKit {
         RongCallModule.setMissedCallListener(rongCallMissedListener);
     }
 
-    //TODO 由于最新CallKit中已经将 RongCallModule#mViewLoaded 默认值改为true，所以不在需要此方法
-//    /**
-//     * 防止 voip 通话页面被会话列表、会话页面或者开发者 app 层页面覆盖。 使用 maven 接入 callkit 的开发者在 app 层主页面的 onCreate 调用此方法即可。
-//     * 针对导入 callkit 源码的开发者，不使用会话列表和会话页面我们建议在 {@link RongCallModule#onCreate(Context)}方法中设置
-//     * mViewLoaded 为 true 即可。
-//     */
-//    public static void onViewCreated() {
-//    }
+    // TODO 由于最新CallKit中已经将 RongCallModule#mViewLoaded 默认值改为true，所以不在需要此方法
+    //    /**
+    //     * 防止 voip 通话页面被会话列表、会话页面或者开发者 app 层页面覆盖。 使用 maven 接入 callkit 的开发者在 app 层主页面的 onCreate
+    // 调用此方法即可。
+    //     * 针对导入 callkit 源码的开发者，不使用会话列表和会话页面我们建议在 {@link RongCallModule#onCreate(Context)}方法中设置
+    //     * mViewLoaded 为 true 即可。
+    //     */
+    //    public static void onViewCreated() {
+    //    }
 
     /**
      * 忽略 voip 来电，不弹出来电界面，直接挂断。
@@ -340,6 +357,23 @@ public class RongCallKit {
     }
 
     public static String getVersion() {
-        return CallKitBuildVar.SDK_VERSION;
+        return BuildConfig.LIBRARY_PACKAGE_NAME;
+    }
+
+    public static void setKitImageEngine(GlideCallKitImageEngine kitImageEngine) {
+        RongCallKit.kitImageEngine = kitImageEngine;
+    }
+
+    /**
+     * 获取自定义头像engine
+     *
+     * @return
+     */
+    public static GlideCallKitImageEngine getKitImageEngine() {
+        return kitImageEngine;
+    }
+
+    public static GroupMembersProvider getmGroupMembersProvider() {
+        return mGroupMembersProvider;
     }
 }

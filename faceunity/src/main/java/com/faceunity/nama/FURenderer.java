@@ -10,12 +10,14 @@ import com.faceunity.core.enumeration.CameraFacingEnum;
 import com.faceunity.core.enumeration.FUAIProcessorEnum;
 import com.faceunity.core.enumeration.FUAITypeEnum;
 import com.faceunity.core.enumeration.FUTransformMatrixEnum;
+import com.faceunity.core.faceunity.FUAIKit;
 import com.faceunity.core.faceunity.FURenderConfig;
 import com.faceunity.core.faceunity.FURenderKit;
 import com.faceunity.core.faceunity.FURenderManager;
 import com.faceunity.core.utils.CameraUtils;
 import com.faceunity.core.utils.FULogger;
 import com.faceunity.nama.listener.FURendererListener;
+import com.faceunity.nama.utils.FuDeviceUtils;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -39,7 +41,6 @@ public class FURenderer extends IFURenderer {
             synchronized (FURenderer.class) {
                 if (INSTANCE == null) {
                     INSTANCE = new FURenderer();
-                    INSTANCE.mFURenderKit = FURenderKit.getInstance();
                 }
             }
         }
@@ -53,8 +54,9 @@ public class FURenderer extends IFURenderer {
 
 
     /* 特效FURenderKit*/
-    private FURenderKit mFURenderKit;
-
+    private FURenderKit mFURenderKit = FURenderKit.getInstance();
+    /* 特效FURenderKit*/
+    private FUAIKit mFUAIKit = FUAIKit.getInstance();
     /* AI道具*/
     private String BUNDLE_AI_FACE = "model" + File.separator + "ai_face_processor.bundle";
     private String BUNDLE_AI_HUMAN = "model" + File.separator + "ai_human_processor.bundle";
@@ -88,14 +90,15 @@ public class FURenderer extends IFURenderer {
      */
     @Override
     public void setup(Context context) {
-        FURenderManager.setKitDebug(FULogger.LogLevel.TRACE);
-        FURenderManager.setCoreDebug(FULogger.LogLevel.DEBUG);
+        FURenderManager.setKitDebug(FULogger.LogLevel.ERROR);
+        FURenderManager.setCoreDebug(FULogger.LogLevel.ERROR);
         FURenderManager.registerFURender(context, authpack.A(), new OperateCallback() {
             @Override
             public void onSuccess(int i, @NotNull String s) {
                 if (i == FURenderConfig.OPERATE_SUCCESS_AUTH) {
-                    mFURenderKit.getFUAIController().loadAIProcessor(BUNDLE_AI_FACE, FUAITypeEnum.FUAITYPE_FACEPROCESSOR);
-                    mFURenderKit.getFUAIController().loadAIProcessor(BUNDLE_AI_HUMAN, FUAITypeEnum.FUAITYPE_HUMAN_PROCESSOR);
+                    mFUAIKit.loadAIProcessor(BUNDLE_AI_FACE, FUAITypeEnum.FUAITYPE_FACEPROCESSOR);
+                    mFUAIKit.loadAIProcessor(BUNDLE_AI_HUMAN, FUAITypeEnum.FUAITYPE_HUMAN_PROCESSOR);
+
                     mFURenderKit.setReadBackSync(true);
                     int cameraFrontOrientation = CameraUtils.INSTANCE.getCameraOrientation(Camera.CameraInfo.CAMERA_FACING_FRONT);
                     int cameraBackOrientation = CameraUtils.INSTANCE.getCameraOrientation(Camera.CameraInfo.CAMERA_FACING_BACK);
@@ -160,7 +163,9 @@ public class FURenderer extends IFURenderer {
         config.setInputTextureMatrix(inputTextureMatrix);
         config.setOutputMatrix(outputMatrix);
         config.setCameraFacing(cameraFacing);
+        mCallStartTime = System.nanoTime();
         FURenderOutputData outputData = mFURenderKit.renderWithInput(inputData);
+        mSumCallTime += System.nanoTime() - mCallStartTime;
         if (outputData.getTexture() != null && outputData.getTexture().getTexId() > 0) {
             return outputData.getTexture().getTexId();
         }
@@ -185,7 +190,10 @@ public class FURenderer extends IFURenderer {
         config.setCameraFacing(cameraFacing);
         config.setNeedBufferReturn(true);
         config.setOutputMatrix(outputMatrix);
-        return mFURenderKit.renderWithInput(inputData);
+        mCallStartTime = System.nanoTime();
+        FURenderOutputData fuRenderOutputData = mFURenderKit.renderWithInput(inputData);
+        mSumCallTime += System.nanoTime() - mCallStartTime;
+        return fuRenderOutputData;
     }
 
     /**

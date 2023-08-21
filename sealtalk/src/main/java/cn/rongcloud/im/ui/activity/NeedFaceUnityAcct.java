@@ -9,6 +9,8 @@ import android.widget.Button;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.faceunity.nama.FURenderer;
+
 import cn.rongcloud.im.R;
 import io.rong.callkit.util.PreferenceUtil;
 
@@ -46,6 +48,11 @@ public class NeedFaceUnityAcct extends AppCompatActivity {
                 Intent intent = new Intent(NeedFaceUnityAcct.this, SplashActivity.class);
                 PreferenceUtil.persistString(NeedFaceUnityAcct.this, PreferenceUtil.KEY_FACEUNITY_IS_ON,
                         isOn + "");
+                new Thread(() -> {
+                    if (isOn) {
+                        FURenderer.getInstance().setup(NeedFaceUnityAcct.this);
+                    }
+                }).start();
                 startActivity(intent);
                 finish();
             }
