@@ -48,11 +48,6 @@ public class NeedFaceUnityAcct extends AppCompatActivity {
                 Intent intent = new Intent(NeedFaceUnityAcct.this, SplashActivity.class);
                 PreferenceUtil.persistString(NeedFaceUnityAcct.this, PreferenceUtil.KEY_FACEUNITY_IS_ON,
                         isOn + "");
-                new Thread(() -> {
-                    if (isOn) {
-                        FURenderer.getInstance().setup(NeedFaceUnityAcct.this);
-                    }
-                }).start();
                 startActivity(intent);
                 finish();
             }

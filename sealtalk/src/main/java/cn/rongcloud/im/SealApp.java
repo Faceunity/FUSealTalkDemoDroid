@@ -22,6 +22,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.CircleCrop;
 import com.bumptech.glide.request.RequestOptions;
 import com.faceunity.nama.FUConfig;
+import com.faceunity.nama.FURenderer;
 import com.faceunity.nama.utils.FuDeviceUtils;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
@@ -78,6 +79,7 @@ public class SealApp extends MultiDexApplication {
         ImageLoaderConfiguration imageLoaderConfiguration =
                 ImageLoaderConfiguration.createDefault(this);
         ImageLoader.getInstance().init(imageLoaderConfiguration);
+        FURenderer.getInstance().setup(this);
         /*
          * 以上部分在所有进程中会执行
          */
