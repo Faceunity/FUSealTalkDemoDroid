@@ -82,8 +82,6 @@ public abstract class AbstractFaceBeautyDataFactory {
      */
     public abstract void enableFaceBeauty(boolean enable);
 
-    public abstract boolean isFaceBeautyEnabled();
-
     /**
      * 获取单项强度
      *
@@ -100,5 +98,6 @@ public abstract class AbstractFaceBeautyDataFactory {
      */
     public abstract void updateParamIntensity(String key, double value);
 
+    public abstract boolean isFaceBeautyEnabled();
 
 }

@@ -175,7 +175,7 @@ public class SealApp extends MultiDexApplication {
         // UMeng初始化
         UMConfigure.preInit(this, BuildConfig.SEALTALK_UMENG_APPKEY, null);
 
-        FUConfig.DEVICE_LEVEL = FuDeviceUtils.judgeDeviceLevelGPU();
+        FUConfig.DEVICE_LEVEL = FuDeviceUtils.judgeDeviceLevel(true);
     }
 
     /** 检查是否正确的配置 SealTalk 中的一些必要环境。 */
