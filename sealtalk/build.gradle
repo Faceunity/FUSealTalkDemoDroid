@@ -11,7 +11,7 @@ android {
         versionCode 20210127
         versionName "5.4.0"
         ndk {
-            abiFilters "armeabi-v7a", 'x86'
+            abiFilters "armeabi-v7a", 'x86', 'arm64-v8a'
         }
         // 若集成过多第三方库时可能导致方法超过65536时需要开启
         multiDexEnabled true
