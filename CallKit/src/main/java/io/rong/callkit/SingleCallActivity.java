@@ -785,7 +785,7 @@ public class SingleCallActivity extends BaseCallActivity implements Handler.Call
                     mFURenderer.prepareRenderer(mFURendererListener);
                 }
 
-                if (FUConfig.DEVICE_LEVEL > FuDeviceUtils.DEVICE_LEVEL_MID) {
+                if (FUConfig.DEVICE_LEVEL > FuDeviceUtils.DEVICE_LEVEL_TWO) {
                     cheekFaceNum();
                 }
 
